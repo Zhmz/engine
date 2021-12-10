@@ -35,7 +35,7 @@ import { EDITOR } from 'internal:constants';
 import { Camera } from '../../core/components/camera-component';
 import { Widget } from '../../ui/widget';
 import { game } from '../../core/game';
-import { Vec3 } from '../../core/math';
+import { Size, Vec3 } from '../../core/math';
 import { view } from '../../core/platform/view';
 import { legacyCC } from '../../core/global-exports';
 import { Enum } from '../../core/value-types/enum';
@@ -43,6 +43,8 @@ import visibleRect from '../../core/platform/visible-rect';
 import { RenderRoot2D } from './render-root-2d';
 import { Node, screen } from '../../core';
 import { NodeEventType } from '../../core/scene-graph/node-event';
+import { scale } from '../../primitive';
+import { UITransform } from '.';
 
 const _worldPos = new Vec3();
 
@@ -120,6 +122,102 @@ export class Canvas extends RenderRoot2D {
         this._onResizeCamera();
     }
 
+    /**
+     * @en
+     * Size of design canvas.
+     *
+     * @zh
+     * 设计分辨率。
+     */
+    @tooltip('i18n:canvas.design_resolution')
+    get designResolution (): Size {
+        return this._designResolution;
+    }
+
+    set designResolution (value) {
+        if (this._designResolution.equals(value)) {
+            return;
+        }
+
+        let clone: Size;
+        if (EDITOR) {
+            const uiTrans = this.node._uiProps.uiTransformComp;
+            if (uiTrans) {
+                clone = new Size(uiTrans.contentSize);
+            }
+        }
+
+        this._designResolution.set(value);
+        this._resizeCanvasUITransform();
+
+        if (EDITOR) {
+            // @ts-expect-error EDITOR condition
+            this.node.emit(NodeEventType.SIZE_CHANGED, clone);
+        } else {
+            this.node.emit(NodeEventType.SIZE_CHANGED);
+        }
+    }
+
+    get designWidth () {
+        return this._designResolution.width;
+    }
+
+    set designWidth (value) {
+        if (this.designResolution.width === value) {
+            return;
+        }
+
+        let clone: Size;
+        if (EDITOR) {
+            const uiTrans = this.node._uiProps.uiTransformComp;
+            if (uiTrans) {
+                clone = new Size(uiTrans.contentSize);
+            }
+        }
+
+        this._designResolution.width = value;
+        this._resizeCanvasUITransform();
+
+        if (EDITOR) {
+            // @ts-expect-error EDITOR condition
+            this.node.emit(NodeEventType.SIZE_CHANGED, clone);
+        } else {
+            this.node.emit(NodeEventType.SIZE_CHANGED);
+        }
+
+        console.error('modify design width');
+    }
+
+    get designHeight () {
+        return this._designResolution.height;
+    }
+
+    set designHeight (value) {
+        if (this.designResolution.height === value) {
+            return;
+        }
+
+        let clone: Size;
+        if (EDITOR) {
+            const uiTrans = this.node._uiProps.uiTransformComp;
+            if (uiTrans) {
+                clone = new Size(uiTrans.contentSize);
+            }
+        }
+
+        this._designResolution.height = value;
+        this._resizeCanvasUITransform();
+
+        if (EDITOR) {
+            // @ts-expect-error EDITOR condition
+            this.node.emit(NodeEventType.SIZE_CHANGED, clone);
+        } else {
+            this.node.emit(NodeEventType.SIZE_CHANGED);
+        }
+
+        console.error('modify design height');
+    }
+
     // /**
     //  * @zh
     //  * 当前激活的画布组件，场景同一时间只能有一个激活的画布。
@@ -138,9 +236,17 @@ export class Canvas extends RenderRoot2D {
     private _pos = new Vec3();
     private _renderMode = RenderMode.OVERLAY;
 
+    @serializable
+    protected _designResolution: Size = new Size(0, 0);
+
     constructor () {
         super();
         this._thisOnCameraResized = this._onResizeCamera.bind(this);
+
+        //initialization
+        if (this.designResolution.x === 0 && this.designResolution.y === 0) {
+            this._designResolution = view.getDesignResolutionSize();
+        }
 
         if (EDITOR) {
             this._fitDesignResolution = () => {
@@ -191,7 +297,8 @@ export class Canvas extends RenderRoot2D {
             this._objFlags |= legacyCC.Object.Flags.IsPositionLocked | legacyCC.Object.Flags.IsSizeLocked | legacyCC.Object.Flags.IsAnchorLocked;
         }
 
-        this.node.on(NodeEventType.TRANSFORM_CHANGED, this._thisOnCameraResized);
+        //这里需要保留，临时去掉，避免无限循环
+        //this.node.on(NodeEventType.TRANSFORM_CHANGED, this._thisOnCameraResized);
     }
 
     public onEnable () {
@@ -218,17 +325,93 @@ export class Canvas extends RenderRoot2D {
         this.node.off(NodeEventType.TRANSFORM_CHANGED, this._thisOnCameraResized);
     }
 
-    protected _onResizeCamera () {
+    // canvas 和 default design resolution 对齐
+    protected _onResizeCameraOld () {
         if (this._cameraComponent && this._alignCanvasWithScreen) {
             if (this._cameraComponent.targetTexture) {
                 this._cameraComponent.orthoHeight = visibleRect.height / 2;
             } else {
                 const size = screen.windowSize;
-                this._cameraComponent.orthoHeight = size.height / view.getScaleY() / 2;
+                //原来的方案
+                //this._cameraComponent.orthoHeight = size.height / view.getScaleY() / 2;
+
+                //下面是先处理fit width的情况
+                //camera和屏幕当前宽高比对齐，不修改camera高度，保证两个矩形相似而非全等（不考虑view.scaleY）
+                const scaleCameraToScreen = this._cameraComponent.orthoHeight * 2 / size.height;
+                //this._cameraComponent.orthoHeight = size.height / 2;
+
+                const uiTrans = this.node._uiProps.uiTransformComp;
+                if (uiTrans) {
+                    console.error(`size.width = ${size.width}, size.height = ${size.height}`);
+                    let scaleX = 1/* * scaleCameraToScreen*/;
+                    //编辑器下不需要设置scale，此时screen.windowSize是编辑器scene窗口实时的尺寸，是用户设置可以自行拖拽的，没什么意义
+                    //有意义的是运行状态下选择的分辨率，也是该字段screen.windowSize
+                    if (!EDITOR) {
+                        //运行模式下，根据当前宽的比进行缩放，将canvas的宽缩放到恰好填入camera矩形框（即屏幕矩形框）内
+                        scaleX = (size.width / uiTrans.width) * scaleCameraToScreen;
+                    }
+                    //设置canvas的scale
+                    this.node.scale = new Vec3(scaleX, scaleX, 1);
+                    //因为camera目前直接生成在canvas下面，所以camera保持worldscale为1，localscale为canvasscale的倒数
+                    this.cameraComponent!.node.scale = new Vec3(1 / scaleX, 1 / scaleX, 1);
+                    console.error(`scale = ${scaleX}, real width = ${uiTrans.width * scaleX}, real height = ${uiTrans.height * scaleX}`);
+                }
             }
 
             this.node.getWorldPosition(_worldPos);
             this._cameraComponent.node.setWorldPosition(_worldPos.x, _worldPos.y, 1000);
+        }
+    }
+
+    // canvas 和 screen 和 camera 对齐
+    protected _onResizeCamera () {
+        if (this._cameraComponent && this._alignCanvasWithScreen) {
+            const size = screen.windowSize;
+            //下面是先处理fit width的情况
+            //计算camera和屏幕的比例关系
+            const scaleScreenToCamera = this._cameraComponent.orthoHeight * 2 / size.height;
+            const uiTrans = this.node._uiProps.uiTransformComp;
+            if (uiTrans) {
+                //屏幕矩形框
+                console.error(`screen width = ${size.width}, screen height = ${size.height}`);
+                //摄影机矩形框
+                console.error(`camera width = ${size.width * scaleScreenToCamera}, camera height = ${this._cameraComponent.orthoHeight * 2}`);
+                //设计分辨率
+                console.error(`design width = ${this.designResolution.width}, design height = ${this.designResolution.height}`);
+                //因为是fit width，所以直接设置canvas宽度
+                uiTrans.width = this.designResolution.width;
+                //根据摄影机宽高比，计算出canvas高度
+                uiTrans.height =  this.designResolution.width * this._cameraComponent.camera.height / this._cameraComponent.camera.width;
+                //未缩放的canvas的宽高
+                console.error(`uiTrans.width = ${uiTrans.width}, uiTrans.height = ${uiTrans.height}`);
+
+                let scaleX = 1;
+                //编辑器下不需要设置scale，此时screen.windowSize是编辑器scene窗口实时的尺寸，是用户设置可以自行拖拽的，没什么意义
+                //有意义的是运行状态下选择的分辨率，也是该字段screen.windowSize
+                if (!EDITOR) {
+                    //运行模式下，根据当前宽的比进行缩放，将canvas的宽缩放到恰好填入屏幕矩形框内
+                    const scaleCanvasToScreen = (size.width / uiTrans.width);
+                    //继续缩放，将canvas填入摄影机矩形框
+                    scaleX = scaleCanvasToScreen * scaleScreenToCamera;
+                }
+                //设置canvas的scale
+                this.node.scale = new Vec3(scaleX, scaleX, 1);
+                //因为camera目前直接生成在canvas下面，所以camera保持worldscale为1，localscale为canvasscale的倒数
+                this.cameraComponent!.node.scale = new Vec3(1 / scaleX, 1 / scaleX, 1);
+                console.error(`scale = ${scaleX}, calculated width = ${uiTrans.width * scaleX}, calculated height = ${uiTrans.height * scaleX}`);
+            }
+
+            this.node.getWorldPosition(_worldPos);
+            this._cameraComponent.node.setWorldPosition(_worldPos.x, _worldPos.y, 1000);
+        }
+    }
+
+    protected _resizeCanvasUITransform () {
+        //先按fit width
+        const uiTrans = this.node._uiProps.uiTransformComp;
+        if (uiTrans) {
+            uiTrans.width = this.designResolution.x;
+            uiTrans.height = uiTrans.width * screen.windowSize.y / screen.windowSize.x;
         }
     }
 
