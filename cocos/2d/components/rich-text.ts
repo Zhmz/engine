@@ -546,19 +546,78 @@ export class RichText extends UIComponent {
         }
     }
 
+    // error means toleration of difference of current splitted string size and the target single line size.
+    protected CalculateOneLineCharCountApproximatelyInThresholdWithInError (text: string, styleIndex: number, error: number) {
+        const labelSize = this._calculateSize(styleIndex, text);
+        const partStringArr: string[] = [];
+        if (labelSize.x < 2048) {
+            partStringArr.push(text);
+            return partStringArr;
+        } else {
+            const longStr = text;
+
+            let curStart = 0;
+            let curEnd = longStr.length / 2;
+            let curString = longStr.substring(curStart, curEnd);
+            let curStringSize = this._calculateSize(styleIndex, curString);
+
+            // calculate a threshold that is n times of this.maxWidth and less than 2048
+            const lineCountFor2048 = 2048 / this.maxWidth;
+            const lineCountForOnePart = Math.floor(lineCountFor2048);
+            const sizeForOnePart = lineCountForOnePart * this.maxWidth;
+
+            // divide text into some pieces of which the size is less than sizeForOnePart
+            while (curStringSize.x > sizeForOnePart) {
+                curEnd /= 2;
+
+                curString = curString.substring(curStart, curEnd);
+                curStringSize = this._calculateSize(styleIndex, curString);
+            }
+
+            // approach target(sizeForOnePart - error)
+            const avgOneCharSize = curStringSize.x / (curEnd - curStart);
+            // avoid endless loop
+            let tryCount = 100;
+            let isLastPart = curEnd >= text.length;
+            while (tryCount && curStart < text.length) {
+                const unitCloseToTargetSize = Math.abs(curStringSize.x - sizeForOnePart) < error
+                    ? 1 : Math.abs(curStringSize.x - sizeForOnePart) / avgOneCharSize;
+                if (curStringSize.x > sizeForOnePart) {
+                    curEnd -= unitCloseToTargetSize;
+                } else if (curStringSize.x + error < sizeForOnePart) {
+                    if (isLastPart) {
+                        partStringArr.push(curString);
+                        const step = curEnd - curStart;
+                        curStart = curEnd;
+                        curEnd += step;
+                    } else {
+                        curEnd += unitCloseToTargetSize;
+                    }
+                } else {
+                    partStringArr.push(curString);
+                    const step = curEnd - curStart;
+                    curStart = curEnd;
+                    curEnd += step;
+                }
+
+                if (curEnd >= text.length) {
+                    curEnd = text.length;
+                }
+                isLastPart = curEnd >= text.length;
+
+                curString = longStr.substring(curStart, curEnd);
+                curStringSize = this._calculateSize(styleIndex, curString);
+
+                tryCount--;
+            }
+
+            return partStringArr;
+        }
+    }
+
     protected _measureText (styleIndex: number, string?: string) {
         const func = (s: string) => {
-            let label: ISegment;
-            if (this._labelSegmentsCache.length === 0) {
-                label = this._createFontLabel(s);
-                this._labelSegmentsCache.push(label);
-            } else {
-                label = this._labelSegmentsCache[0];
-                label.node.getComponent(Label)!.string = s;
-            }
-            label.styleIndex = styleIndex;
-            this._applyTextAttribute(label);
-            const labelSize = label.node._uiProps.uiTransformComp!.contentSize;
+            const labelSize = this._calculateSize(styleIndex, s);
             return labelSize.width;
         };
         if (string) {
@@ -566,6 +625,21 @@ export class RichText extends UIComponent {
         } else {
             return func;
         }
+    }
+
+    protected _calculateSize (styleIndex: number, s: string) {
+        let label: ISegment;
+        if (this._labelSegmentsCache.length === 0) {
+            label = this._createFontLabel(s);
+            this._labelSegmentsCache.push(label);
+        } else {
+            label = this._labelSegmentsCache[0];
+            label.node.getComponent(Label)!.string = s;
+        }
+        label.styleIndex = styleIndex;
+        this._applyTextAttribute(label);
+        const labelSize = label.node._uiProps.uiTransformComp!.contentSize;
+        return labelSize;
     }
 
     protected _onTouchEnded (event: EventTouch) {
@@ -863,7 +937,7 @@ export class RichText extends UIComponent {
 
         for (let i = 0; i < this._textArray.length; ++i) {
             const richTextElement = this._textArray[i];
-            const text = richTextElement.text;
+            let text = richTextElement.text;
             if (text === undefined) {
                 continue;
             }
@@ -879,6 +953,10 @@ export class RichText extends UIComponent {
                     continue;
                 }
             }
+
+            const splitArr: string[] = this.CalculateOneLineCharCountApproximatelyInThresholdWithInError(text, i, this.fontSize);
+            text = splitArr.join('\n');
+
             const multilineTexts = text.split('\n');
 
             for (let j = 0; j < multilineTexts.length; ++j) {
