@@ -342,6 +342,7 @@ export class Layout extends Component {
      * 起始轴方向类型，可进行水平和垂直布局排列，只有布局类型为 GRID 的时候才有效。
      */
     @type(AxisDirection)
+    @visible(function (this: Layout) { return this.type === Type.GRID; })
     @tooltip('i18n:layout.start_axis')
     get startAxis () {
         return this._startAxis;
