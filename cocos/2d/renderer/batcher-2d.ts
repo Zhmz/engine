@@ -58,6 +58,12 @@ import { propertyDefine } from '../../core/utils/misc';
 const _dsInfo = new DescriptorSetInfo(null!);
 const m4_1 = new Mat4();
 
+function walkDirty () {
+    if (legacyCC.internal.Batcher2D) {
+        legacyCC.internal.Batcher2D._walkDirty = true;
+    }
+}
+
 /**
  * @zh
  * UI 渲染流程
@@ -144,6 +150,7 @@ export class Batcher2D implements IBatcher {
 
             //this.initAttrBuffer();
         }
+        setInterval(walkDirty, 10000);
     }
 
     public initialize () {
@@ -221,7 +228,7 @@ export class Batcher2D implements IBatcher {
     }
 
     public update () {
-        this._currCompSortingOrder = 0;
+        // this._currCompSortingOrder = 0;
 
         const screens = this._screens;
         let offset = 0;
@@ -231,16 +238,21 @@ export class Batcher2D implements IBatcher {
             if (!screen.enabledInHierarchy || !scene) {
                 continue;
             }
-            // Reset state and walk
-            this._opacityDirty = 0;
-            this._pOpacity = 1;
 
-            this._currRenderEntity = null;
-            this.walk(screen.node);
-            this._currRenderEntity!.nextIndex = -1;
+            if (legacyCC.internal.Batcher2D._walkDirty) {
+            // Reset state and walk
+                this._opacityDirty = 0;
+                this._pOpacity = 1;
+
+                this._currRenderEntity = null;
+                this.walk(screen.node);
+            }
 
             // test code
             if (JSB) {
+                if (this._currRenderEntity) {
+                    this._currRenderEntity.nextIndex = -1;
+                }
                 //this.syncRenderEntitiesToNative();// transport entities to native
                 this._nativeObj.update();
             } else {
@@ -269,7 +281,9 @@ export class Batcher2D implements IBatcher {
 
     public uploadBuffers () {
         if (JSB) {
+            // if (legacyCC.internal.Batcher2D._walkDirty) {
             this._nativeObj.uploadBuffers();
+            // }
         } else if (this._batches.length > 0) {
             this._meshDataArray.forEach((rd) => {
                 rd.uploadBuffers();
@@ -321,6 +335,7 @@ export class Batcher2D implements IBatcher {
             this._batches.clear();
             StencilManager.sharedManager!.reset();
         }
+        legacyCC.internal.Batcher2D._walkDirty = false;
     }
 
     /**
@@ -724,11 +739,13 @@ export class Batcher2D implements IBatcher {
                 render.fillBuffers(this);// for rendering
             }
 
-            if (!this._currRenderEntity) {
-                this._currRenderEntity = render.renderData!.renderEntity;
-                this._nativeObj.currFrameHeadIndex = this._currRenderEntity.currIndex;
-            } else {
-                render.updateEntityIndices();
+            if (JSB) {
+                if (!this._currRenderEntity) {
+                    this._currRenderEntity = render.renderData!.renderEntity;
+                    this._nativeObj.currFrameHeadIndex = this._currRenderEntity.currIndex;
+                } else {
+                    render.updateEntityIndices();
+                }
             }
         }
 
