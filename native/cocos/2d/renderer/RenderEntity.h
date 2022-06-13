@@ -36,7 +36,7 @@ public:
     void setVertexOffset(index_t vertexOffset);
     inline index_t getIndexOffset() const { return this->_indexOffset; }
     void setIndexOffset(index_t indexOffset);
-    inline UIMeshBuffer* getMeshBuffer() { return this->_meshBuffer; };
+    inline UIMeshBuffer* getMeshBuffer() const { return this->_meshBuffer; };
     inline float_t* getVbBuffer() const { return this->_vbBuffer; }
     void setVbBuffer(float_t* vbBuffer);
     inline uint16_t* getIbBuffer() const { return this->_ibBuffer; }
