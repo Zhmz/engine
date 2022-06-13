@@ -50,7 +50,6 @@ import { BaseRenderData, MeshRenderData, RenderData } from './render-data';
 import { UIMeshRenderer } from '../components/ui-mesh-renderer';
 import { RenderEntity } from './render-entity';
 import { NativeAdvanceRenderData, NativeBatcher2d, NativeRenderEntity, NativeUIMeshBuffer } from '../../core/renderer/2d/native-2d';
-import { AdvanceRenderData } from './AdvanceRenderData';
 import { mapBuffer, readBuffer } from '../../3d/misc';
 import { MeshBuffer } from './mesh-buffer';
 import { propertyDefine } from '../../core/utils/misc';
@@ -221,7 +220,7 @@ export class Batcher2D implements IBatcher {
     }
 
     public update () {
-        this._currCompSortingOrder = 0;
+        // this._currCompSortingOrder = 0;
 
         const screens = this._screens;
         this._nativeObj.update();
@@ -676,12 +675,13 @@ export class Batcher2D implements IBatcher {
                 //这句的功能挪到native了
                 render.fillBuffers(this);// for rendering
             }
-
-            if (!this._currRenderEntity) {
-                this._currRenderEntity = render.renderData!.renderEntity;
-                this._nativeObj.currFrameHeadIndex = this._currRenderEntity.currIndex;
-            } else {
-                render.updateEntityIndices();
+            if (JSB) {
+                if (!this._currRenderEntity) {
+                    this._currRenderEntity = render.renderData!.renderEntity;
+                    this._nativeObj.currFrameHeadIndex = this._currRenderEntity.currIndex;
+                } else {
+                    render.updateEntityIndices();
+                }
             }
         }
 
