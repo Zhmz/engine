@@ -137,10 +137,6 @@ export class LabelShadow extends Component {
     }
 
     public onDisable () {
-        this._updateRenderData();
-    }
-
-    public onDestroy () {
         this._enabled = false;
         this._updateRenderData();
     }
