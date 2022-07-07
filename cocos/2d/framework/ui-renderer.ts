@@ -364,9 +364,8 @@ export class UIRenderer extends Renderer {
         this.node.on(NodeEventType.SIZE_CHANGED, this._nodeStateChange, this);
         this.node.on(NodeEventType.PARENT_CHANGED, this._colorDirty, this);
         this.updateMaterial();
-        this._renderFlag = this._canRender();
         this._colorDirty();
-        uiRendererManager.markDirtyRenderer(this);
+        this.markForUpdateRenderData();
     }
 
     // For Redo, Undo
@@ -416,7 +415,6 @@ export class UIRenderer extends Renderer {
      * @param enable Marked necessary to update or not
      */
     public markForUpdateRenderData (enable = true) {
-        this._renderFlag = this._canRender();
         if (enable) {
             const renderData = this.renderData;
             if (renderData) {
@@ -473,6 +471,10 @@ export class UIRenderer extends Renderer {
     public updateRenderer () {
         if (this._assembler) {
             this._assembler.updateRenderData(this);
+        }
+        this._renderFlag = this._canRender();
+        if (this._renderEntity) {
+            this._renderEntity.enabled = this._renderFlag;
         }
     }
 
@@ -697,6 +699,7 @@ export class UIRenderer extends Renderer {
 
     private disposeRenderEntity () {
         this._renderEntity?.destroy();
+        this._renderEntity = null;
     }
 }
 

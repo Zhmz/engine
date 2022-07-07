@@ -378,7 +378,7 @@ export class Mask extends UIRenderer {
         this._createGraphics();
         super.updateMaterial();
         this._updateGraphics();
-        this._renderFlag = this._canRender();
+        this.markForUpdateRenderData();
     }
 
     public onDisable () {
