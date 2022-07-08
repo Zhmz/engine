@@ -97,6 +97,7 @@ export class UIMeshRenderer extends Component {
         }
         if (JSB) {
             this._UIModelNativeProxy.attachNode(this.node);
+            // @ts-expect-error temporary no care
             this.renderEntity!.assignExtraEntityAttrs(this);
         }
     }
@@ -169,7 +170,9 @@ export class UIMeshRenderer extends Component {
     private _uploadRenderData (index) {
         if (JSB) {
             const renderData = MeshRenderData.add();
+            // @ts-expect-error temporary no care
             renderData.initRenderDrawInfo(this);
+            // @ts-expect-error temporary no care
             this._renderData = renderData;
             this._renderData!.material = this._modelComponent!.getMaterialInstance(index);
         }
