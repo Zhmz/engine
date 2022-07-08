@@ -1,21 +1,34 @@
+import { DEBUG } from 'internal:constants';
+import { assert } from '../../core';
 import { js } from '../../core/utils/js';
 import { UIMeshRenderer } from '../components';
 import { UIRenderer } from './ui-renderer';
 
 export class UIRendererManager {
-    private _allRenderers: UIRenderer[] = [];
+    private _allRenderers: (UIRenderer | UIMeshRenderer)[] = [];
     private _dirtyRenderers: (UIRenderer | UIMeshRenderer)[] = [];
     private _dirtyVersion = 0;
-    public addRenderer (uiRenderer: UIRenderer) {
-        this._allRenderers.push(uiRenderer);
+    public addRenderer (uiRenderer: UIRenderer | UIMeshRenderer) {
+        if (uiRenderer._internalId === -1) {
+            uiRenderer._internalId = this._allRenderers.length;
+            this._allRenderers.push(uiRenderer);
+        }
     }
 
-    public removeRenderer (uiRenderer: UIRenderer) {
-        js.array.fastRemove(this._allRenderers, uiRenderer);
+    public removeRenderer (uiRenderer: UIRenderer | UIMeshRenderer) {
+        if (uiRenderer._internalId !== -1) {
+            const id = uiRenderer._internalId;
+            this._allRenderers[this._allRenderers.length - 1]._internalId = id;
+            js.array.fastRemoveAt(this._allRenderers, id);
+            uiRenderer._internalId = -1;
+            if (uiRenderer._dirtyVersion === this._dirtyVersion) {
+                js.array.fastRemove(this._dirtyRenderers, uiRenderer);
+            }
+        }
     }
 
     public markDirtyRenderer (uiRenderer: UIRenderer | UIMeshRenderer) {
-        if (uiRenderer._dirtyVersion !== this._dirtyVersion) {
+        if (uiRenderer._dirtyVersion !== this._dirtyVersion && uiRenderer._internalId !== -1) {
             this._dirtyRenderers.push(uiRenderer);
             uiRenderer._dirtyVersion = this._dirtyVersion;
         }
@@ -25,6 +38,9 @@ export class UIRendererManager {
         const length = this._dirtyRenderers.length;
         const dirtyRenderers = this._dirtyRenderers;
         for (let i = 0; i < length; i++) {
+            if (DEBUG) {
+                assert(dirtyRenderers[i]._internalId !== -1);
+            }
             dirtyRenderers[i].updateRenderer();
         }
         this._dirtyRenderers.length = 0;

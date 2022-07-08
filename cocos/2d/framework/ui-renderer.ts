@@ -325,7 +325,14 @@ export class UIRenderer extends Renderer {
     protected _instanceMaterialType = -1;
     protected _blendState: BlendState = new BlendState();
     protected _blendHash = 0;
+    /**
+     * @internal
+     */
     public _dirtyVersion = -1;
+    /**
+     * @internal
+     */
+    public _internalId = -1;
 
     get batcher () {
         if (!this._batcher) {
@@ -366,6 +373,7 @@ export class UIRenderer extends Renderer {
         this.node.on(NodeEventType.PARENT_CHANGED, this._colorDirty, this);
         this.updateMaterial();
         this._colorDirty();
+        uiRendererManager.addRenderer(this);
         this.markForUpdateRenderData();
     }
 
@@ -380,7 +388,9 @@ export class UIRenderer extends Renderer {
         this.node.off(NodeEventType.ANCHOR_CHANGED, this._nodeStateChange, this);
         this.node.off(NodeEventType.SIZE_CHANGED, this._nodeStateChange, this);
         this.node.off(NodeEventType.PARENT_CHANGED, this._colorDirty, this);
+        uiRendererManager.removeRenderer(this);
         this._renderFlag = false;
+        if (this._renderEntity) this._renderEntity.enabled = false;
     }
 
     public onDestroy () {
