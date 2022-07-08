@@ -1,5 +1,5 @@
 import { DEBUG } from 'internal:constants';
-import { assert } from '../../core';
+import { assert } from '../../core/platform/debug';
 import { js } from '../../core/utils/js';
 import { UIMeshRenderer } from '../components';
 import { UIRenderer } from './ui-renderer';
@@ -17,12 +17,14 @@ export class UIRendererManager {
 
     public removeRenderer (uiRenderer: UIRenderer | UIMeshRenderer) {
         if (uiRenderer._internalId !== -1) {
+            assert(this._allRenderers[uiRenderer._internalId] === uiRenderer);
             const id = uiRenderer._internalId;
             this._allRenderers[this._allRenderers.length - 1]._internalId = id;
             js.array.fastRemoveAt(this._allRenderers, id);
             uiRenderer._internalId = -1;
             if (uiRenderer._dirtyVersion === this._dirtyVersion) {
                 js.array.fastRemove(this._dirtyRenderers, uiRenderer);
+                uiRenderer._dirtyVersion = -1;
             }
         }
     }

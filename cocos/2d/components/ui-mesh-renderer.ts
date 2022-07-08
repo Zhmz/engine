@@ -125,7 +125,7 @@ export class UIMeshRenderer extends Component {
      * 一般在 UI 渲染流程中调用，用于组装所有的渲染数据到顶点数据缓冲区。
      * 注意：不要手动调用该函数，除非你理解整个流程。
      */
-    public updateAssembler (render: IBatcher) {
+    public _render (render: IBatcher) {
         if (this._modelComponent) {
             const models = this._modelComponent._collectModels();
             // @ts-expect-error: UIMeshRenderer do not attachToScene
@@ -139,6 +139,12 @@ export class UIMeshRenderer extends Component {
         }
 
         return false;
+    }
+
+    public fillBuffers (render: IBatcher) {
+        if (this.enabled) {
+            this._render(render);
+        }
     }
 
     // Native updateAssembler
