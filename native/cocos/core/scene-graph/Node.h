@@ -238,8 +238,8 @@ public:
     void removeAllChildren();
     bool isChildOf(Node *parent);
 
-    inline float_t getParentOpacity() { return _parentOpacity; }
-    inline void setParentOpacity(float_t parentOpacity) { _parentOpacity = parentOpacity; }
+    inline float getParentOpacity() const { return _parentOpacity; }
+    inline void setParentOpacity(float parentOpacity) { _parentOpacity = parentOpacity; }
 
     void setActive(bool isActive);
 
@@ -712,7 +712,7 @@ private:
     Vec3 _euler{0, 0, 0};
 
     //
-    float_t _parentOpacity{1.0f};
+    float _parentOpacity{1.0F};
 
     IntrusivePtr<UserData> _userData;
     friend class NodeActivator;

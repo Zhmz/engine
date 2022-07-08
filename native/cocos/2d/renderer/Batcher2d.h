@@ -71,7 +71,9 @@ public:
     void resetRenderStates();
 
 private:
-    inline void fillIndexBuffers(RenderDrawInfo* drawInfo) {
+    bool _isInit = false;
+
+    inline void fillIndexBuffers(RenderDrawInfo* drawInfo) { // NOLINT(readability-convert-member-functions-to-static)
         uint32_t vertexOffset = drawInfo->getVertexOffset();
         uint16_t* ib = drawInfo->getIDataBuffer();
 
@@ -87,12 +89,12 @@ private:
         buffer->setIndexOffset(indexOffset);
     }
 
-    inline void fillVertexBuffers(RenderEntity* entity, RenderDrawInfo* drawInfo) {
+    inline void fillVertexBuffers(RenderEntity* entity, RenderDrawInfo* drawInfo) { // NOLINT(readability-convert-member-functions-to-static)
         Node* node = entity->getNode();
         const Mat4& matrix = node->getWorldMatrix();
         uint8_t stride = drawInfo->getStride();
         uint32_t size = drawInfo->getVbCount() * stride;
-        float_t* vbBuffer = drawInfo->getVbBuffer();
+        float* vbBuffer = drawInfo->getVbBuffer();
 
         Vec3 temp;
         uint32_t offset = 0;
@@ -106,7 +108,8 @@ private:
             vbBuffer[offset++] = temp.z;
         }
     }
-    inline void setIndexRange(RenderDrawInfo* drawInfo) {
+
+    inline void setIndexRange(RenderDrawInfo* drawInfo) { // NOLINT(readability-convert-member-functions-to-static)
         UIMeshBuffer* buffer = drawInfo->getMeshBuffer();
         uint32_t indexOffset = drawInfo->getIndexOffset();
         uint32_t indexCount = drawInfo->getIbCount();
@@ -116,24 +119,24 @@ private:
         }
     }
 
-    inline void fillColors(RenderEntity* entity, RenderDrawInfo* drawInfo) {
+    inline void fillColors(RenderEntity* entity, RenderDrawInfo* drawInfo) { // NOLINT(readability-convert-member-functions-to-static)
         Color temp = entity->getColor();
 
         uint8_t stride = drawInfo->getStride();
         uint32_t size = drawInfo->getVbCount() * stride;
-        float_t* vbBuffer = drawInfo->getVbBuffer();
+        float* vbBuffer = drawInfo->getVbBuffer();
 
         uint32_t offset = 0;
         for (int i = 0; i < size; i += stride) {
             offset = i + 5;
-            vbBuffer[offset++] = temp.r / 255.0f;
-            vbBuffer[offset++] = temp.g / 255.0f;
-            vbBuffer[offset++] = temp.b / 255.0f;
+            vbBuffer[offset++] = static_cast<float>(temp.r) / 255.0F;
+            vbBuffer[offset++] = static_cast<float>(temp.g) / 255.0F;
+            vbBuffer[offset++] = static_cast<float>(temp.b) / 255.0F;
             vbBuffer[offset++] = entity->getOpacity();
         }
     }
 
-    gfx::DescriptorSet* getDescriptorSet(gfx::Texture* texture, gfx::Sampler* sampler, gfx::DescriptorSetLayout* _dsLayout);
+    gfx::DescriptorSet* getDescriptorSet(gfx::Texture* texture, gfx::Sampler* sampler, gfx::DescriptorSetLayout* dsLayout);
 
     StencilManager* _stencilManager{nullptr};
 
@@ -147,7 +150,7 @@ private:
     memop::Pool<scene::DrawBatch2D> _drawBatchPool;
 
     // weak reference
-    gfx::Device* _device{nullptr}; //use getDevice()
+    gfx::Device* _device{nullptr}; // use getDevice()
 
     // weak reference
     RenderEntity* _currEntity{nullptr};

@@ -24,7 +24,6 @@
 ****************************************************************************/
 
 #include "2d/renderer/RenderDrawInfo.h"
-#include <iostream>
 #include "2d/renderer/Batcher2d.h"
 #include "base/TypeDef.h"
 #include "renderer/gfx-base/GFXDevice.h"
@@ -39,7 +38,7 @@ RenderDrawInfo::RenderDrawInfo(Batcher2d* batcher) : _batcher(batcher) {
     _attrSharedBuffer->setJSArrayBuffer(seArrayBufferObject);
 }
 
-RenderDrawInfo::RenderDrawInfo(const index_t bufferId, const uint32_t vertexOffset, const uint32_t indexOffset) {
+RenderDrawInfo::RenderDrawInfo(index_t bufferId, uint32_t vertexOffset, uint32_t indexOffset) { // NOLINT(bugprone-easily-swappable-parameters)
     _bufferId = bufferId;
     _vertexOffset = vertexOffset;
     _indexOffset = indexOffset;
@@ -77,7 +76,7 @@ void RenderDrawInfo::setIndexOffset(uint32_t indexOffset) {
     _indexOffset = indexOffset;
 }
 
-void RenderDrawInfo::setVbBuffer(float_t* vbBuffer) {
+void RenderDrawInfo::setVbBuffer(float* vbBuffer) {
     _vbBuffer = vbBuffer;
 }
 
@@ -85,7 +84,7 @@ void RenderDrawInfo::setIbBuffer(uint16_t* ibBuffer) {
     _ibBuffer = ibBuffer;
 }
 
-void RenderDrawInfo::setVDataBuffer(float_t* vDataBuffer) {
+void RenderDrawInfo::setVDataBuffer(float* vDataBuffer) {
     _vDataBuffer = vDataBuffer;
 }
 
@@ -137,7 +136,7 @@ void RenderDrawInfo::setModel(scene::Model* model) {
     _model = model;
 }
 
-void RenderDrawInfo::setRender2dBufferToNative(uint8_t* buffer, uint8_t stride, uint32_t size) {
+void RenderDrawInfo::setRender2dBufferToNative(uint8_t* buffer, uint8_t stride, uint32_t size) { // NOLINT(bugprone-easily-swappable-parameters)
     _stride = stride;
     _size = size;
     _sharedBuffer = buffer;
@@ -149,7 +148,7 @@ const ArrayBuffer& RenderDrawInfo::getAttrSharedBufferForJS() const {
 
 gfx::InputAssembler* RenderDrawInfo::requestIA(gfx::Device* device) {
     if (_nextFreeIAHandle >= _iaPool.size()) {
-        _initIAInfo(device);
+        initIAInfo(device);
     }
     auto* ia = _iaPool[_nextFreeIAHandle++]; // 需要 reset
     ia->setFirstIndex(getIndexOffset());
@@ -164,8 +163,8 @@ void RenderDrawInfo::uploadBuffers() {
     vBuffer->resize(size);
     vBuffer->update(_vDataBuffer);
     gfx::Buffer* iBuffer = _ibGFXBuffer;
-    auto isize = _ibCount * sizeof(uint16_t);
-    iBuffer->resize(isize);
+    auto iSize = _ibCount * 2;
+    iBuffer->resize(iSize);
     iBuffer->update(_iDataBuffer);
 }
 
@@ -195,7 +194,7 @@ void RenderDrawInfo::destroy() {
     _iaPool.clear();
 }
 
-gfx::InputAssembler* RenderDrawInfo::_initIAInfo(gfx::Device* device) {
+gfx::InputAssembler* RenderDrawInfo::initIAInfo(gfx::Device* device) {
     if (_iaPool.empty()) {
         uint32_t vbStride = 9 * sizeof(float); // hack
         uint32_t ibStride = sizeof(uint16_t);

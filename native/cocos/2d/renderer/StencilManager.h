@@ -118,7 +118,7 @@ public:
     }
 
     inline uint32_t getStencilHash(StencilStage stage) const {
-        return (((uint32_t)stage) << 8) | _maskStackSize;
+        return ((static_cast<uint32_t>(stage)) << 8) | _maskStackSize;
     }
 
     void setStencilStage(uint32_t stageIndex);
