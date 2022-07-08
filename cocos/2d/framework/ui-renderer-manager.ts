@@ -17,7 +17,9 @@ export class UIRendererManager {
 
     public removeRenderer (uiRenderer: UIRenderer | UIMeshRenderer) {
         if (uiRenderer._internalId !== -1) {
-            assert(this._allRenderers[uiRenderer._internalId] === uiRenderer);
+            if (DEBUG) {
+                assert(this._allRenderers[uiRenderer._internalId] === uiRenderer);
+            }
             const id = uiRenderer._internalId;
             this._allRenderers[this._allRenderers.length - 1]._internalId = id;
             js.array.fastRemoveAt(this._allRenderers, id);
