@@ -1,4 +1,4 @@
-
+  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,26 +24,18 @@
  THE SOFTWARE.
 */
 
-import { AdvancedObject } from './advanced-object';
-type Constructor<T = any> = new (...args) => T; 
-export class AdvancedProperty<OT extends AdvancedObject = AdvancedObject> {
-    private _name: string;
-    private _propertyType: Constructor;
-    private _ownerType: Constructor<OT>;
-    private constructor (name: string, type: Constructor, ownerType: Constructor<OT>) {
-        this._name = name;
-        this._propertyType = type;
-        this._ownerType = ownerType;
+import { AdvancedObject } from '../property/advanced-object';
+import { AdvancedProperty } from '../property/advanced-property';
+
+export class UIElement extends AdvancedObject {
+    public static ActuallyWidth = AdvancedProperty.register('actuallyWidth', Number, UIElement);
+    public static ActuallyHeight = AdvancedProperty.register('actuallyWidth', Number, UIElement);
+
+    get actuallyWidth () {
+        return this.getValue(UIElement.ActuallyWidth) as number;
     }
 
-    private static _propertyRegistry = new Array<AdvancedProperty>();
-    public static register<OT extends AdvancedObject>(name: string, type: Constructor, ownerType: Constructor<OT>) {
-        const ap = new AdvancedProperty(name, type, ownerType);
-        this._propertyRegistry.push(ap);
-        return ap;
+    get actuallyHeight () {
+        return this.getValue(UIElement.ActuallyHeight) as number;
     }
-
-    public get name () { return this._name; }
-    public get propertyType () { return this._propertyType; }
-    public get ownerType () { return this._ownerType; }
 }
