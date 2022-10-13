@@ -26,16 +26,44 @@
 
 import { AdvancedObject } from '../property/advanced-object';
 import { AdvancedProperty } from '../property/advanced-property';
+import { Enum } from '../../core/value-types/enum';
+
+export enum FlowDirection {
+    LTR,
+    RTL,
+}
 
 export class UIElement extends AdvancedObject {
-    public static ActuallyWidth = AdvancedProperty.register('actuallyWidth', Number, UIElement);
-    public static ActuallyHeight = AdvancedProperty.register('actuallyWidth', Number, UIElement);
+    public static ActuallyWidthProperty = AdvancedProperty.register('ActuallyWidth', Number, UIElement);
+    public static ActuallyHeightProperty = AdvancedProperty.register('ActuallyHeight', Number, UIElement);
+    public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement);
 
     get actuallyWidth () {
-        return this.getValue(UIElement.ActuallyWidth) as number;
+        return this.getValue(UIElement.ActuallyWidthProperty) as number;
     }
 
     get actuallyHeight () {
-        return this.getValue(UIElement.ActuallyHeight) as number;
+        return this.getValue(UIElement.ActuallyHeightProperty) as number;
     }
+
+
+    //#region Localization
+
+    get flowDirection () {
+        return this.getValue(UIElement.FlowDirectionProperty) as FlowDirection;
+    }
+
+    set flowDirection (flowDirection: FlowDirection) {
+        this.setValue(UIElement.FlowDirectionProperty, flowDirection);
+    }
+    //#endregion Localization
+ 
+    private _parent: UIElement | null = null;
+    private _children: Array<UIElement> = [];
+
+    protected onMeasure () {}
+    protected onArrange () {}
+    protected onRepaint () {}
+
+
 }

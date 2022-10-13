@@ -1,4 +1,4 @@
-
+  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,26 +24,6 @@
  THE SOFTWARE.
 */
 
-import { AdvancedObject } from './advanced-object';
-type Constructor<T = any> = new (...args) => T; 
-export class AdvancedProperty<OT extends AdvancedObject = AdvancedObject> {
-    private _name: string;
-    private _propertyType: Constructor | Object;
-    private _ownerType: Constructor<OT>;
-    private constructor (name: string, type: Constructor | Object, ownerType: Constructor<OT>) {
-        this._name = name;
-        this._propertyType = type;
-        this._ownerType = ownerType;
-    }
+export abstract class IPainter {
 
-    private static _propertyRegistry = new Array<AdvancedProperty>();
-    public static register<OT extends AdvancedObject>(name: string, type: Constructor | Object, ownerType: Constructor<OT>) {
-        const ap = new AdvancedProperty(name, type, ownerType);
-        this._propertyRegistry.push(ap);
-        return ap;
-    }
-
-    public get name () { return this._name; }
-    public get propertyType () { return this._propertyType; }
-    public get ownerType () { return this._ownerType; }
 }
