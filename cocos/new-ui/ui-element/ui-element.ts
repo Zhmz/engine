@@ -37,6 +37,7 @@ export class UIElement extends AdvancedObject {
     public static ActuallyWidthProperty = AdvancedProperty.register('ActuallyWidth', Number, UIElement);
     public static ActuallyHeightProperty = AdvancedProperty.register('ActuallyHeight', Number, UIElement);
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement);
+    public static OpacityProperty = AdvancedProperty.register('Opacity', Number, UIElement);
 
     get actuallyWidth () {
         return this.getValue(UIElement.ActuallyWidthProperty) as number;
@@ -57,6 +58,22 @@ export class UIElement extends AdvancedObject {
         this.setValue(UIElement.FlowDirectionProperty, flowDirection);
     }
     //#endregion Localization
+
+    //#region Display
+
+    get opacity () {
+        return this.getValue(UIElement.OpacityProperty) as number;
+    }
+
+    set opacity (val: number) {
+        this.setValue(UIElement.OpacityProperty, val);
+    }
+
+    //#endregion Display
+
+    //#region RenderTransform
+
+    //#endregion RenderTransform
  
     private _parent: UIElement | null = null;
     private _children: Array<UIElement> = [];
