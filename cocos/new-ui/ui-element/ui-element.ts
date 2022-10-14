@@ -27,6 +27,7 @@
 import { AdvancedObject } from '../property/advanced-object';
 import { AdvancedProperty } from '../property/advanced-property';
 import { Enum } from '../../core/value-types/enum';
+import { Vec3 } from '../../core/math/vec3';
 
 export enum FlowDirection {
     LTR,
@@ -38,6 +39,7 @@ export class UIElement extends AdvancedObject {
     public static ActuallyHeightProperty = AdvancedProperty.register('ActuallyHeight', Number, UIElement);
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Number, UIElement);
+    public static PositionProperty = AdvancedProperty.register('Position', Vec3, UIElement);
 
     get actuallyWidth () {
         return this.getValue(UIElement.ActuallyWidthProperty) as number;
@@ -72,6 +74,14 @@ export class UIElement extends AdvancedObject {
     //#endregion Display
 
     //#region RenderTransform
+
+    get position () {
+        return this.getValue(UIElement.PositionProperty) as Vec3;
+    }
+
+    set position (val: Vec3) {
+        this.setValue(UIElement.PositionProperty, val);
+    }
 
     //#endregion RenderTransform
  
