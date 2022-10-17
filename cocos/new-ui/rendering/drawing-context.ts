@@ -24,6 +24,6 @@
  THE SOFTWARE.
 */
 
-export abstract class IPainter {
+export abstract class IDrawingContext {
 
 }
