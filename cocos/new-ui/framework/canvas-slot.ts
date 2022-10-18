@@ -23,18 +23,18 @@
  THE SOFTWARE.
 */
 
+import { AnchorData } from "../math/anchor-data";
 import { AdvancedProperty } from "../property/advanced-property";
-import { Thickness } from "../math/thickness";
-import { UIElement } from "../ui-element/ui-element";
+import { UISlot } from "../ui-element/ui-slot";
 
-export class Border extends UIElement {
-    public static BorderWidthProperty = AdvancedProperty.register('BorderWidth', Thickness, UIElement);
+export class CanvasSlot extends UISlot {
+    public static AnchorDataProperty = AdvancedProperty.register('AnchorData', AnchorData, CanvasSlot);
 
-    get borderWidth () {
-        return this.getValue(Border.BorderWidthProperty) as Thickness;
+    get anchorData (): Readonly<AnchorData> {
+        return this.getValue(CanvasSlot.AnchorDataProperty) as AnchorData;
     }
 
-    set borderWidth (val: Thickness) {
-        this.setValue(Border.BorderWidthProperty, val);
+    set anchorData (val) {
+        this.setValue(CanvasSlot.AnchorDataProperty, val);
     }
 }

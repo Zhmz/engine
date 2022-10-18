@@ -26,6 +26,6 @@
 
 import { UIElement } from "../ui-element/ui-element";
 
-class Canvas extends UIElement {
+export class Canvas extends UIElement {
     
 }

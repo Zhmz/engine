@@ -25,6 +25,7 @@
 */
 
 import { AdvancedObject } from './advanced-object';
+import { AttachedObject } from './attached-object';
 type Constructor<T = any> = new (...args) => T;
 
 export enum Primitive {
@@ -32,19 +33,19 @@ export enum Primitive {
     STRING,
     BOOLEAN,
 }
-export class AdvancedProperty<OT extends AdvancedObject = AdvancedObject> {
+export class AdvancedProperty {
     private _name: string;
     // Object is used for Enum 
     private _propertyType: Constructor | Record<string, number | string> | Primitive;
-    private _ownerType: Constructor<OT>;
-    private constructor (name: string, type: Constructor | Record<string, number | string> | Primitive, ownerType: Constructor<OT>) {
+    private _ownerType: Constructor<AdvancedObject | AttachedObject>;
+    private constructor (name: string, type: Constructor | Record<string, number | string> | Primitive, ownerType: Constructor<AdvancedObject | AttachedObject>) {
         this._name = name;
         this._propertyType = type;
         this._ownerType = ownerType;
     }
 
     private static _propertyRegistry = new Array<AdvancedProperty>();
-    public static register<OT extends AdvancedObject>(name: string, type: Constructor | Record<string, number | string> | Primitive, ownerType: Constructor<OT>) {
+    public static register<OT extends AdvancedObject | AttachedObject>(name: string, type: Constructor | Record<string, number | string> | Primitive, ownerType: Constructor<OT>) {
         const ap = new AdvancedProperty(name, type, ownerType);
         this._propertyRegistry.push(ap);
         return ap;

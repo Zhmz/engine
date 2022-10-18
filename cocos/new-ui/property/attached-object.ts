@@ -1,3 +1,4 @@
+
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -23,18 +24,25 @@
  THE SOFTWARE.
 */
 
-import { AdvancedProperty } from "../property/advanced-property";
-import { Thickness } from "../math/thickness";
-import { UIElement } from "../ui-element/ui-element";
+import { AdvancedObject } from "./advanced-object";
+import { AdvancedProperty } from "./advanced-property";
 
-export class Border extends UIElement {
-    public static BorderWidthProperty = AdvancedProperty.register('BorderWidth', Thickness, UIElement);
+export class AttachedObject {
+    private _owner: AdvancedObject;
 
-    get borderWidth () {
-        return this.getValue(Border.BorderWidthProperty) as Thickness;
+    public get owner () {
+        return this._owner;
     }
 
-    set borderWidth (val: Thickness) {
-        this.setValue(Border.BorderWidthProperty, val);
+    constructor (owner: AdvancedObject) {
+        this._owner = owner;
+    }
+
+    getValue (property: AdvancedProperty): any {
+        return this._owner.getValue(property);
+    }
+    
+    setValue (property: AdvancedProperty, value: any) {
+        this._owner.setValue(property, value);
     }
 }

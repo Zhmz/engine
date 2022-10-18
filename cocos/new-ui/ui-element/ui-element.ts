@@ -33,6 +33,9 @@ import { Quat } from '../../core/math/quat';
 import { IDrawingContext } from '../rendering/drawing-context';
 import { assert } from '../../core/platform/debug';
 import { ErrorID, UIError } from '../error';
+import { Thickness } from '../math/thickness';
+import { UISlot } from './ui-slot';
+import { ContentSlot } from '../framework/content-slot';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -43,7 +46,6 @@ export enum Visibility {
     VISIBLE,
     HIDDEN
 }
-
 export class UIElement extends AdvancedObject {
     public static ActuallyWidthProperty = AdvancedProperty.register('ActuallyWidth', Primitive.NUMBER, UIElement);
     public static ActuallyHeightProperty = AdvancedProperty.register('ActuallyHeight', Primitive.NUMBER, UIElement);
@@ -55,8 +57,13 @@ export class UIElement extends AdvancedObject {
     public static RotationProperty = AdvancedProperty.register('Rotation', Quat, UIElement);
     public static ScaleProperty = AdvancedProperty.register('Scale', Vec3, UIElement);
     public static PivotOriginProperty = AdvancedProperty.register('PivotOrigin', Vec2, UIElement);
+    public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement);
 
     //#region Layout
+
+    get slot () {
+        return this._slot;
+    }
 
     get actuallyWidth () {
         return this.getValue(UIElement.ActuallyWidthProperty) as number;
@@ -64,6 +71,14 @@ export class UIElement extends AdvancedObject {
 
     get actuallyHeight () {
         return this.getValue(UIElement.ActuallyHeightProperty) as number;
+    }
+
+    get margin () {
+        return this.getValue(UIElement.MarginProperty) as Thickness;
+    }
+
+    set margin (val: Thickness) {
+        this.setValue(UIElement.MarginProperty, val);
     }
 
     //#endregion Layout
@@ -185,6 +200,9 @@ export class UIElement extends AdvancedObject {
     }
 
     private setParent (parent: UIElement | null, index: number = -1) {
+        if (parent && !parent.canAddChild(this)) {
+            throw new UIError(ErrorID.ADD_CHILD_ERROR);
+        }
         if (this._parent) {
             const index = this._parent._children.indexOf(this);
             assert(index >= 0);
@@ -197,17 +215,28 @@ export class UIElement extends AdvancedObject {
             } else {
                 this._parent._children.splice(index, 0, this);
             }
+            this._parent.onAddChild(this);
         }
     }
 
+    private _slot: UISlot | null = null;
     private _parent: UIElement | null = null;
     private _children: Array<UIElement> = [];
 
     //#endregion hierarchy
+    protected canAddChild (child: UIElement) {
+        return true;
+    }
+
+    protected onRemoveFromParent () {
+        this._slot = null;
+    }
+
+    protected onAddChild (child: UIElement) {
+        child._slot = new ContentSlot(child);
+    }
 
     protected onMeasure () {}
     protected onArrange () {}
     protected onRepaint (drawingContext: IDrawingContext) {}
-
-
 }

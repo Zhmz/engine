@@ -23,18 +23,42 @@
  THE SOFTWARE.
 */
 
+import { Enum } from "../../core/value-types";
 import { AdvancedProperty } from "../property/advanced-property";
-import { Thickness } from "../math/thickness";
 import { UIElement } from "../ui-element/ui-element";
+import { UISlot } from "../ui-element/ui-slot";
 
-export class Border extends UIElement {
-    public static BorderWidthProperty = AdvancedProperty.register('BorderWidth', Thickness, UIElement);
+export enum HorizontalAlignment {
+    LEFT,
+    CENTER,
+    RIGHT,
+    STRETCH
+}
 
-    get borderWidth () {
-        return this.getValue(Border.BorderWidthProperty) as Thickness;
+export enum VerticalAlignment {
+    TOP,
+    CENTER,
+    BOTTOM,
+    STRETCH
+}
+
+export class ContentSlot extends UISlot {
+    public static HorizontalAlignmentProperty = AdvancedProperty.register('HorizontalAlignment', Enum(HorizontalAlignment), ContentSlot);
+    public static VerticalAlignmentProperty = AdvancedProperty.register('VerticalAlignment', Enum(VerticalAlignment), ContentSlot);
+
+    get horizontalAlignment () {
+        return this.getValue(ContentSlot.HorizontalAlignmentProperty) as HorizontalAlignment; 
     }
 
-    set borderWidth (val: Thickness) {
-        this.setValue(Border.BorderWidthProperty, val);
+    set horizontalAlignment (val) {
+        this.setValue(ContentSlot.HorizontalAlignmentProperty, val);
+    }
+
+    get verticalAlignment () {
+        return this.getValue(ContentSlot.VerticalAlignmentProperty) as VerticalAlignment;
+    }
+
+    set verticalAlignment (val) {
+        this.setValue(ContentSlot.VerticalAlignmentProperty, val);
     }
 }

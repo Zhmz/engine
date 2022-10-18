@@ -3,7 +3,8 @@
 export enum ErrorID {
     UNKNOWN,
     OUT_OF_RANGE,
-    INVALID_INPUT
+    INVALID_INPUT,
+    ADD_CHILD_ERROR
 }
 
 export class UIError extends Error {

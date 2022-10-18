@@ -24,7 +24,8 @@
  THE SOFTWARE.
 */
 
-import { ValueType } from "../core/value-types";
+import { approx } from "../../core/math/utils";
+import { ValueType } from "../../core/value-types";
 
 export class Thickness extends ValueType {
     private _left: number;
@@ -80,5 +81,23 @@ export class Thickness extends ValueType {
             this._left = this._right = this._top = this._bottom = 0;
         }
         
+    }
+
+    public set(other: Thickness): void {
+        this._top = other._top;
+        this._bottom = other._bottom;
+        this._left = other._left;
+        this._right = other._right;
+    }
+
+    public clone (): Thickness {
+        return new Thickness(this._left, this._top, this._right, this._bottom);
+    }
+
+    public equals(other: Thickness): boolean {
+        return approx(this._left, other._left)
+                && approx(this._right, other._right)
+                && approx(this._top, other._top)
+                && approx(this._bottom, other._bottom)
     }
 }

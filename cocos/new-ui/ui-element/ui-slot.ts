@@ -23,18 +23,11 @@
  THE SOFTWARE.
 */
 
-import { AdvancedProperty } from "../property/advanced-property";
-import { Thickness } from "../math/thickness";
-import { UIElement } from "../ui-element/ui-element";
+import { AttachedObject } from "../property/attached-object";
+import { UIElement } from "./ui-element";
 
-export class Border extends UIElement {
-    public static BorderWidthProperty = AdvancedProperty.register('BorderWidth', Thickness, UIElement);
-
-    get borderWidth () {
-        return this.getValue(Border.BorderWidthProperty) as Thickness;
-    }
-
-    set borderWidth (val: Thickness) {
-        this.setValue(Border.BorderWidthProperty, val);
+export class UISlot extends AttachedObject {
+    constructor (element: UIElement) {
+        super(element);
     }
 }
