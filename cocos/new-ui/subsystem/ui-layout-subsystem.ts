@@ -24,8 +24,15 @@
  THE SOFTWARE.
 */
 
-import { UIElement } from "../base/ui-element";
+import { UISubSystem } from "../base/ui-subsystem";
 
-class Image extends UIElement {
+export class UILayoutSubsystem extends UISubSystem {
     
+    addDirtyElement () {
+
+    }
+
+    update () {
+
+    }
 }

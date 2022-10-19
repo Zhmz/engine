@@ -24,8 +24,23 @@
  THE SOFTWARE.
 */
 
-import { UIElement } from "../base/ui-element";
+import { UISubSystem } from "./ui-subsystem";
+import { UIElement } from "./ui-element";
+import { UIWindow } from "./ui-window";
 
-class Image extends UIElement {
-    
-}
+export class UIDocument {
+    get window () {
+        return this._window;
+    }
+
+    private _window: UIWindow = new UIWindow(this);
+    private _systems: UISubSystem[] = [];
+
+    constructor () {
+        
+    }
+
+    addDirtyElement (element: UIElement, dirtyFlags: number) {
+
+    }
+} 

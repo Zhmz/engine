@@ -24,8 +24,24 @@
  THE SOFTWARE.
 */
 
-import { UIElement } from "../base/ui-element";
+import { AdvancedProperty } from "../property/advanced-property";
+import { UIElement } from "./ui-element";
+import { Rect } from '../../core/math';
+import { UIDocument } from "./ui-document";
 
-class Image extends UIElement {
-    
+export class UIWindow extends UIElement {
+    public static ViewportProperty = AdvancedProperty.register('Viewport', Rect, UIElement);
+
+    get viewport () {
+        return this.getValue(UIWindow.ViewportProperty) as Rect;
+    }
+
+    set viewport (val) {
+        this.setValue(UIWindow.ViewportProperty, val);
+    }
+
+    constructor (document: UIDocument) {
+        super();
+        this._document = document;
+    }
 }

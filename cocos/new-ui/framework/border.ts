@@ -24,8 +24,8 @@
 */
 
 import { AdvancedProperty } from "../property/advanced-property";
-import { Thickness } from "../math/thickness";
-import { UIElement } from "../ui-element/ui-element";
+import { Thickness } from "../base/thickness";
+import { UIElement } from "../base/ui-element";
 
 export class Border extends UIElement {
     public static BorderWidthProperty = AdvancedProperty.register('BorderWidth', Thickness, UIElement);

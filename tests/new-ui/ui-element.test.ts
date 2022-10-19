@@ -1,4 +1,4 @@
-import { UIElement } from "../../cocos/new-ui/ui-element/ui-element";
+import { UIElement } from "../../cocos/new-ui/base/ui-element";
 
 test('hierarchy', () => {
     const parent = new UIElement();

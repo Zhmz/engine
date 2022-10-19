@@ -33,6 +33,7 @@ export enum Primitive {
     STRING,
     BOOLEAN,
 }
+
 export class AdvancedProperty {
     private _name: string;
     // Object is used for Enum 

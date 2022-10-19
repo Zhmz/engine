@@ -24,8 +24,15 @@
  THE SOFTWARE.
 */
 
-import { UIElement } from "../base/ui-element";
+import { UIDocument } from "./ui-document";
+import { UIElement } from "./ui-element";
 
-class Image extends UIElement {
-    
+export abstract class UISubSystem {
+    protected _document: UIDocument;
+    constructor (document: UIDocument) {
+        this._document = document;
+    }
+
+    abstract addDirtyElement (element: UIElement, dirtyFlags: number);
+    abstract update ();
 }

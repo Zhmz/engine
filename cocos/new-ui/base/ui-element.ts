@@ -24,18 +24,19 @@
  THE SOFTWARE.
 */
 
-import { AdvancedObject } from '../property/advanced-object';
+import { AdvancedObject } from './advanced-object';
 import { AdvancedProperty, Primitive } from '../property/advanced-property';
 import { Enum } from '../../core/value-types/enum';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec2 } from '../../core/math/vec2';
 import { Quat } from '../../core/math/quat';
-import { IDrawingContext } from '../rendering/drawing-context';
+import { IDrawingContext } from './ui-drawing-context';
 import { assert } from '../../core/platform/debug';
-import { ErrorID, UIError } from '../error';
-import { Thickness } from '../math/thickness';
+import { ErrorID, UIError } from './error';
+import { Thickness } from './thickness';
 import { UISlot } from './ui-slot';
 import { ContentSlot } from '../framework/content-slot';
+import { UIDocument } from './ui-document';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -58,6 +59,7 @@ export class UIElement extends AdvancedObject {
     public static ScaleProperty = AdvancedProperty.register('Scale', Vec3, UIElement);
     public static PivotOriginProperty = AdvancedProperty.register('PivotOrigin', Vec2, UIElement);
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement);
+    public static PaddingProperty = AdvancedProperty.register('Padding', Thickness, UIElement);
 
     //#region Layout
 
@@ -79,6 +81,14 @@ export class UIElement extends AdvancedObject {
 
     set margin (val: Thickness) {
         this.setValue(UIElement.MarginProperty, val);
+    }
+
+    get padding () {
+        return this.getValue(UIElement.PaddingProperty) as Thickness; 
+    }
+
+    set padding (val) {
+        this.setValue(UIElement.PaddingProperty, val);
     }
 
     //#endregion Layout
@@ -222,6 +232,7 @@ export class UIElement extends AdvancedObject {
     private _slot: UISlot | null = null;
     private _parent: UIElement | null = null;
     private _children: Array<UIElement> = [];
+    protected _document: UIDocument | null = null;
 
     //#endregion hierarchy
     protected canAddChild (child: UIElement) {

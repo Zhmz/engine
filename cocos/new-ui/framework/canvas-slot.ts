@@ -23,18 +23,38 @@
  THE SOFTWARE.
 */
 
-import { AnchorData } from "../math/anchor-data";
+import { Vec2 } from "../../core/math/vec2";
+import { Anchors } from "../math/anchors";
+import { Thickness } from "../base/thickness";
 import { AdvancedProperty } from "../property/advanced-property";
-import { UISlot } from "../ui-element/ui-slot";
+import { UISlot } from "../base/ui-slot";
 
 export class CanvasSlot extends UISlot {
-    public static AnchorDataProperty = AdvancedProperty.register('AnchorData', AnchorData, CanvasSlot);
+    public static AnchorsProperty = AdvancedProperty.register('Anchors', Anchors, CanvasSlot);
+    public static OffsetsProperty = AdvancedProperty.register('Offsets', Thickness, CanvasSlot);
+    public static PivotProperty = AdvancedProperty.register('Pivot', Vec2, CanvasSlot);
 
-    get anchorData (): Readonly<AnchorData> {
-        return this.getValue(CanvasSlot.AnchorDataProperty) as AnchorData;
+    get anchors () {
+        return this.getValue(CanvasSlot.AnchorsProperty) as Anchors;
     }
 
-    set anchorData (val) {
-        this.setValue(CanvasSlot.AnchorDataProperty, val);
+    set anchors (val: Anchors) {
+        this.setValue(CanvasSlot.AnchorsProperty, val);
+    }
+
+    get offsets () {
+        return this.getValue(CanvasSlot.OffsetsProperty) as Thickness;
+    }
+
+    set offsets (val) {
+        this.setValue(CanvasSlot.OffsetsProperty, val);
+    }
+
+    get pivot () {
+        return this.getValue(CanvasSlot.PivotProperty) as Vec2;
+    }
+
+    set pivot (val) {
+        this.setValue(CanvasSlot.PivotProperty, val);
     }
 }

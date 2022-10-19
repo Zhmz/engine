@@ -1,5 +1,6 @@
 import { AdvancedProperty, Primitive } from "../../cocos/new-ui/property/advanced-property";
-import { AdvancedObject } from "../../cocos/new-ui/property/advanced-object";
+import { AdvancedObject } from "../../cocos/new-ui/base/advanced-object";
+import { AttachedObject } from "../../cocos/new-ui/property/attached-object";
 
 test('advanced-property', () => {
     class MyTestClass extends AdvancedObject{}
@@ -78,4 +79,26 @@ test('advanced-object', () => {
     expect(test.testEnum).toBe(TestEnum.TEST_1);
     test.testEnum = TestEnum.TEST_2;
     expect(test.testEnum).toBe(TestEnum.TEST_2);
+});
+
+test('attached object', () => {
+    const owner = new AdvancedObject();
+    class MyAttachedObject extends AttachedObject {
+        public static TestProperty = AdvancedProperty.register('Test', Primitive.NUMBER, MyAttachedObject);
+
+        get test () {
+            return this.getValue(MyAttachedObject.TestProperty) as number;
+        }
+
+        set test (val) {
+            this.setValue(MyAttachedObject.TestProperty, val);
+        }
+    }
+
+    const attachedObject = new MyAttachedObject(owner);
+    attachedObject.test = 10;
+    expect(attachedObject.test).toBe(10);
+    expect(owner.getValue(MyAttachedObject.TestProperty)).toBe(10);
+    owner.setValue(MyAttachedObject.TestProperty, 20);
+    expect(attachedObject.test).toBe(20);
 });
