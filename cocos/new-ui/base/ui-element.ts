@@ -25,7 +25,7 @@
 */
 
 import { AdvancedObject } from './advanced-object';
-import { AdvancedProperty, Primitive } from '../property/advanced-property';
+import { AdvancedProperty, Primitive } from './advanced-property';
 import { Enum } from '../../core/value-types/enum';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec2 } from '../../core/math/vec2';
@@ -245,6 +245,10 @@ export class UIElement extends AdvancedObject {
 
     protected onAddChild (child: UIElement) {
         child._slot = new ContentSlot(child);
+    }
+
+    protected markDirty () {
+
     }
 
     protected onMeasure () {}

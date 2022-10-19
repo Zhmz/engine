@@ -23,7 +23,7 @@
  THE SOFTWARE.
 */
 
-import { UIElement } from "../ui-element/ui-element";
+import { UIElement } from "../base/ui-element";
 
 export class Button extends UIElement {
 

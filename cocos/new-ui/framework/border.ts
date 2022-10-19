@@ -23,7 +23,7 @@
  THE SOFTWARE.
 */
 
-import { AdvancedProperty } from "../property/advanced-property";
+import { AdvancedProperty } from "../base/advanced-property";
 import { Thickness } from "../base/thickness";
 import { UIElement } from "../base/ui-element";
 

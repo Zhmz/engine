@@ -23,7 +23,7 @@
  THE SOFTWARE.
 */
 
-import { AttachedObject } from "../property/attached-object";
+import { AttachedObject } from "./attached-object";
 import { UIElement } from "./ui-element";
 
 export class UISlot extends AttachedObject {

@@ -24,7 +24,7 @@
 */
 
 import { Enum } from "../../core/value-types";
-import { AdvancedProperty } from "../property/advanced-property";
+import { AdvancedProperty } from "../base/advanced-property";
 import { UISlot } from "../base/ui-slot";
 
 export enum HorizontalAlignment {

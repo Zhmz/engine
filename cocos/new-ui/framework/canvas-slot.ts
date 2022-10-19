@@ -24,9 +24,9 @@
 */
 
 import { Vec2 } from "../../core/math/vec2";
-import { Anchors } from "../math/anchors";
+import { Anchors } from "../base/anchors";
 import { Thickness } from "../base/thickness";
-import { AdvancedProperty } from "../property/advanced-property";
+import { AdvancedProperty } from "../base/advanced-property";
 import { UISlot } from "../base/ui-slot";
 
 export class CanvasSlot extends UISlot {
