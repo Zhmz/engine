@@ -35,7 +35,6 @@ import { assert } from '../../core/platform/debug';
 import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UISlot } from './ui-slot';
-import { ContentSlot } from '../framework/content-slot';
 import { UIDocument } from './ui-document';
 
 export enum FlowDirection {
@@ -61,6 +60,12 @@ export class UIElement extends AdvancedObject {
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement);
     public static PaddingProperty = AdvancedProperty.register('Padding', Thickness, UIElement);
 
+    
+    protected _slot: UISlot | null = null;
+    protected _parent: UIElement | null = null;
+    protected _children: Array<UIElement> = [];
+    protected _document: UIDocument | null = null;
+
     //#region Layout
 
     get slot () {
@@ -71,8 +76,16 @@ export class UIElement extends AdvancedObject {
         return this.getValue(UIElement.ActuallyWidthProperty) as number;
     }
 
+    protected set actuallyWidth (val) {
+        this.setValue(UIElement.ActuallyWidthProperty, val);
+    }
+
     get actuallyHeight () {
         return this.getValue(UIElement.ActuallyHeightProperty) as number;
+    }
+
+    protected set actuallyHeight (val) {
+        this.setValue(UIElement.ActuallyHeightProperty, val);
     }
 
     get margin () {
@@ -95,7 +108,6 @@ export class UIElement extends AdvancedObject {
 
 
     //#region Localization
-
     get flowDirection () {
         return this.getValue(UIElement.FlowDirectionProperty) as FlowDirection;
     }
@@ -167,6 +179,10 @@ export class UIElement extends AdvancedObject {
         this.setValue(UIElement.PivotOriginProperty, val);
     }
     //#endregion RenderTransform
+
+    get document () {
+        return this._document;
+    }
  
     //#region hierarchy
     get parent () {
@@ -177,6 +193,32 @@ export class UIElement extends AdvancedObject {
         return this._children;
     }
 
+    get childCount (): number {
+        return this._children.length;
+    }
+
+    public clearChildren () {
+        for (let i = this._children.length - 1; i >= 0; i--) {
+            this.removeChildAt(i);
+        }
+    }
+
+    public getChildIndex (child: UIElement): number {
+        const index = this._children.indexOf(child);
+        if (index !== -1) {
+            return index;
+        } else {
+            throw new UIError(ErrorID.INVALID_INPUT);
+        }
+    }
+
+    public getChildAt (index: number) {
+        if (index < 0 || index > this._children.length - 1) {
+            throw new UIError(ErrorID.OUT_OF_RANGE);
+        }
+        return this._children[index];
+    }
+
     public addChild (child: UIElement) {
         if (child._parent === this) {
             throw new UIError(ErrorID.INVALID_INPUT)
@@ -185,7 +227,7 @@ export class UIElement extends AdvancedObject {
     }
 
     public insertChildAt (child: UIElement, index: number) {
-        if (index < 0 || index > this._children.length) {
+        if (index < 0 || index > this._children.length - 1) {
             throw new UIError(ErrorID.OUT_OF_RANGE);
         }
         if (child._parent === this) {
@@ -210,12 +252,16 @@ export class UIElement extends AdvancedObject {
     }
 
     private setParent (parent: UIElement | null, index: number = -1) {
-        if (parent && !parent.canAddChild(this)) {
-            throw new UIError(ErrorID.ADD_CHILD_ERROR);
+        if (parent && !parent.getSlotClass()) {
+            throw new UIError(ErrorID.SLOT_UNMATCHED);
         }
+        if (parent && !parent.allowMultipleChild() && parent.children.length === 1) {
+            throw new UIError(ErrorID.MULTIPLE_CHILD);
+        }
+
         if (this._parent) {
             const index = this._parent._children.indexOf(this);
-            assert(index >= 0);
+            assert(index !== -1);
             this._parent._children.splice(index, 1);
         }
         this._parent = parent;
@@ -225,30 +271,48 @@ export class UIElement extends AdvancedObject {
             } else {
                 this._parent._children.splice(index, 0, this);
             }
-            this._parent.onAddChild(this);
+        }
+        this.updateSlot();
+        this.updateDocument(this._parent ? this._parent._document : null);
+    }
+
+    //#endregion hierarchy
+    protected allowMultipleChild () {
+        return false;
+    }
+
+    protected getSlotClass (): typeof UISlot | null{
+        return null;
+    }
+
+    private updateSlot () {
+        if (!this._parent) {
+            this._slot = null;
+            return;
+        }
+        const slotClass = this._parent.getSlotClass();
+        if (!this._slot && slotClass) {
+            this._slot = new slotClass(this);
+            return;
+        }
+        if (this._slot && slotClass && this._slot.constructor !== slotClass) {
+            this._slot = new slotClass(this);
         }
     }
 
-    private _slot: UISlot | null = null;
-    private _parent: UIElement | null = null;
-    private _children: Array<UIElement> = [];
-    protected _document: UIDocument | null = null;
-
-    //#endregion hierarchy
-    protected canAddChild (child: UIElement) {
-        return true;
+    private updateDocument (document: UIDocument | null) {
+        if (this._document !== document) {
+            this._document = document;
+            for (let i = 0; i < this._children.length; i++) {
+                this._children[i].updateDocument(document);
+            }
+        }
     }
 
-    protected onRemoveFromParent () {
-        this._slot = null;
-    }
-
-    protected onAddChild (child: UIElement) {
-        child._slot = new ContentSlot(child);
-    }
-
-    protected markDirty () {
-
+    protected markDirty (dirtyFlags: number) {
+        if (this._document) {
+            this._document.addDirtyElement(this, dirtyFlags);
+        }
     }
 
     protected onMeasure () {}

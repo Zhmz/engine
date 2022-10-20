@@ -27,7 +27,8 @@ export enum ErrorID {
     UNKNOWN,
     OUT_OF_RANGE,
     INVALID_INPUT,
-    ADD_CHILD_ERROR
+    SLOT_UNMATCHED,
+    MULTIPLE_CHILD
 }
 
 export class UIError extends Error {

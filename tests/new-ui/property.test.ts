@@ -1,6 +1,6 @@
-import { AdvancedProperty, Primitive } from "../../cocos/new-ui/property/advanced-property";
+import { AdvancedProperty, Primitive } from "../../cocos/new-ui/base/advanced-property";
 import { AdvancedObject } from "../../cocos/new-ui/base/advanced-object";
-import { AttachedObject } from "../../cocos/new-ui/property/attached-object";
+import { AttachedObject } from "../../cocos/new-ui/base/attached-object";
 
 test('advanced-property', () => {
     class MyTestClass extends AdvancedObject{}

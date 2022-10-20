@@ -24,7 +24,13 @@
 */
 
 import { Component } from '../../core';
+import { UIElement } from './ui-element';
+import { Image as UIImage } from '../framework/image';
 
-export class UIComponent extends Component {
-    
+export abstract class UIComponent extends Component {
+    protected abstract _uiElement: UIElement;
+
+    buildUITree (context) {
+        context.parent.addChild(this._uiElement);
+    }
 }

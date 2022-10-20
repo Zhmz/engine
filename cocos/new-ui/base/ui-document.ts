@@ -27,6 +27,7 @@
 import { UISubSystem } from "./ui-subsystem";
 import { UIElement } from "./ui-element";
 import { UIWindow } from "./ui-window";
+import { UILayoutSubsystem } from "../subsystem/ui-layout-subsystem";
 
 export class UIDocument {
     get window () {
@@ -37,10 +38,18 @@ export class UIDocument {
     private _systems: UISubSystem[] = [];
 
     constructor () {
-        
+        this._systems.push(new UILayoutSubsystem(this));
     }
 
     addDirtyElement (element: UIElement, dirtyFlags: number) {
+        for (let i = 0; i < this._systems.length; i++) {
+            this._systems[i].addDirtyElement(element, dirtyFlags);
+        }
+    }
 
+    update () {
+        for (let i = 0; i < this._systems.length; i++) {
+            this._systems[i].update();
+        }
     }
 } 

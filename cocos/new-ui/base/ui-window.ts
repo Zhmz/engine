@@ -28,6 +28,7 @@ import { AdvancedProperty } from "./advanced-property";
 import { UIElement } from "./ui-element";
 import { Rect } from '../../core/math';
 import { UIDocument } from "./ui-document";
+import { ContentSlot } from "../framework/content-slot";
 
 export class UIWindow extends UIElement {
     public static ViewportProperty = AdvancedProperty.register('Viewport', Rect, UIElement);
@@ -38,6 +39,14 @@ export class UIWindow extends UIElement {
 
     set viewport (val) {
         this.setValue(UIWindow.ViewportProperty, val);
+    }
+
+    protected allowMultipleChild () {
+        return false;
+    }
+
+    protected getSlotClass () {
+        return ContentSlot;
     }
 
     constructor (document: UIDocument) {
