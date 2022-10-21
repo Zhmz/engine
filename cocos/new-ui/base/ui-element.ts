@@ -309,9 +309,9 @@ export class UIElement extends AdvancedObject {
         }
     }
 
-    protected markDirty (dirtyFlags: number) {
+    protected invalidate (dirtyFlags: number) {
         if (this._document) {
-            this._document.addDirtyElement(this, dirtyFlags);
+            this._document.updateContext.invalidate(this, dirtyFlags);
         }
     }
 
