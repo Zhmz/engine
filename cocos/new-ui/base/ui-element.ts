@@ -36,6 +36,7 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
+import { Rect } from '../../core';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -47,8 +48,6 @@ export enum Visibility {
     HIDDEN
 }
 export class UIElement extends AdvancedObject {
-    public static ActuallyWidthProperty = AdvancedProperty.register('ActuallyWidth', Primitive.NUMBER, UIElement);
-    public static ActuallyHeightProperty = AdvancedProperty.register('ActuallyHeight', Primitive.NUMBER, UIElement);
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement);
     public static VisibilityProperty = AdvancedProperty.register('Visibility', Enum(Visibility), UIElement);
@@ -56,7 +55,7 @@ export class UIElement extends AdvancedObject {
     public static PositionProperty = AdvancedProperty.register('Position', Vec3, UIElement);
     public static RotationProperty = AdvancedProperty.register('Rotation', Quat, UIElement);
     public static ScaleProperty = AdvancedProperty.register('Scale', Vec3, UIElement);
-    public static PivotOriginProperty = AdvancedProperty.register('PivotOrigin', Vec2, UIElement);
+    public static RenderTransformPivotProperty = AdvancedProperty.register('RenderTransformPivot', Vec2, UIElement);
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement);
     public static PaddingProperty = AdvancedProperty.register('Padding', Thickness, UIElement);
 
@@ -65,6 +64,7 @@ export class UIElement extends AdvancedObject {
     protected _parent: UIElement | null = null;
     protected _children: Array<UIElement> = [];
     protected _document: UIDocument | null = null;
+    protected _layout = new Rect();
 
     //#region Layout
 
@@ -72,22 +72,10 @@ export class UIElement extends AdvancedObject {
         return this._slot;
     }
 
-    get actuallyWidth () {
-        return this.getValue(UIElement.ActuallyWidthProperty) as number;
+    get layout () {
+        return this._layout;
     }
-
-    protected set actuallyWidth (val) {
-        this.setValue(UIElement.ActuallyWidthProperty, val);
-    }
-
-    get actuallyHeight () {
-        return this.getValue(UIElement.ActuallyHeightProperty) as number;
-    }
-
-    protected set actuallyHeight (val) {
-        this.setValue(UIElement.ActuallyHeightProperty, val);
-    }
-
+ 
     get margin () {
         return this.getValue(UIElement.MarginProperty) as Thickness;
     }
@@ -104,10 +92,6 @@ export class UIElement extends AdvancedObject {
         this.setValue(UIElement.PaddingProperty, val);
     }
 
-    //#endregion Layout
-
-
-    //#region Localization
     get flowDirection () {
         return this.getValue(UIElement.FlowDirectionProperty) as FlowDirection;
     }
@@ -115,7 +99,7 @@ export class UIElement extends AdvancedObject {
     set flowDirection (flowDirection: FlowDirection) {
         this.setValue(UIElement.FlowDirectionProperty, flowDirection);
     }
-    //#endregion Localization
+    //#endregion Layout
 
     //#region Display
 
@@ -171,13 +155,14 @@ export class UIElement extends AdvancedObject {
         this.setValue(UIElement.ScaleProperty, val);
     }
 
-    get pivotOrigin () {
-        return this.getValue(UIElement.PivotOriginProperty) as Vec2;
+    get renderTransformPivot () {
+        return this.getValue(UIElement.RenderTransformPivotProperty) as Vec2;
     }
 
-    set pivotOrigin (val: Vec2) {
-        this.setValue(UIElement.PivotOriginProperty, val);
+    set renderTransformPivot (val: Vec2) {
+        this.setValue(UIElement.RenderTransformPivotProperty, val);
     }
+
     //#endregion RenderTransform
 
     get document () {
