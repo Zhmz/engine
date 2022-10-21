@@ -47,6 +47,14 @@ export enum Visibility {
     VISIBLE,
     HIDDEN
 }
+
+export enum InvalidateReason {
+    HIERARCHY = 1,
+    LAYOUT = 1 << 1,
+    STYLE = 1 << 2,
+    TRANSFORM = 1 << 3,
+    PAINT = 1 << 4
+}
 export class UIElement extends AdvancedObject {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement);
@@ -302,5 +310,5 @@ export class UIElement extends AdvancedObject {
 
     protected onMeasure () {}
     protected onArrange () {}
-    protected onRepaint (drawingContext: IDrawingContext) {}
+    protected onPaint (drawingContext: IDrawingContext) {}
 }

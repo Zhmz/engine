@@ -24,12 +24,13 @@
  THE SOFTWARE.
 */
 
+import { InvalidateReason, UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
 
 export class UILayoutSubsystem extends UISubSystem {
-    
-    addDirtyElement () {
 
+    invalidate(element: UIElement, invalidateReason: InvalidateReason) {
+        
     }
 
     update () {
