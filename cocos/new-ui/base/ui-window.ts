@@ -31,16 +31,6 @@ import { UIDocument } from "./ui-document";
 import { ContentSlot } from "../framework/content-slot";
 
 export class UIWindow extends UIElement {
-    public static ViewportProperty = AdvancedProperty.register('Viewport', Rect, UIElement);
-
-    get viewport () {
-        return this.getValue(UIWindow.ViewportProperty) as Rect;
-    }
-
-    set viewport (val) {
-        this.setValue(UIWindow.ViewportProperty, val);
-    }
-
     protected allowMultipleChild () {
         return false;
     }

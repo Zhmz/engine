@@ -24,32 +24,28 @@
  THE SOFTWARE.
 */
 
-import { UISubSystem } from "./ui-subsystem";
-import { UIElement } from "./ui-element";
+import { Rect } from "../../core/math";
+import { UIUpdateContext } from "./ui-update-context";
 import { UIWindow } from "./ui-window";
-import { UILayoutSubsystem } from "../subsystem/ui-layout-subsystem";
 
 export class UIDocument {
+    get viewport (): Readonly<Rect> {
+        return this._viewport;
+    }
+
+    private set viewport (val) {
+        this._viewport.set(val);
+    }
+
     get window () {
         return this._window;
     }
 
-    private _window: UIWindow = new UIWindow(this);
-    private _systems: UISubSystem[] = [];
-
-    constructor () {
-        this._systems.push(new UILayoutSubsystem(this));
+    get updateContext () {
+        return this._updateContext;
     }
 
-    addDirtyElement (element: UIElement, dirtyFlags: number) {
-        for (let i = 0; i < this._systems.length; i++) {
-            this._systems[i].addDirtyElement(element, dirtyFlags);
-        }
-    }
-
-    update () {
-        for (let i = 0; i < this._systems.length; i++) {
-            this._systems[i].update();
-        }
-    }
+    private _viewport = new Rect();
+    private _window = new UIWindow(this);
+    private _updateContext = new UIUpdateContext(this);
 } 
