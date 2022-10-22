@@ -30,9 +30,9 @@ import { AdvancedProperty } from "../base/advanced-property";
 import { UISlot } from "../base/ui-slot";
 
 export class CanvasSlot extends UISlot {
-    public static AnchorsProperty = AdvancedProperty.register('Anchors', Anchors, CanvasSlot);
-    public static OffsetsProperty = AdvancedProperty.register('Offsets', Thickness, CanvasSlot);
-    public static PivotProperty = AdvancedProperty.register('Pivot', Vec2, CanvasSlot);
+    public static AnchorsProperty = AdvancedProperty.register('Anchors', Anchors, CanvasSlot, Anchors.ZERO);
+    public static OffsetsProperty = AdvancedProperty.register('Offsets', Thickness, CanvasSlot, Thickness.ZERO);
+    public static PivotProperty = AdvancedProperty.register('Pivot', Vec2, CanvasSlot, Vec2.ZERO);
 
     get anchors () {
         return this.getValue(CanvasSlot.AnchorsProperty) as Anchors;

@@ -36,7 +36,7 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
-import { Rect } from '../../core';
+import { Mat4, Rect } from '../../core';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -56,16 +56,16 @@ export enum InvalidateReason {
     PAINT = 1 << 4
 }
 export class UIElement extends AdvancedObject {
-    public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement);
-    public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement);
-    public static VisibilityProperty = AdvancedProperty.register('Visibility', Enum(Visibility), UIElement);
-    public static ClipToBoundsProperty = AdvancedProperty.register('ClipToBounds', Primitive.BOOLEAN, UIElement);
-    public static PositionProperty = AdvancedProperty.register('Position', Vec3, UIElement);
-    public static RotationProperty = AdvancedProperty.register('Rotation', Quat, UIElement);
-    public static ScaleProperty = AdvancedProperty.register('Scale', Vec3, UIElement);
-    public static RenderTransformPivotProperty = AdvancedProperty.register('RenderTransformPivot', Vec2, UIElement);
-    public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement);
-    public static PaddingProperty = AdvancedProperty.register('Padding', Thickness, UIElement);
+    public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
+    public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement, 1);
+    public static VisibilityProperty = AdvancedProperty.register('Visibility', Enum(Visibility), UIElement, Visibility.VISIBLE);
+    public static ClipToBoundsProperty = AdvancedProperty.register('ClipToBounds', Primitive.BOOLEAN, UIElement, true);
+    public static PositionProperty = AdvancedProperty.register('Position', Vec3, UIElement, Vec3.ZERO);
+    public static RotationProperty = AdvancedProperty.register('Rotation', Quat, UIElement, Quat.IDENTITY);
+    public static ScaleProperty = AdvancedProperty.register('Scale', Vec3, UIElement, Vec3.ONE);
+    public static RenderTransformPivotProperty = AdvancedProperty.register('RenderTransformPivot', Vec2, UIElement, Object.freeze(new Vec2(0.5, 0.5)));
+    public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement, Thickness.ZERO);
+    public static PaddingProperty = AdvancedProperty.register('Padding', Thickness, UIElement, Thickness.ZERO);
 
     
     protected _slot: UISlot | null = null;
@@ -73,6 +73,8 @@ export class UIElement extends AdvancedObject {
     protected _children: Array<UIElement> = [];
     protected _document: UIDocument | null = null;
     protected _layout = new Rect();
+    protected _worldTransform = new Mat4();
+    protected _worldTransformDirty = false;
 
     //#region Layout
 
@@ -82,6 +84,13 @@ export class UIElement extends AdvancedObject {
 
     get layout () {
         return this._layout;
+    }
+
+    set layout (val: Rect) {
+        if (!this._layout.equals(val)) {
+            this.invalidateWorldTransform();
+            this._layout.set(val);
+        }
     }
  
     get margin () {
@@ -144,7 +153,17 @@ export class UIElement extends AdvancedObject {
     }
 
     set position (val: Vec3) {
-        this.setValue(UIElement.PositionProperty, val);
+        this.invalidateWorldTransform();
+        this.setValue(UIElement.PositionProperty, val.clone());
+    }
+
+    get eulerAngles () {
+        return Quat.toEuler(new Vec3(), this.rotation) as Vec3;
+    }
+
+    set eulerAngles (val: Vec3) {
+        const quat = Quat.fromEuler(new Quat, val.x, val.y, val.z);
+        this.rotation = quat;
     }
 
     get rotation () {
@@ -152,7 +171,8 @@ export class UIElement extends AdvancedObject {
     }
 
     set rotation (val: Quat) {
-        this.setValue(UIElement.RotationProperty, val);
+        this.invalidateWorldTransform();
+        this.setValue(UIElement.RotationProperty, val.clone());
     }
 
     get scale () {
@@ -160,7 +180,8 @@ export class UIElement extends AdvancedObject {
     }
 
     set scale (val: Vec3) {
-        this.setValue(UIElement.ScaleProperty, val);
+        this.invalidateWorldTransform();
+        this.setValue(UIElement.ScaleProperty, val.clone());
     }
 
     get renderTransformPivot () {
@@ -168,8 +189,40 @@ export class UIElement extends AdvancedObject {
     }
 
     set renderTransformPivot (val: Vec2) {
-        this.setValue(UIElement.RenderTransformPivotProperty, val);
+        this.invalidateWorldTransform();
+        this.setValue(UIElement.RenderTransformPivotProperty, val.clone());
     }
+
+    get renderTransform () {
+        return Mat4.fromRTS(new Mat4(), this.rotation, this.position, this.scale);
+    }
+
+    get worldTransform () {
+        this.updateWorldTransform();
+        return this._worldTransform;
+    }
+
+    private updateWorldTransform () {
+        if (this._worldTransformDirty) {
+            Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.x, this.layout.y, 0));
+            Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
+            if (this.parent) {
+                Mat4.multiply(this._worldTransform, this.parent.worldTransform, this._worldTransform);
+            }
+            this._worldTransformDirty = false;
+        }
+    }
+
+    private invalidateWorldTransform () {
+        if (!this._worldTransformDirty) {
+            this._worldTransformDirty = true;
+            for (let i = 0; i < this._children.length; i++) {
+                this._children[i].invalidateWorldTransform();
+            }
+        }
+    }
+
+
 
     //#endregion RenderTransform
 

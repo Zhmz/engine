@@ -42,8 +42,8 @@ export enum VerticalAlignment {
 }
 
 export class ContentSlot extends UISlot {
-    public static HorizontalAlignmentProperty = AdvancedProperty.register('HorizontalAlignment', Enum(HorizontalAlignment), ContentSlot);
-    public static VerticalAlignmentProperty = AdvancedProperty.register('VerticalAlignment', Enum(VerticalAlignment), ContentSlot);
+    public static HorizontalAlignmentProperty = AdvancedProperty.register('HorizontalAlignment', Enum(HorizontalAlignment), ContentSlot, HorizontalAlignment.CENTER);
+    public static VerticalAlignmentProperty = AdvancedProperty.register('VerticalAlignment', Enum(VerticalAlignment), ContentSlot, HorizontalAlignment.CENTER);
 
     get horizontalAlignment () {
         return this.getValue(ContentSlot.HorizontalAlignmentProperty) as HorizontalAlignment; 

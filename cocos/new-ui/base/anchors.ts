@@ -28,6 +28,8 @@ import { Vec2 } from "../../core/math/vec2";
 import { ValueType } from "../../core/value-types";
 
 export class Anchors extends ValueType {
+    static ZERO = Object.freeze(new Anchors);
+    
     private _min: Vec2;
     private _max: Vec2;
 

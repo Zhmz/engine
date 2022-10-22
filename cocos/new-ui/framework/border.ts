@@ -28,7 +28,7 @@ import { Thickness } from "../base/thickness";
 import { UIElement } from "../base/ui-element";
 
 export class Border extends UIElement {
-    public static BorderWidthProperty = AdvancedProperty.register('BorderWidth', Thickness, UIElement);
+    public static BorderWidthProperty = AdvancedProperty.register('BorderWidth', Thickness, UIElement, Thickness.ZERO);
 
     get borderWidth () {
         return this.getValue(Border.BorderWidthProperty) as Thickness;

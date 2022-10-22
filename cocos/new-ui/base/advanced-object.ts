@@ -25,14 +25,30 @@
 */
 
 import { AdvancedProperty } from './advanced-property';
+import { PropertyValueEntry } from './advanced-property-value';
 
 export class AdvancedObject {
-    private _properties = new Map<AdvancedProperty, any>();
+    private _propertyValueEntries = new Array<PropertyValueEntry>();
     getValue (property: AdvancedProperty): any {
-        return this._properties.get(property);
+        const propertyValueEntries = this._propertyValueEntries;
+        for (let i = 0, length = propertyValueEntries.length; i < length; i++) {
+            if (propertyValueEntries[i].propertyId === property.id) {
+                return propertyValueEntries[i].value;
+            }
+        }
+        
+        return property.defaultValue;
     }
     
     setValue (property: AdvancedProperty, value: any) {
-        this._properties.set(property, value);
+        const propertyValueEntries = this._propertyValueEntries;
+        for (let i = 0, length = propertyValueEntries.length; i < length; i++) {
+            if (propertyValueEntries[i].propertyId === property.id) {
+                propertyValueEntries[i].value = value;
+                return;
+            }
+        }
+        const propertyValueEntry = new PropertyValueEntry(property.id, value);
+        propertyValueEntries.push(propertyValueEntry);
     }
 }

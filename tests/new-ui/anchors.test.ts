@@ -1,5 +1,5 @@
 import { Vec2 } from "../../cocos/core/math/vec2";
-import { Anchors } from "../../cocos/new-ui/math/anchors"
+import { Anchors } from "../../cocos/new-ui/base/anchors"
 
 test('anchors', () => {
     const anchors = new Anchors;

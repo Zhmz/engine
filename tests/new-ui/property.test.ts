@@ -102,3 +102,35 @@ test('attached object', () => {
     owner.setValue(MyAttachedObject.TestProperty, 20);
     expect(attachedObject.test).toBe(20);
 });
+
+test('default-value', () => {
+
+    enum TestEnum {
+        TEST_1,
+        TEST_2,
+        TEST_3
+    }
+    class MyTestClass extends AdvancedObject {
+        public static TestProperty = AdvancedProperty.register('Test', Primitive.NUMBER, MyTestClass, 10);
+        public static TestBoolProperty = AdvancedProperty.register('Test1', Primitive.BOOLEAN, MyTestClass, true);
+        public static TestStringProperty = AdvancedProperty.register('Test2', Primitive.STRING, MyTestClass, 'test');
+        public static TestEnumProperty = AdvancedProperty.register('Test3', TestEnum, MyTestClass);
+    }
+
+    const testObject = new MyTestClass();
+    expect(testObject.getValue(MyTestClass.TestProperty)).toBe(10);
+    testObject.setValue(MyTestClass.TestProperty, 50);
+    expect(testObject.getValue(MyTestClass.TestProperty)).toBe(50);
+
+    expect(testObject.getValue(MyTestClass.TestBoolProperty)).toBe(true);
+    testObject.setValue(MyTestClass.TestBoolProperty, false);
+    expect(testObject.getValue(MyTestClass.TestBoolProperty)).toBe(false);
+
+    expect(testObject.getValue(MyTestClass.TestStringProperty)).toBe('test');
+    testObject.setValue(MyTestClass.TestStringProperty, 'hello world');
+    expect(testObject.getValue(MyTestClass.TestStringProperty)).toBe('hello world');
+
+    expect(testObject.getValue(MyTestClass.TestEnumProperty)).toBe(AdvancedProperty.UNSET_VALUE);
+    testObject.setValue(MyTestClass.TestEnumProperty, TestEnum.TEST_3);
+    expect(testObject.getValue(MyTestClass.TestEnumProperty)).toBe(TestEnum.TEST_3);
+});

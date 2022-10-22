@@ -35,24 +35,47 @@ export enum Primitive {
 }
 
 export class AdvancedProperty {
+    static UNSET_VALUE = undefined;
+
     private _name: string;
     // Object is used for Enum 
     private _propertyType: Constructor | Record<string, number | string> | Primitive;
     private _ownerType: Constructor<AdvancedObject | AttachedObject>;
-    private constructor (name: string, type: Constructor | Record<string, number | string> | Primitive, ownerType: Constructor<AdvancedObject | AttachedObject>) {
+    private _defaultValue: any;
+    private _id: number;
+    private constructor (
+        id: number,
+        name: string, 
+        type: Constructor | Record<string, number | string> | Primitive, 
+        ownerType: Constructor<AdvancedObject | AttachedObject>, 
+        defaultValue: any) {
+
+        this._id = id;
         this._name = name;
         this._propertyType = type;
         this._ownerType = ownerType;
+        this._defaultValue = defaultValue;
     }
 
     private static _propertyRegistry = new Array<AdvancedProperty>();
-    public static register<OT extends AdvancedObject | AttachedObject>(name: string, type: Constructor | Record<string, number | string> | Primitive, ownerType: Constructor<OT>) {
-        const ap = new AdvancedProperty(name, type, ownerType);
+    public static register<OT extends AdvancedObject | AttachedObject>(
+        name: string, 
+        type: Constructor | Record<string, number | string> | Primitive, 
+        ownerType: Constructor<OT>,
+        defaultValue: any = AdvancedProperty.UNSET_VALUE) {
+
+        const ap = new AdvancedProperty(this._propertyRegistry.length, name, type, ownerType, defaultValue);
         this._propertyRegistry.push(ap);
         return ap;
+    }
+
+    public static get allRegisteredProperties (): ReadonlyArray<AdvancedProperty> {
+        return this._propertyRegistry;
     }
 
     public get name () { return this._name; }
     public get propertyType () { return this._propertyType; }
     public get ownerType () { return this._ownerType; }
+    public get defaultValue () { return this._defaultValue; }
+    public get id () { return this._id; } 
 }

@@ -28,6 +28,8 @@ import { approx } from "../../core/math/utils";
 import { ValueType } from "../../core/value-types";
 
 export class Thickness extends ValueType {
+    static ZERO = Object.freeze(new Thickness);
+    
     private _left: number;
     private _right: number;
     private _top: number;

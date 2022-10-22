@@ -1,7 +1,9 @@
+import { Mat4, Scene, Vec3 } from "../../cocos/core";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { UISlot } from "../../cocos/new-ui/base/ui-slot";
 import { ContentSlot } from "../../cocos/new-ui/framework/content-slot";
+import { Node } from '../../cocos/core/scene-graph';
 
 test('slot', () => {
     const element1 = new UIElement();
@@ -244,3 +246,44 @@ test('other', () => {
     expect(testElement.childCount).toBe(0);
     expect(testElement2.childCount).toBe(1);
 });
+
+test('render-transform', () => {
+
+    class SingleChildElement extends UIElement {
+        protected allowMultipleChild () {
+            return false;
+        }
+
+        protected getSlotClass () {
+            return ContentSlot;
+        }
+    }
+    const document = new UIDocument();
+    const child1 = new SingleChildElement();
+    document.window.addChild(child1);
+    expect(document.window.worldTransform.equals(Mat4.IDENTITY)).toBeTruthy();
+    child1.position = new Vec3(10, 3.5, -2.4);
+    child1.eulerAngles = new Vec3(47.5, 23, -3);
+    child1.scale = new Vec3(2, 0.5, 1);
+    let child2 = new SingleChildElement();
+    child2.position = new Vec3(5, -10, 3);
+    child2.eulerAngles = new Vec3(0, 90, 45);
+    child2.scale = new Vec3(1, 1, 2);
+    child1.addChild(child2);
+
+    const scene = new Scene('test');
+    const node = new Node();
+    scene.addChild(node)
+    node.position = new Vec3(10, 3.5, -2.4);
+    node.eulerAngles = new Vec3(47.5, 23, -3);
+    node.scale = new Vec3(2, 0.5, 1);
+    let node2 = new Node();
+    node2.position = new Vec3(5, -10, 3);
+    node2.eulerAngles = new Vec3(0, 90, 45);
+    node2.scale = new Vec3(1, 1, 2);
+
+    expect(child1.worldTransform.equals(node.worldMatrix));
+    expect(child2.worldTransform.equals(node2.worldMatrix));
+});
+
+

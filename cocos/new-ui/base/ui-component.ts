@@ -25,7 +25,6 @@
 
 import { Component } from '../../core';
 import { UIElement } from './ui-element';
-import { Image as UIImage } from '../framework/image';
 
 export abstract class UIComponent extends Component {
     protected abstract _uiElement: UIElement;
