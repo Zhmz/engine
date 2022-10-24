@@ -36,7 +36,7 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
-import { Mat4, Rect } from '../../core';
+import { approx, Mat4, Rect } from '../../core';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -194,7 +194,18 @@ export class UIElement extends AdvancedObject {
     }
 
     get renderTransform () {
-        return Mat4.fromRTS(new Mat4(), this.rotation, this.position, this.scale);
+        const { x : xOffsetPercentage, y : yOffsetPercentage } = this.renderTransformPivot;
+        const localMatrix = Mat4.fromRTS(new Mat4(), this.rotation, this.position, this.scale);
+        if (!approx(xOffsetPercentage, 0.5) || !approx(yOffsetPercentage, 0.5)) {
+            const matrix = new Mat4(); 
+            const xOffset = this.layout.width * (xOffsetPercentage - 0.5);
+            const yOffset = this.layout.height * (yOffsetPercentage - 0.5);
+            Mat4.fromTranslation(matrix, new Vec3(xOffset, yOffset, 0));
+            Mat4.multiply(localMatrix, matrix, localMatrix);
+            Mat4.fromTranslation(matrix, new Vec3(-xOffset, -yOffset, 0));
+            Mat4.multiply(localMatrix, localMatrix, matrix);
+        }
+        return localMatrix;
     }
 
     get worldTransform () {
@@ -297,6 +308,10 @@ export class UIElement extends AdvancedObject {
         child.setParent(null);
     }
 
+    public removeFromParent () {
+        this.setParent(null);
+    }
+
     private setParent (parent: UIElement | null, index: number = -1) {
         if (parent && !parent.getSlotClass()) {
             throw new UIError(ErrorID.SLOT_UNMATCHED);
@@ -320,6 +335,7 @@ export class UIElement extends AdvancedObject {
         }
         this.updateSlot();
         this.updateDocument(this._parent ? this._parent._document : null);
+        this.invalidateWorldTransform();
     }
 
     //#endregion hierarchy
