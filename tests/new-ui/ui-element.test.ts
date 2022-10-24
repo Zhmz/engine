@@ -501,5 +501,37 @@ test('world-transform with pivot', () => {
     expect(approx(element.worldTransform.m12, 86.066017)).toBeTruthy();
     expect(approx(element.worldTransform.m13, -4.6446609)).toBeTruthy();
     expect(element.worldTransform.m14).toBe(-5);
+    expect((Quat.toEuler(new Vec3(), element.worldTransform.getRotation(new Quat)) as Vec3).equals(new Vec3(0, 0, -45))).toBeTruthy();
+
+    element.renderTransformPivot = new Vec2(1, 1);
+    expect(element.worldTransform.m12).toBeCloseTo(-26.06601);
+    expect(element.worldTransform.m13).toBeCloseTo(124.6447);
+    expect(element.worldTransform.m14).toBe(-5);
+    expect((Quat.toEuler(new Vec3(), element.worldTransform.getRotation(new Quat)) as Vec3).equals(new Vec3(0, 0, -45))).toBeTruthy();
+
+    element.eulerAngles = new Vec3(0, 0, -90);
+    expect(element.worldTransform.m12).toBeCloseTo(-20, 6);
+    expect(element.worldTransform.m13).toBeCloseTo(210, 6);
+    expect(element.worldTransform.m14).toBe(-5);
+    expect((Quat.toEuler(new Vec3(), element.worldTransform.getRotation(new Quat)) as Vec3).equals(new Vec3(0, 0, -90))).toBeTruthy();
+
+    element.scale = new Vec3(1, 2.5, 1);
+    expect(element.worldTransform.m12).toBeCloseTo(-170, 5);
+    expect(element.worldTransform.m13).toBeCloseTo(210, 6);
+    expect(element.worldTransform.m14).toBe(-5);
+    expect((Quat.toEuler(new Vec3(), element.worldTransform.getRotation(new Quat)) as Vec3).equals(new Vec3(0, 0, -90))).toBeTruthy();
+    expect(element.worldTransform.getScale(new Vec3).equals(new Vec3(1, 2.5, 1))).toBeTruthy();
+
+    element.eulerAngles = new Vec3(0, 0, 45);
+    element2.layout = new Rect(5, -5, 100, 100);
+    element2.position = new Vec3(20, 30, 5);
+    element2.eulerAngles = new Vec3(0, 0, 0);
+    element2.scale = new Vec3(2, 0.2, 1.7);
+    element2.renderTransformPivot = new Vec2(0.2, 0.3);
+    expect(element2.worldTransform.m12).toBeCloseTo(244.402326, 2);
+    expect(element2.worldTransform.m13).toBeCloseTo(2.6687, 2);
+    expect(element2.worldTransform.m14).toBeCloseTo(0);
+    expect(element2.worldTransform.getScale(new Vec3)).toStrictEqual(new Vec3(2, 0.5, 1.7));
+    expect(element2.worldTransform.equals(Mat4.fromRTS(new Mat4, Quat.fromEuler(new Quat, 0, 0, 45), new Vec3(244.4023266, 2.66874, 0), new Vec3(2, 0.5, 1.7)))).toBeTruthy();
 });
 
