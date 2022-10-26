@@ -23,30 +23,29 @@
  THE SOFTWARE.
 */
 
-import { Component } from '../../core';
-import { UIElement } from './ui-element';
+import { BaseRaycaster } from "./raycaster/base-raycaster";
 
-export abstract class UIComponent extends Component {
-    protected abstract _uiElement: UIElement;
+export class RaycasterManager {
 
-    buildUITree (context) {
-        context.parent.addChild(this._uiElement);
+    static _raycasters: BaseRaycaster[] = [];
+
+    public static addRaycaster(raycaster: BaseRaycaster) {
+        if (-1 !== RaycasterManager._raycasters.indexOf(raycaster)) {
+            return;
+        }
+        this._raycasters.push(raycaster);
     }
 
-
-    protected onEnable() {
-        this._registerEvent();
+    public static removeRaycaster(raycaster: BaseRaycaster) {
+        const index = RaycasterManager._raycasters.indexOf(raycaster);
+        if (-1 === index) {
+            return;
+        }
+        this._raycasters.splice(index, 1);
     }
 
-    protected onDisable() {
-        this._unregisterEvent();
-    }
-
-    protected _registerEvent() {
-
-    }
-
-    protected _unregisterEvent() {
-
-    }
 }
+
+
+
+

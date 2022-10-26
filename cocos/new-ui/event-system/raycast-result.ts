@@ -23,30 +23,21 @@
  THE SOFTWARE.
 */
 
-import { Component } from '../../core';
-import { UIElement } from './ui-element';
-
-export abstract class UIComponent extends Component {
-    protected abstract _uiElement: UIElement;
-
-    buildUITree (context) {
-        context.parent.addChild(this._uiElement);
-    }
+import { Vec3 } from "../../core/math";
 
 
-    protected onEnable() {
-        this._registerEvent();
-    }
+export class RaycastResult {
+    private _node:Node;
+    private _distance:number;
+    private _index:number;
+    private _depth:number;
+    private _sortingLayer:number;
+    private _sortingOrder:number;
+    private _worldPosition:Vec3;
+    private _screenPosition:Vec3;
 
-    protected onDisable() {
-        this._unregisterEvent();
-    }
-
-    protected _registerEvent() {
-
-    }
-
-    protected _unregisterEvent() {
-
-    }
 }
+
+
+
+
