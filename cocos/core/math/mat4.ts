@@ -328,10 +328,10 @@ export class Mat4 extends ValueType {
             out.m00 = a.m00; out.m01 = a.m01; out.m02 = a.m02; out.m03 = a.m03;
             out.m04 = a.m04; out.m05 = a.m05; out.m06 = a.m06; out.m07 = a.m07;
             out.m08 = a.m08; out.m09 = a.m09; out.m10 = a.m10; out.m11 = a.m11;
+            out.m12 = a.m12; out.m13 = a.m13; out.m14 = a.m14; out.m15 = a.m15;
             out.m12 += v.x;
             out.m13 += v.y;
             out.m14 += v.z;
-            out.m15 = a.m15;
         }
         return out;
     }

@@ -1,4 +1,4 @@
-import { approx, Mat4, Quat, Rect, Scene, Vec2, Vec3 } from "../../cocos/core";
+import { Mat4, Quat, Rect, Scene, Vec2, Vec3 } from "../../cocos/core";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { UISlot } from "../../cocos/new-ui/base/ui-slot";
@@ -498,8 +498,8 @@ test('world-transform with pivot', () => {
     element.position = new Vec3(10, 50, -5);
     element.eulerAngles = new Vec3(0, 0, -45);
     element.renderTransformPivot = new Vec2(0, 0);
-    expect(approx(element.worldTransform.m12, 86.066017)).toBeTruthy();
-    expect(approx(element.worldTransform.m13, -4.6446609)).toBeTruthy();
+    expect(element.worldTransform.m12).toBeCloseTo(86.066017);
+    expect(element.worldTransform.m13).toBeCloseTo(-4.6446609);
     expect(element.worldTransform.m14).toBe(-5);
     expect((Quat.toEuler(new Vec3(), element.worldTransform.getRotation(new Quat)) as Vec3).equals(new Vec3(0, 0, -45))).toBeTruthy();
 
@@ -535,3 +535,147 @@ test('world-transform with pivot', () => {
     expect(element2.worldTransform.equals(Mat4.fromRTS(new Mat4, Quat.fromEuler(new Quat, 0, 0, 45), new Vec3(244.4023266, 2.66874, 0), new Vec3(2, 0.5, 1.7)))).toBeTruthy();
 });
 
+test('shear', () => {
+    const document = new UIDocument();
+    const element = new MultipleChildElement();
+    document.window.addChild(element);
+    element.layout = new Rect(0, 0, 100, 100);
+    // left top
+    const leftTopAnchorElement = new SingleChildElement();
+    element.addChild(leftTopAnchorElement);
+    leftTopAnchorElement.layout = new Rect(-50, 50, 0, 0);
+    // left center
+    const leftCenterAnchorElement = new SingleChildElement();
+    element.addChild(leftCenterAnchorElement);
+    leftCenterAnchorElement.layout = new Rect(-50, 0, 0, 0);
+    // left bottom
+    const leftBottomAnchorElement = new SingleChildElement();
+    element.addChild(leftBottomAnchorElement);
+    leftBottomAnchorElement.layout = new Rect(-50, -50, 0, 0);
+    // center top
+    const centerTopAnchorElement = new SingleChildElement();
+    element.addChild(centerTopAnchorElement);
+    centerTopAnchorElement.layout = new Rect(0, 50, 0, 0);
+    // center center
+    const centerCenterAnchorElement = new SingleChildElement();
+    element.addChild(centerCenterAnchorElement);
+    centerCenterAnchorElement.layout = new Rect(0, 0, 0, 0);
+    // center bottom
+    const centerBottomAnchorElement = new SingleChildElement();
+    element.addChild(centerBottomAnchorElement);
+    centerBottomAnchorElement.layout = new Rect(0, -50, 0, 0);
+    // right top
+    const rightTopAnchorElement = new SingleChildElement();
+    element.addChild(rightTopAnchorElement);
+    rightTopAnchorElement.layout = new Rect(50, 50, 0, 0);
+    // center center
+    const rightCenterAnchorElement = new SingleChildElement();
+    element.addChild(rightCenterAnchorElement);
+    rightCenterAnchorElement.layout = new Rect(50, 0, 0, 0);
+    // right bottom
+    const rightBottomAnchorElement = new SingleChildElement();
+    element.addChild(rightBottomAnchorElement);
+    rightBottomAnchorElement.layout = new Rect(50, -50, 0, 0);
+    //    __________
+    //   /    .    /
+    //  /_________/      
+    element.shear = new Vec2(0.2, 0);
+    expect(leftTopAnchorElement.worldTransform.m12).toBeCloseTo(-40);
+    expect(leftTopAnchorElement.worldTransform.m13).toBeCloseTo(50);
+    expect(leftCenterAnchorElement.worldTransform.m12).toBeCloseTo(-50);
+    expect(leftCenterAnchorElement.worldTransform.m13).toBeCloseTo(0);
+    expect(leftBottomAnchorElement.worldTransform.m12).toBeCloseTo(-60);
+    expect(leftBottomAnchorElement.worldTransform.m13).toBeCloseTo(-50);
+    expect(centerTopAnchorElement.worldTransform.m12).toBeCloseTo(10);
+    expect(centerTopAnchorElement.worldTransform.m13).toBeCloseTo(50);
+    expect(centerCenterAnchorElement.worldTransform.m12).toBeCloseTo(0);
+    expect(centerCenterAnchorElement.worldTransform.m13).toBeCloseTo(0);
+    expect(centerBottomAnchorElement.worldTransform.m12).toBeCloseTo(-10);
+    expect(centerBottomAnchorElement.worldTransform.m13).toBeCloseTo(-50);
+    expect(rightTopAnchorElement.worldTransform.m12).toBeCloseTo(60);
+    expect(rightTopAnchorElement.worldTransform.m13).toBeCloseTo(50);
+    expect(rightCenterAnchorElement.worldTransform.m12).toBeCloseTo(50);
+    expect(rightCenterAnchorElement.worldTransform.m13).toBeCloseTo(0);
+    expect(rightBottomAnchorElement.worldTransform.m12).toBeCloseTo(40);
+    expect(rightBottomAnchorElement.worldTransform.m13).toBeCloseTo(-50);
+
+    //   /  |
+    //   |  |
+    //   |  /
+    element.shear = new Vec2(0, 0.2);
+    expect(leftTopAnchorElement.worldTransform.m12).toBeCloseTo(-50);
+    expect(leftTopAnchorElement.worldTransform.m13).toBeCloseTo(40);
+    expect(leftCenterAnchorElement.worldTransform.m12).toBeCloseTo(-50);
+    expect(leftCenterAnchorElement.worldTransform.m13).toBeCloseTo(-10);
+    expect(leftBottomAnchorElement.worldTransform.m12).toBeCloseTo(-50);
+    expect(leftBottomAnchorElement.worldTransform.m13).toBeCloseTo(-60);
+    expect(centerTopAnchorElement.worldTransform.m12).toBeCloseTo(0);
+    expect(centerTopAnchorElement.worldTransform.m13).toBeCloseTo(50);
+    expect(centerCenterAnchorElement.worldTransform.m12).toBeCloseTo(0);
+    expect(centerCenterAnchorElement.worldTransform.m13).toBeCloseTo(0);
+    expect(centerBottomAnchorElement.worldTransform.m12).toBeCloseTo(0);
+    expect(centerBottomAnchorElement.worldTransform.m13).toBeCloseTo(-50);
+    expect(rightTopAnchorElement.worldTransform.m12).toBeCloseTo(50);
+    expect(rightTopAnchorElement.worldTransform.m13).toBeCloseTo(60);
+    expect(rightCenterAnchorElement.worldTransform.m12).toBeCloseTo(50);
+    expect(rightCenterAnchorElement.worldTransform.m13).toBeCloseTo(10);
+    expect(rightBottomAnchorElement.worldTransform.m12).toBeCloseTo(50);
+    expect(rightBottomAnchorElement.worldTransform.m13).toBeCloseTo(-40);
+
+    element.scale = new Vec3(0.5, 0.5, 1);
+    expect(leftTopAnchorElement.worldTransform.m12).toBeCloseTo(-25);
+    expect(leftTopAnchorElement.worldTransform.m13).toBeCloseTo(20);
+    expect(leftCenterAnchorElement.worldTransform.m12).toBeCloseTo(-25);
+    expect(leftCenterAnchorElement.worldTransform.m13).toBeCloseTo(-5);
+    expect(leftBottomAnchorElement.worldTransform.m12).toBeCloseTo(-25);
+    expect(leftBottomAnchorElement.worldTransform.m13).toBeCloseTo(-30);
+    expect(centerTopAnchorElement.worldTransform.m12).toBeCloseTo(0);
+    expect(centerTopAnchorElement.worldTransform.m13).toBeCloseTo(25);
+    expect(centerCenterAnchorElement.worldTransform.m12).toBeCloseTo(0);
+    expect(centerCenterAnchorElement.worldTransform.m13).toBeCloseTo(0);
+    expect(centerBottomAnchorElement.worldTransform.m12).toBeCloseTo(0);
+    expect(centerBottomAnchorElement.worldTransform.m13).toBeCloseTo(-25);
+    expect(rightTopAnchorElement.worldTransform.m12).toBeCloseTo(25);
+    expect(rightTopAnchorElement.worldTransform.m13).toBeCloseTo(30);
+    expect(rightCenterAnchorElement.worldTransform.m12).toBeCloseTo(25);
+    expect(rightCenterAnchorElement.worldTransform.m13).toBeCloseTo(5);
+    expect(rightBottomAnchorElement.worldTransform.m12).toBeCloseTo(25);
+    expect(rightBottomAnchorElement.worldTransform.m13).toBeCloseTo(-20);
+});
+
+test('local-world transform', () => {
+    const document = new UIDocument();
+    const uiElement = new SingleChildElement();
+    document.window.addChild(uiElement);
+    uiElement.layout = new Rect(-20, 20, 100, 50);
+    uiElement.renderTransformPivot = new Vec2(0, 0);
+    uiElement.position = new Vec3(25, 74, 0);
+    uiElement.rotation = Quat.fromEuler(new Quat(), 0, 0, 45);
+    const worldPos = uiElement.localToWorld(new Vec3(), new Vec3(120, 25, 0));
+    expect(worldPos.x).toBeCloseTo(39.85282);
+    expect(worldPos.y).toBeCloseTo(224.5635);
+    const localPoint = uiElement.worldToLocal(new Vec3(), worldPos);
+    expect(localPoint.x).toBeCloseTo(120);
+    expect(localPoint.y).toBeCloseTo(25);
+
+    const uiElement2 = new SingleChildElement();
+    uiElement.addChild(uiElement2);
+    uiElement2.layout = new Rect(64, -30, 50, 20);
+    uiElement2.renderTransformPivot = new Vec2(1, 1);
+    uiElement2.position = new Vec3(10, 5, 3);
+    uiElement2.scale = new Vec3 (2, 1, 1);
+
+    const worldPos2 = uiElement2.localToWorld(new Vec3, new Vec3(0, 0, 0));
+    expect(worldPos2.x).toBeCloseTo(25.0035);
+    expect(worldPos2.y).toBeCloseTo(139.0036);
+
+    const localPos2 = uiElement2.worldToLocal(new Vec3, worldPos2);
+    expect(localPos2.x).toBeCloseTo(0);
+    expect(localPos2.y).toBeCloseTo(0);
+
+    uiElement2.shear = new Vec2(0.1, 0.1);
+    const worldPos3 = uiElement2.localToWorld(new Vec3, new Vec3(25, 10, 0));
+    expect(worldPos3.x).toBeCloseTo(53.28784);
+    expect(worldPos3.y).toBeCloseTo(181.42997);
+
+});

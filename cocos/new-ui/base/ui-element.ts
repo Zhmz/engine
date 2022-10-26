@@ -36,6 +36,7 @@ import { Thickness } from './thickness';
 import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
 import { approx, Mat4, Rect } from '../../core';
+import { Ray } from '../../core/geometry';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -62,6 +63,7 @@ export class UIElement extends AdvancedObject {
     public static PositionProperty = AdvancedProperty.register('Position', Vec3, UIElement, Vec3.ZERO);
     public static RotationProperty = AdvancedProperty.register('Rotation', Quat, UIElement, Quat.IDENTITY);
     public static ScaleProperty = AdvancedProperty.register('Scale', Vec3, UIElement, Vec3.ONE);
+    public static ShearProperty = AdvancedProperty.register('Shear', Vec2, UIElement, Vec2.ZERO);
     public static RenderTransformPivotProperty = AdvancedProperty.register('RenderTransformPivot', Vec2, UIElement, Object.freeze(new Vec2(0.5, 0.5)));
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement, Thickness.ZERO);
     public static PaddingProperty = AdvancedProperty.register('Padding', Thickness, UIElement, Thickness.ZERO);
@@ -72,7 +74,9 @@ export class UIElement extends AdvancedObject {
     protected _document: UIDocument | null = null;
     protected _layout = new Rect();
     protected _worldTransform = new Mat4();
+    protected _localTransform = new Mat4();
     protected _worldTransformDirty = false;
+    protected _localTransformDirty = false;
 
     //#region Layout
 
@@ -159,6 +163,7 @@ export class UIElement extends AdvancedObject {
     }
 
     set position (val: Vec3) {
+        this._localTransformDirty = true;
         this.invalidateWorldTransform();
         this.setValue(UIElement.PositionProperty, val.clone());
     }
@@ -177,8 +182,19 @@ export class UIElement extends AdvancedObject {
     }
 
     set rotation (val: Quat) {
+        this._localTransformDirty = true;
         this.invalidateWorldTransform();
         this.setValue(UIElement.RotationProperty, val.clone());
+    }
+
+    get shear () {
+        return this.getValue(UIElement.ShearProperty) as Vec2;
+    }
+
+    set shear (val: Vec2) {
+        this._localTransformDirty = true;
+        this.invalidateWorldTransform();
+        this.setValue(UIElement.ShearProperty, val);
     }
 
     get scale () {
@@ -186,6 +202,7 @@ export class UIElement extends AdvancedObject {
     }
 
     set scale (val: Vec3) {
+        this._localTransformDirty = true;
         this.invalidateWorldTransform();
         this.setValue(UIElement.ScaleProperty, val.clone());
     }
@@ -199,27 +216,8 @@ export class UIElement extends AdvancedObject {
         this.setValue(UIElement.RenderTransformPivotProperty, val.clone());
     }
 
-    get renderTransform () {
-        const { x: xOffsetPercentage, y: yOffsetPercentage } = this.renderTransformPivot;
-        const localMatrix = Mat4.fromRTS(new Mat4(), this.rotation, this.position, this.scale);
-        if (!approx(xOffsetPercentage, 0.5) || !approx(yOffsetPercentage, 0.5)) {
-            const matrix = new Mat4();
-            const xOffset = this.layout.width * (xOffsetPercentage - 0.5);
-            const yOffset = this.layout.height * (yOffsetPercentage - 0.5);
-            Mat4.fromTranslation(matrix, new Vec3(xOffset, yOffset, 0));
-            Mat4.multiply(localMatrix, matrix, localMatrix);
-            Mat4.fromTranslation(matrix, new Vec3(-xOffset, -yOffset, 0));
-            Mat4.multiply(localMatrix, localMatrix, matrix);
-        }
-        return localMatrix;
-    }
 
-    get worldTransform () {
-        this.updateWorldTransform();
-        return this._worldTransform;
-    }
-
-    private updateWorldTransform () {
+    get worldTransform (): Readonly<Mat4> {
         if (this._worldTransformDirty) {
             Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.x, this.layout.y, 0));
             Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
@@ -228,6 +226,42 @@ export class UIElement extends AdvancedObject {
             }
             this._worldTransformDirty = false;
         }
+        return this._worldTransform;
+    }
+
+    private get localTransform () {
+        if (this._localTransformDirty) {
+            const { x: shearX, y: shearY } = this.shear;
+            if (approx(shearX, 0) && approx(shearY, 0)) {
+                Mat4.fromRTS(this._localTransform, this.rotation, this.position, this.scale);
+            } else {
+                // apply order: scale -> shear -> rotation -> translation
+                Mat4.fromScaling(this._localTransform, this.scale);
+                const tempMat = new Mat4();
+                tempMat.m01 = shearY;
+                tempMat.m04 = shearX;
+                Mat4.multiply(this._localTransform, tempMat, this._localTransform);
+                Mat4.fromRT(tempMat, this.rotation, this.position);
+                Mat4.multiply(this._localTransform, tempMat, this._localTransform);
+            }
+            this._localTransformDirty = false;
+        }
+        return this._localTransform;
+    }
+
+    private get renderTransform () {
+        const { x : xOffsetPercentage, y : yOffsetPercentage } = this.renderTransformPivot;
+        if (!approx(xOffsetPercentage, 0.5) || !approx(yOffsetPercentage, 0.5)) {
+            const matrix = new Mat4();
+            const xOffset = this.layout.width * (xOffsetPercentage - 0.5);
+            const yOffset = this.layout.height * (yOffsetPercentage - 0.5);
+            Mat4.fromTranslation(matrix, new Vec3(xOffset, yOffset, 0));
+            Mat4.multiply(matrix, matrix, this.localTransform);
+            const temp = Mat4.fromTranslation(new Mat4(), new Vec3(-xOffset, -yOffset, 0));
+            Mat4.multiply(matrix, matrix, temp);
+            return matrix;
+        }
+        return this.localTransform;
     }
 
     private invalidateWorldTransform () {
@@ -237,6 +271,15 @@ export class UIElement extends AdvancedObject {
                 this._children[i].invalidateWorldTransform();
             }
         }
+    }
+
+    public worldToLocal (out: Vec3, worldPoint: Vec3) {
+        const matrix = Mat4.invert(new Mat4(), this.worldTransform);
+        return Vec3.transformMat4(out, worldPoint, matrix);
+    }
+
+    public localToWorld (out: Vec3, localPoint: Vec3) {
+        return Vec3.transformMat4(out, localPoint, this.worldTransform);
     }
 
     //#endregion RenderTransform
@@ -381,7 +424,27 @@ export class UIElement extends AdvancedObject {
         }
     }
 
-    protected onMeasure () {}
-    protected onArrange () {}
+    //#region layout
+    protected onMeasure (availableSize: Vec2) {
+
+    }
+
+    protected onArrange (availableRect: Rect) {
+
+    }
+
+    public measure (availableSize: Vec2) {
+        this.onMeasure(availableSize);
+    }
+
+    public arrange (availableRect: Rect) {
+        this.onArrange(availableRect);
+    }
+    
+    //#endregion layout
     protected onPaint (drawingContext: IDrawingContext) {}
+
+    public hitTest (ray: Ray): boolean {
+        return true;
+    }
 }
