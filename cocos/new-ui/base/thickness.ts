@@ -67,6 +67,14 @@ export class Thickness extends ValueType {
         this._bottom = val;
     }
 
+    get width () {
+        return this._left + this._right;
+    }
+
+    get height () {
+        return this._top + this._bottom;
+    }
+
     constructor ();
     constructor (uniformLength: number);
     constructor (left: number, top: number, right: number, bottom: number);

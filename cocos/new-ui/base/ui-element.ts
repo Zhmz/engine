@@ -36,7 +36,7 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
-import { approx, Mat4, Rect } from '../../core';
+import { approx, Mat4, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
 
 export enum FlowDirection {
@@ -75,6 +75,7 @@ export class UIElement extends AdvancedObject {
     protected _children: Array<UIElement> = [];
     protected _document: UIDocument | null = null;
     protected _layout = new Rect();
+    protected _desiredSize = new Size();
     protected _worldTransform = new Mat4();
     protected _localTransform = new Mat4();
     protected _worldTransformDirty = false;
@@ -418,15 +419,21 @@ export class UIElement extends AdvancedObject {
     }
 
     //#region layout
-    protected onMeasure (availableSize: Vec2) {
-
+    /**
+     * 
+     * @param availableSize 
+     */
+    protected onMeasure (availableSize: Size) {
+        return new Size(0, 0);
     }
 
     protected onArrange (availableRect: Rect) {
 
     }
 
-    public measure (availableSize: Vec2) {
+    // sealed, invoked by layout system
+    public measure (availableSize: Size) {
+        const { width: marginWidth, height: marginHeight} = this.margin;
         this.onMeasure(availableSize);
     }
 
@@ -435,7 +442,10 @@ export class UIElement extends AdvancedObject {
     }
     
     //#endregion layout
-    protected onPaint (drawingContext: IDrawingContext) {}
+
+    protected onPaint (drawingContext: IDrawingContext) {
+
+    }
 
     public hitTest (ray: Ray): boolean {
         return true;

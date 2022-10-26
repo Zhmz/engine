@@ -24,29 +24,48 @@
  THE SOFTWARE.
 */
 
-import { AdvancedProperty } from "./advanced-property";
-import { UIElement } from "./ui-element";
-import { Rect, Size } from '../../core/math';
-import { UIDocument } from "./ui-document";
-import { ContentSlot } from "../framework/content-slot";
+import { Color } from "../../core";
 
-export class UIWindow extends UIElement {
-    protected allowMultipleChild () {
-        return false;
+enum BrushType {
+    COLOR,
+    TEXTURE,
+    RENDER_TEXTURE,
+    SPRITE_FRAME,
+    MATERIAL,
+    VECTOR_IMAGE
+}
+
+export class Brush {
+    static default = Object.freeze(new Brush());
+
+    private _type: BrushType = BrushType.COLOR
+    private _tintColor = Color.WHITE;
+    private _width = 0;
+    private _height = 0;
+
+    get type () {
+        return this._type;
     }
 
-    protected getSlotClass () {
-        return ContentSlot;
+    get width () {
+        return this._width;
     }
 
-    constructor (document: UIDocument) {
-        super();
-        this._document = document;
+    set height (val) {
+        this._height = val;
     }
 
-    onMeasure (availableSize: Size) {
-        this._desiredSize.set(availableSize);
-        this._children[0]?.measure(availableSize);
-        return this._desiredSize;
+    get height () {
+        return this._height;
+    }
+
+    get tintColor (): Readonly<Color> {
+        return this._tintColor;
+    }
+
+    set tintColor (color: Color) {
+        if (this._tintColor.equals(color)) {
+            this._tintColor.set(color);
+        }
     }
 }

@@ -40,4 +40,22 @@ test('thickness', () => {
     expect(thickness.equals(thickness2)).toBeFalsy();
 
 
-})
+});
+
+test('width and height', () => {
+    const thickness = new Thickness();
+    expect(thickness.height).toBe(0);
+    expect(thickness.width).toBe(0);
+    thickness.left = 10;
+    thickness.right = 20;
+    thickness.top = 30;
+    thickness.bottom = 10;
+    expect(thickness.width).toBe(30);
+    expect(thickness.height).toBe(40);
+    thickness.left = 5;
+    thickness.right = -20;
+    thickness.top = 20;
+    thickness.bottom = -20;
+    expect(thickness.width).toBe(-15);
+    expect(thickness.height).toBe(0);
+});

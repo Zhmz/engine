@@ -24,8 +24,26 @@
  THE SOFTWARE.
 */
 
+import { Size } from "../../core";
 import { UIElement } from "../base/ui-element";
+import { UISlot } from "../base/ui-slot";
+import { CanvasSlot } from "./canvas-slot";
 
 export class Canvas extends UIElement {
-    
+    protected allowMultipleChild () {
+        return true;
+    }
+
+    protected getSlotClass (): typeof UISlot | null{
+        return CanvasSlot;
+    }
+
+    onMeasure (availableSize: Size) {
+        this._desiredSize.set(availableSize);
+        const childAvailableSize = new Size(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+        for (let i = 0; i < this._children.length; i++) {
+            this._children[i].measure(childAvailableSize);
+        }
+        return this._desiredSize;
+    }
 }

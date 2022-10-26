@@ -23,11 +23,16 @@
  THE SOFTWARE.
 */
 
+import { Size } from "../../core";
 import { AttachedObject } from "./attached-object";
 import { UIElement } from "./ui-element";
 
 export class UISlot extends AttachedObject {
     constructor (element: UIElement) {
         super(element);
+    }
+
+    public onMeasure (availableSize: Size): Size {
+        return new Size(0, 0);
     }
 }

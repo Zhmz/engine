@@ -24,8 +24,33 @@
  THE SOFTWARE.
 */
 
+import { Size } from "../../core";
+import { AdvancedProperty } from "../base/advanced-property";
 import { UIElement } from "../base/ui-element";
+import { UISlot } from "../base/ui-slot";
+import { Brush } from "../rendering/brush";
 
-class Image extends UIElement {
+export class Image extends UIElement {
+    public static ImageSourceProperty = AdvancedProperty.register('ImageSource', Brush, Image, Brush.default);
+
+    get imageSource (): Readonly<Brush> {
+        return this.getValue(Image.ImageSourceProperty);
+    }
+
+    set imageSource (val: Readonly<Brush>) {
+        this.setValue(Image.ImageSourceProperty, val);
+    }
     
+    protected allowMultipleChild () {
+        return false;
+    }
+
+    protected getSlotClass (): typeof UISlot | null{
+        return null;
+    }
+
+    onMeasure (availableSize: Size) {
+        const { width: naturalWidth, height: naturalHeight } = this.imageSource;
+        return new Size(naturalWidth, naturalHeight);
+    }
 }
