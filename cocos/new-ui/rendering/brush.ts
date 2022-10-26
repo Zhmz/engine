@@ -32,7 +32,7 @@ enum BrushType {
     RENDER_TEXTURE,
     SPRITE_FRAME,
     MATERIAL,
-    VECTOR_IMAGE
+    VECTOR_IMAGE,
 }
 
 export class Brush {

@@ -28,7 +28,7 @@ import { AdvancedObject } from "./advanced-object";
 import { AdvancedProperty } from "./advanced-property";
 
 export class AttachedObject {
-    private _owner: AdvancedObject;
+    protected _owner: AdvancedObject;
 
     public get owner () {
         return this._owner;

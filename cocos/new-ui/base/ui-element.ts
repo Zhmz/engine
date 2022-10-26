@@ -87,6 +87,10 @@ export class UIElement extends AdvancedObject {
         return this._slot;
     }
 
+    get desiredSize (): Readonly<Size> {
+        return this._desiredSize;
+    }
+
     get layout () {
         return this._layout;
     }
@@ -427,7 +431,7 @@ export class UIElement extends AdvancedObject {
         return new Size(0, 0);
     }
 
-    protected onArrange (availableRect: Rect) {
+    protected onArrange (arrangeSize: Size) {
 
     }
 
@@ -437,8 +441,11 @@ export class UIElement extends AdvancedObject {
         this.onMeasure(availableSize);
     }
 
-    public arrange (availableRect: Rect) {
-        this.onArrange(availableRect);
+    public arrange (finalRect: Rect) {
+        const { width: marginWidth, height: marginHeight} = this.margin;
+        const { width: paddingWidth, height: paddingHeight } = this.padding;
+        const arrangeSize = new Size(Math.max(finalRect.width - marginWidth - paddingWidth, 0), Math.max(finalRect.height - marginHeight - paddingHeight, 0));
+        this.onArrange(arrangeSize);
     }
     
     //#endregion layout

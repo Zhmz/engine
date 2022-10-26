@@ -23,6 +23,7 @@
  THE SOFTWARE.
 */
 
+import { Size } from "../../core";
 import { Enum } from "../../core/value-types";
 import { AdvancedProperty } from "../base/advanced-property";
 import { UISlot } from "../base/ui-slot";

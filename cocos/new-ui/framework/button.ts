@@ -24,7 +24,19 @@
 */
 
 import { UIElement } from "../base/ui-element";
+import { UISlot } from "../base/ui-slot";
+import { ContentSlot } from "./content-slot";
 
 export class Button extends UIElement {
+    protected allowMultipleChild () {
+        return false;
+    }
 
+    protected getSlotClass (): typeof UISlot | null{
+        return ContentSlot;
+    }
+
+    public onArrange () {
+
+    }
 }

@@ -39,11 +39,15 @@ export class Canvas extends UIElement {
     }
 
     onMeasure (availableSize: Size) {
-        this._desiredSize.set(availableSize);
-        const childAvailableSize = new Size(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-        for (let i = 0; i < this._children.length; i++) {
-            this._children[i].measure(childAvailableSize);
+        return Size.ZERO;
+    }
+
+    onArrange () {
+        const childCount = this.childCount;
+        if (childCount === 0) return;
+        for (let i = 0; i < childCount; i++) {
+            const child = this._children[i];
+            const canvasSlot = child.slot as CanvasSlot;
         }
-        return this._desiredSize;
     }
 }
