@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -69,7 +68,6 @@ export class UIElement extends AdvancedObject {
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement, Thickness.ZERO);
     public static PaddingProperty = AdvancedProperty.register('Padding', Thickness, UIElement, Thickness.ZERO);
 
-    
     protected _slot: UISlot | null = null;
     protected _parent: UIElement | null = null;
     protected _children: Array<UIElement> = [];
@@ -101,7 +99,7 @@ export class UIElement extends AdvancedObject {
             this._layout.set(val);
         }
     }
- 
+
     get margin () {
         return this.getValue(UIElement.MarginProperty) as Thickness;
     }
@@ -111,7 +109,7 @@ export class UIElement extends AdvancedObject {
     }
 
     get padding () {
-        return this.getValue(UIElement.PaddingProperty) as Thickness; 
+        return this.getValue(UIElement.PaddingProperty) as Thickness;
     }
 
     set padding (val) {
@@ -142,7 +140,7 @@ export class UIElement extends AdvancedObject {
     }
 
     set visibility (val: Visibility) {
-        this.setValue(UIElement.VisibilityProperty, val); 
+        this.setValue(UIElement.VisibilityProperty, val);
     }
 
     get clipToBounds () {
@@ -172,7 +170,7 @@ export class UIElement extends AdvancedObject {
     }
 
     set eulerAngles (val: Vec3) {
-        const quat = Quat.fromEuler(new Quat, val.x, val.y, val.z);
+        const quat = Quat.fromEuler(new Quat(), val.x, val.y, val.z);
         this.rotation = quat;
     }
 
@@ -214,6 +212,7 @@ export class UIElement extends AdvancedObject {
         this.invalidateWorldTransform();
         this.setValue(UIElement.RenderTransformPivotProperty, val.clone());
     }
+
 
     get worldTransform (): Readonly<Mat4> {
         if (this._worldTransformDirty) {
@@ -285,7 +284,7 @@ export class UIElement extends AdvancedObject {
     get document () {
         return this._document;
     }
- 
+
     //#region hierarchy
     get parent () {
         return this._parent;
@@ -323,7 +322,7 @@ export class UIElement extends AdvancedObject {
 
     public addChild (child: UIElement) {
         if (child._parent === this) {
-            throw new UIError(ErrorID.INVALID_INPUT)
+            throw new UIError(ErrorID.INVALID_INPUT);
         }
         child.setParent(this);
     }
@@ -333,20 +332,20 @@ export class UIElement extends AdvancedObject {
             throw new UIError(ErrorID.OUT_OF_RANGE);
         }
         if (child._parent === this) {
-            throw new UIError(ErrorID.INVALID_INPUT)
+            throw new UIError(ErrorID.INVALID_INPUT);
         }
         child.setParent(this, index);
     }
 
-    public removeChild(child: UIElement) {
+    public removeChild (child: UIElement) {
         if (child._parent !== this) {
-            throw new UIError(ErrorID.INVALID_INPUT)
+            throw new UIError(ErrorID.INVALID_INPUT);
         }
         child.setParent(null);
     }
 
-    public removeChildAt(index: number) {
-        if (index < 0 || index > this._children.length -1) {
+    public removeChildAt (index: number) {
+        if (index < 0 || index > this._children.length - 1) {
             throw new UIError(ErrorID.OUT_OF_RANGE);
         }
         const child = this._children[index];
@@ -357,7 +356,7 @@ export class UIElement extends AdvancedObject {
         this.setParent(null);
     }
 
-    private setParent (parent: UIElement | null, index: number = -1) {
+    private setParent (parent: UIElement | null, index = -1) {
         if (parent && !parent.getSlotClass()) {
             throw new UIError(ErrorID.SLOT_UNMATCHED);
         }
@@ -388,7 +387,7 @@ export class UIElement extends AdvancedObject {
         return false;
     }
 
-    protected getSlotClass (): typeof UISlot | null{
+    protected getSlotClass (): typeof UISlot | null {
         return null;
     }
 
@@ -454,7 +453,10 @@ export class UIElement extends AdvancedObject {
 
     }
 
+    //#region EventSystem
     public hitTest (ray: Ray): boolean {
         return true;
     }
+    //#endregion EventSystem
+
 }
