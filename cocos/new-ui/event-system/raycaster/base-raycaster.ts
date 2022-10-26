@@ -23,26 +23,37 @@
  THE SOFTWARE.
 */
 
-import { Component } from '../../core';
-import { UIElement } from './ui-element';
+import { Component } from "../../../core";
+import { PointerEventData } from "../event-data/pointer-event-data";
+import { RaycastResult } from "../raycast-result";
+import { RaycasterManager } from "../raycaster-manager";
 
-export abstract class UIComponent extends Component {
-    protected abstract _uiElement: UIElement;
+export abstract class BaseRaycaster extends Component{
 
-    buildUITree (context) {
-        context.parent.addChild(this._uiElement);
+    public abstract raycast(eventData: PointerEventData, resultList:RaycastResult[]);
+
+    protected onEnable() {
+        RaycasterManager.addRaycaster(this);
     }
 
-
-    public onEnable() {
-        this._registerEvent();
+    protected onDisable() {
+        RaycasterManager.removeRaycaster(this);
     }
-
-    public onDisable() {
-        this._unregisterEvent();
-    }
-
-    protected abstract _registerEvent();
-
-    protected abstract _unregisterEvent();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
