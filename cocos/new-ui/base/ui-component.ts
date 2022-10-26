@@ -34,19 +34,15 @@ export abstract class UIComponent extends Component {
     }
 
 
-    protected onEnable() {
+    public onEnable() {
         this._registerEvent();
     }
 
-    protected onDisable() {
+    public onDisable() {
         this._unregisterEvent();
     }
 
-    protected _registerEvent() {
+    protected abstract _registerEvent();
 
-    }
-
-    protected _unregisterEvent() {
-
-    }
+    protected abstract _unregisterEvent();
 }

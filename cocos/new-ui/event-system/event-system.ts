@@ -23,7 +23,8 @@
  THE SOFTWARE.
 */
 
-import { MouseInputSource } from 'pal/input';
+//import { MouseInputSource } from 'pal/input';
+import { MouseInputSource } from '../../../pal/input/web';
 import { Event, EventMouse } from '../../input/types';
 import { InputEventType } from '../../input/types/event-enum';
 import { UIElement } from '../base/ui-element';
@@ -46,6 +47,11 @@ export class EventSystem {
 
     // the threshold of dragging
     private _dragPixelThreshold = 10;
+
+
+    get mouseInput():MouseInputSource {
+        return this._mouseInput;
+    }
 
     get currInputModule (): BaseInputModule | null {
         return this._currInputModule;
@@ -102,7 +108,20 @@ export class EventSystem {
 
     // register events(temporarily mouseEvent)
     private _registerEvent () {
+
+        // TODO: touch
+
+
+        this._mouseInput.on(InputEventType.MOUSE_UP, (event) => {
+            this._emitEvent(event);
+        });
+        this._mouseInput.on(InputEventType.MOUSE_MOVE, (event) => {
+            this._emitEvent(event);
+        });
         this._mouseInput.on(InputEventType.MOUSE_DOWN, (event) => {
+            this._emitEvent(event);
+        });
+        this._mouseInput.on(InputEventType.MOUSE_WHEEL, (event) => {
             this._emitEvent(event);
         });
     }

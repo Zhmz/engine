@@ -33,6 +33,15 @@ export class UIButton extends UIComponent {
     protected declare _uiElement: UIElement;
 
 
+    public static MOUSE_UP_COUNTER = 0;
+    public static MOUSE_DOWN_COUNTER =0;
+
+    constructor() {
+        super();
+        UIButton.MOUSE_DOWN_COUNTER = 0;
+        UIButton.MOUSE_UP_COUNTER = 0;
+    }
+
     protected _registerEvent() {
         this.node.on(NodeEventType.TOUCH_START, this._onTouchBegan, this);
         this.node.on(NodeEventType.TOUCH_MOVE, this._onTouchMove, this);
@@ -41,6 +50,8 @@ export class UIButton extends UIComponent {
 
         this.node.on(NodeEventType.MOUSE_ENTER, this._onMouseMoveIn, this);
         this.node.on(NodeEventType.MOUSE_LEAVE, this._onMouseMoveOut, this);
+        this.node.on(NodeEventType.MOUSE_UP, this._onMouseUp, this);
+        this.node.on(NodeEventType.MOUSE_DOWN, this._onMouseDown, this);
     }
 
     protected _unregisterEvent() {
@@ -51,33 +62,44 @@ export class UIButton extends UIComponent {
 
         this.node.off(NodeEventType.MOUSE_ENTER, this._onMouseMoveIn, this);
         this.node.off(NodeEventType.MOUSE_LEAVE, this._onMouseMoveOut, this);
+        this.node.on(NodeEventType.MOUSE_UP, this._onMouseUp, this);
+        this.node.on(NodeEventType.MOUSE_DOWN, this._onMouseDown, this);
     }
 
     protected _onTouchBegan() {
-
+        console.log('_onTouchBegan');
     }
 
     protected _onTouchMove() {
-
+        console.log('_onTouchMove');
     }
-    
-    protected _onTouchEnded() {
 
+    protected _onTouchEnded() {
+        console.log('_onTouchEnded');
     }
 
     protected _onTouchCancel() {
-
+        console.log('_onTouchCancel');
     }
 
     protected _onMouseMoveIn() {
         //TODO: button's reaction
-
+        console.log('_onMouseMoveIn');
     }
 
     protected _onMouseMoveOut() {
         //TODO: button's reaction
+        console.log('_onMouseMoveOut');
+    }
+    protected _onMouseDown() {
+        console.log('_onMouseDown');
+        UIButton.MOUSE_DOWN_COUNTER++;
     }
 
+    protected _onMouseUp() {
+        console.log('_onMouseUp');
+        UIButton.MOUSE_UP_COUNTER++;
+    }
 
 
 }

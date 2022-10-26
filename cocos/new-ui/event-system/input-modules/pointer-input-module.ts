@@ -23,29 +23,45 @@
  THE SOFTWARE.
 */
 
-import { js } from '../../../core';
+import { js, Vec2 } from '../../../core';
 import { boolean } from '../../../core/data/decorators';
+import { DispatcherEventType, NodeEventProcessor } from '../../../core/scene-graph/node-event-processor';
 import { input } from '../../../input';
 import { EventMouse, EventTouch } from '../../../input/types';
 import { InputEventType } from '../../../input/types/event-enum';
+import { UIElement } from '../../base/ui-element';
 import { BaseInputModule, InputModulePriority } from './base-input-module';
 
 export class PointerInputModule extends BaseInputModule {
     public priority: InputModulePriority = InputModulePriority.UI;
 
-    public dispatchEventMouse (eventMouse: EventMouse):boolean {
+    constructor() {
+        super();
+
+    }
+
+    public registerNodeEventProcessor() {
+        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addNodeEventProcessor, this);
+        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removeNodeEventProcessor, this);
+    }
+
+
+    public dispatchEventMouse(eventMouse: EventMouse): boolean {
         let dispatchToNextEventDispatcher = true;
-        // @ts-expect-error access private method
-        const succeed = this._nodeEventProcessor._handleEventMouse(eventMouse);
+        // const pos = Vec2.ZERO;
+        // eventMouse.getLocation(pos);
+        const succeed = true;//uiElement.raycast(pos);//consider how to get the uiElement param
+        
         //TODO: prevent event broadcasting
         if (succeed) {
+            this._nodeEventProcessor!.dispatchEvent(eventMouse);
             dispatchToNextEventDispatcher = false;
         }
         return dispatchToNextEventDispatcher;
     }
 
     // simulate click
-    public dispatchEventTouch (eventTouch: EventTouch): boolean {
+    public dispatchEventTouch(eventTouch: EventTouch): boolean {
         let dispatchToNextEventDispatcher = true;
         const pointerEventProcessor = this._nodeEventProcessor!;
         const touch = eventTouch.touch!;
@@ -78,3 +94,5 @@ export class PointerInputModule extends BaseInputModule {
         return dispatchToNextEventDispatcher;
     }
 }
+
+export const pointerInputModule = new PointerInputModule();

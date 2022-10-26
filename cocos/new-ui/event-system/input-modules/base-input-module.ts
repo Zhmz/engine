@@ -63,9 +63,9 @@ export abstract class BaseInputModule {
     constructor () {
         eventSystem.registerInputModule(this);
 
-        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addNodeEventProcessor, this);
-        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removeNodeEventProcessor, this);
-        //TODO： mark dirty
+        // NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addNodeEventProcessor, this);
+        // NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removeNodeEventProcessor, this);
+        // //TODO： mark dirty
     }
 
     public dispatchEvent (event:Event) :boolean {
@@ -81,14 +81,14 @@ export abstract class BaseInputModule {
     public abstract dispatchEventMouse (eventMouse:EventMouse):boolean;
     public abstract  dispatchEventTouch (eventTouch:EventTouch):boolean;
 
-    private addNodeEventProcessor (processor:NodeEventProcessor) {
+    protected addNodeEventProcessor (processor:NodeEventProcessor) {
         //TODO: use list to manage NodeEventProcessor
         if (!this._nodeEventProcessor) {
             this._nodeEventProcessor = processor;
         }
     }
 
-    private removeNodeEventProcessor (processor:NodeEventProcessor) {
+    protected removeNodeEventProcessor (processor:NodeEventProcessor) {
         //TODO: use list to manage NodeEventProcessor
         if (this._nodeEventProcessor === processor) {
             this._nodeEventProcessor = null;
