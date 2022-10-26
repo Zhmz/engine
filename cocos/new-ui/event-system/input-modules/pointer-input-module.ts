@@ -50,7 +50,7 @@ export class PointerInputModule extends BaseInputModule {
         let dispatchToNextEventDispatcher = true;
         // const pos = Vec2.ZERO;
         // eventMouse.getLocation(pos);
-        const succeed = true;//uiElement.raycast(pos);//consider how to get the uiElement param
+        const succeed = true;//uiElement.hitTest(ray);//consider how to get the uiElement param
         
         //TODO: prevent event broadcasting
         if (succeed) {

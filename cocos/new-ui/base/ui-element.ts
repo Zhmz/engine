@@ -148,14 +148,6 @@ export class UIElement extends AdvancedObject {
 
     //#endregion Display
 
-    //#region EventSystem
-    public raycast (screenPointer:Vec2): boolean {
-        // TODO
-        return true;
-    }
-
-    //#endregion EventSystem
-
     //#region RenderTransform
 
     get position () {
@@ -444,7 +436,10 @@ export class UIElement extends AdvancedObject {
     //#endregion layout
     protected onPaint (drawingContext: IDrawingContext) {}
 
+    //#region EventSystem
     public hitTest (ray: Ray): boolean {
         return true;
     }
+    //#endregion EventSystem
+
 }
