@@ -46,7 +46,9 @@ export class UIDocument {
     }
 
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
-
+        if (invalidateReason & InvalidateReason.LAYOUT) {
+            this._layoutSubsystem.invalidate(element);
+        }
     }
 
     update () {

@@ -37,6 +37,6 @@ export class Button extends UIElement {
     }
 
     public onArrange () {
-
+        
     }
 }
