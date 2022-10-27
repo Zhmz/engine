@@ -28,6 +28,7 @@ import { Anchors } from "../base/anchors";
 import { Thickness } from "../base/thickness";
 import { AdvancedProperty } from "../base/advanced-property";
 import { UISlot } from "../base/ui-slot";
+import { InvalidateReason } from "../base/ui-element";
 
 export class CanvasSlot extends UISlot {
     public static AnchorsProperty = AdvancedProperty.register('Anchors', Anchors, CanvasSlot, Anchors.ZERO);
@@ -39,6 +40,7 @@ export class CanvasSlot extends UISlot {
     }
 
     set anchors (val: Anchors) {
+        this.element.invalidate(InvalidateReason.LAYOUT);
         this.setValue(CanvasSlot.AnchorsProperty, val);
     }
 
@@ -47,6 +49,7 @@ export class CanvasSlot extends UISlot {
     }
 
     set offsets (val) {
+        this.element.invalidate(InvalidateReason.LAYOUT);
         this.setValue(CanvasSlot.OffsetsProperty, val);
     }
 
@@ -55,6 +58,7 @@ export class CanvasSlot extends UISlot {
     }
 
     set pivot (val) {
+        this.element.invalidate(InvalidateReason.LAYOUT);
         this.setValue(CanvasSlot.PivotProperty, val);
     }
 }

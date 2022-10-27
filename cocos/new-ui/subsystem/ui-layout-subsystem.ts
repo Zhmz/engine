@@ -28,9 +28,15 @@ import { InvalidateReason, UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
 
 export class UILayoutSubsystem extends UISubSystem {
+    private _dirtyElementMap = new Set;
 
-    invalidate(element: UIElement, invalidateReason: InvalidateReason) {
-        
+    invalidate(element: UIElement) {
+        if (!this._dirtyElementMap.has(element)) {
+            this._dirtyElementMap.add(element)
+            if (element.parent) {
+                this.invalidate(element.parent);
+            }
+        }
     }
 
     update () {

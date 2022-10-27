@@ -42,7 +42,6 @@ import { js } from './utils/js';
 import { legacyCC } from './global-exports';
 import { errorID, error, assertID, warnID, debug } from './platform/debug';
 import { containerManager } from './memop/container-manager';
-import { uiRendererManager } from '../2d/framework/ui-renderer-manager';
 import { deviceManager } from './gfx';
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -193,6 +192,14 @@ export class Director extends EventTarget {
      * @event Director.EVENT_END_FRAME
      */
     public static readonly EVENT_END_FRAME = 'director_end_frame';
+
+    /**
+     * @en The event which will be triggered during UI system updating. It's used for internal<br/>
+     * @zh UI 系统更新中的事件, 目前为内部使用的事件。
+     * @event Director.EVENT_UI_UPDATE
+     * @engineInternal
+     */
+    public static readonly EVENT_UI_UPDATE = 'director_ui_update';
 
     public static instance: Director;
 
@@ -715,8 +722,8 @@ export class Director extends EventTarget {
                 }
             }
 
+            this.emit(Director.EVENT_UI_UPDATE);
             this.emit(Director.EVENT_BEFORE_DRAW);
-            uiRendererManager.updateAllDirtyRenderers();
             this._root!.frameMove(dt);
             this.emit(Director.EVENT_AFTER_DRAW);
 

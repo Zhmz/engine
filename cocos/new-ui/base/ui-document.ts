@@ -25,7 +25,8 @@
 */
 
 import { Rect } from "../../core/math";
-import { UIUpdateContext } from "./ui-update-context";
+import { UILayoutSubsystem } from "../subsystem/ui-layout-subsystem";
+import { InvalidateReason, UIElement } from "./ui-element";
 import { UIWindow } from "./ui-window";
 
 export class UIDocument {
@@ -33,19 +34,26 @@ export class UIDocument {
         return this._viewport;
     }
 
-    private set viewport (val) {
-        this._viewport.set(val);
+    set viewport (val) {
+        if (!this._viewport.equals(val)) {
+            this._viewport.set(val);
+            this.invalidate(this.window, InvalidateReason.LAYOUT);
+        }
     }
 
     get window () {
         return this._window;
     }
 
-    get updateContext () {
-        return this._updateContext;
+    invalidate (element: UIElement, invalidateReason: InvalidateReason) {
+
+    }
+
+    update () {
+        this._layoutSubsystem.update();
     }
 
     private _viewport = new Rect();
     private _window = new UIWindow(this);
-    private _updateContext = new UIUpdateContext(this);
+    private _layoutSubsystem = new UILayoutSubsystem(this);
 } 

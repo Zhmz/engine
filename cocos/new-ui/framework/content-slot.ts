@@ -26,6 +26,7 @@
 import { Size } from "../../core";
 import { Enum } from "../../core/value-types";
 import { AdvancedProperty } from "../base/advanced-property";
+import { InvalidateReason } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
 
 export enum HorizontalAlignment {
@@ -51,6 +52,7 @@ export class ContentSlot extends UISlot {
     }
 
     set horizontalAlignment (val) {
+        this.element.invalidate(InvalidateReason.LAYOUT);
         this.setValue(ContentSlot.HorizontalAlignmentProperty, val);
     }
 
@@ -59,6 +61,7 @@ export class ContentSlot extends UISlot {
     }
 
     set verticalAlignment (val) {
+        this.element.invalidate(InvalidateReason.LAYOUT);
         this.setValue(ContentSlot.VerticalAlignmentProperty, val);
     }
 }
