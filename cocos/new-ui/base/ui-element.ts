@@ -37,6 +37,9 @@ import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
 import { approx, Mat4, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
+import { Event, EventMouse, EventTouch } from '../../input/types';
+import { UIElementEventProcessor } from '../event-system/ui-element-event-processor';
+import { NewUIEventType } from '../../input/types/event-enum';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -78,6 +81,11 @@ export class UIElement extends AdvancedObject {
     protected _localTransform = new Mat4();
     protected _worldTransformDirty = false;
     protected _localTransformDirty = false;
+
+    constructor() {
+        super();
+        this._registerEvent();
+    }
 
     //#region Layout
 
@@ -454,9 +462,76 @@ export class UIElement extends AdvancedObject {
     }
 
     //#region EventSystem
+
+    protected _eventProcessor: any = new UIElementEventProcessor(this); 
+
     public hitTest (ray: Ray): boolean {
         return true;
     }
+
+    public hitTestByScreenPos (screenPos: Vec2): boolean {
+        return true;
+    }
+
+    public dispatchEvent(event:Event) {
+
+    }
+
+    public on (type: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
+        this._eventProcessor.on(type, callback, target, useCapture);
+    }
+    public off (type: string | NewUIEventType, callback?: Function, target?: unknown, useCapture: any = false) {
+        this._eventProcessor.off(type, callback, target, useCapture);
+    }
+    public once (type: string | NewUIEventType, callback: Function, target?: unknown, useCapture?: any) {
+        this._eventProcessor.once(type, callback, target, useCapture);
+    }
+
     //#endregion EventSystem
+
+    //#region register
+
+    protected _registerEvent() {
+        this.on(NewUIEventType.TOUCH_START, this._onTouchBegan, this);
+        this.on(NewUIEventType.TOUCH_MOVE, this._onTouchMove, this);
+        this.on(NewUIEventType.TOUCH_END, this._onTouchEnded,  this);
+        this.on(NewUIEventType.TOUCH_CANCEL, this._onTouchCancel,  this);
+
+        this.on(NewUIEventType.MOUSE_ENTER, this._onMouseMoveIn,  this);
+        this.on(NewUIEventType.MOUSE_LEAVE, this._onMouseMoveOut,  this);
+        this.on(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
+        this.on(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
+    }
+
+    protected _unregisterEvent() {
+        this.off(NewUIEventType.TOUCH_START, this._onTouchBegan,  this);
+        this.off(NewUIEventType.TOUCH_MOVE, this._onTouchMove,  this);
+        this.off(NewUIEventType.TOUCH_END, this._onTouchEnded,  this);
+        this.off(NewUIEventType.TOUCH_CANCEL, this._onTouchCancel,  this);
+
+        this.off(NewUIEventType.MOUSE_ENTER, this._onMouseMoveIn,  this);
+        this.off(NewUIEventType.MOUSE_LEAVE, this._onMouseMoveOut,  this);
+        this.off(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
+        this.off(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
+    }
+
+
+    protected _onTouchBegan() {}
+
+    protected _onTouchMove() {}
+
+    protected _onTouchEnded() {}
+
+    protected _onTouchCancel() {}
+
+    protected _onMouseMoveIn() {}
+
+    protected _onMouseMoveOut() {}
+
+    protected _onMouseDown() {}
+
+    protected _onMouseUp() {}
+
+    //#endregion register
 
 }

@@ -35,6 +35,7 @@ export class EventSystem {
     private _inputModuleList: BaseInputModule[] = [];
     private _currInputModule: BaseInputModule | null = null;
 
+
     // #region event
     private _mouseInput = new MouseInputSource();
 

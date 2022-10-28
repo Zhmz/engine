@@ -54,7 +54,7 @@ export abstract class BaseInputModule {
 
     // consider event block later
     //protected _nodeEventProcessorList:NodeEventProcessor[] = [];
-    protected declare _nodeEventProcessor:NodeEventProcessor|null;
+    //protected declare _nodeEventProcessor:NodeEventProcessor|null;
 
     protected cacheRaycastResults:RaycastResult[] = [];
 
@@ -79,19 +79,7 @@ export abstract class BaseInputModule {
     }
 
     public abstract dispatchEventMouse (eventMouse:EventMouse):boolean;
-    public abstract  dispatchEventTouch (eventTouch:EventTouch):boolean;
+    public abstract dispatchEventTouch (eventTouch:EventTouch):boolean;
 
-    protected addNodeEventProcessor (processor:NodeEventProcessor) {
-        //TODO: use list to manage NodeEventProcessor
-        if (!this._nodeEventProcessor) {
-            this._nodeEventProcessor = processor;
-        }
-    }
 
-    protected removeNodeEventProcessor (processor:NodeEventProcessor) {
-        //TODO: use list to manage NodeEventProcessor
-        if (this._nodeEventProcessor === processor) {
-            this._nodeEventProcessor = null;
-        }
-    }
 }

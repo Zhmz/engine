@@ -28,15 +28,59 @@ import { UISlot } from "../base/ui-slot";
 import { ContentSlot } from "./content-slot";
 
 export class Button extends UIElement {
-    protected allowMultipleChild () {
+
+    public static MOUSE_UP_COUNTER = 0;
+    public static MOUSE_DOWN_COUNTER = 0;
+
+    constructor() {
+        super();
+        Button.MOUSE_DOWN_COUNTER = 0;
+        Button.MOUSE_UP_COUNTER = 0;
+    }
+
+    protected allowMultipleChild() {
         return false;
     }
 
-    protected getSlotClass (): typeof UISlot | null{
+    protected getSlotClass(): typeof UISlot | null {
         return ContentSlot;
     }
 
-    public onArrange () {
+    public onArrange() {
 
+    }
+
+    protected _onTouchBegan() {
+        console.log('_onTouchBegan');
+    }
+
+    protected _onTouchMove() {
+        console.log('_onTouchMove');
+    }
+
+    protected _onTouchEnded() {
+        console.log('_onTouchEnded');
+    }
+
+    protected _onTouchCancel() {
+        console.log('_onTouchCancel');
+    }
+
+    protected _onMouseMoveIn() {
+        console.log('_onMouseMoveIn');
+    }
+
+    protected _onMouseMoveOut() {
+        console.log('_onMouseMoveOut');
+    }
+
+    protected _onMouseDown() {
+        console.log('_onMouseDown');
+        Button.MOUSE_DOWN_COUNTER++;
+    }
+
+    protected _onMouseUp() {
+        console.log('_onMouseUp');
+        Button.MOUSE_UP_COUNTER++;
     }
 }

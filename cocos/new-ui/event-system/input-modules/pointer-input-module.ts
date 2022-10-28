@@ -25,36 +25,46 @@
 
 import { js, Vec2 } from '../../../core';
 import { boolean } from '../../../core/data/decorators';
+import { CallbacksInvoker } from '../../../core/event/callbacks-invoker';
 import { DispatcherEventType, NodeEventProcessor } from '../../../core/scene-graph/node-event-processor';
 import { input } from '../../../input';
-import { EventMouse, EventTouch } from '../../../input/types';
-import { InputEventType } from '../../../input/types/event-enum';
+import { Event, EventMouse, EventTouch, Touch } from '../../../input/types';
+import { NewUIEventType, SystemEventTypeUnion } from '../../../input/types/event-enum';
 import { UIElement } from '../../base/ui-element';
+import { UIElementEventProcessor } from '../ui-element-event-processor';
 import { BaseInputModule, InputModulePriority } from './base-input-module';
+
 
 export class PointerInputModule extends BaseInputModule {
     public priority: InputModulePriority = InputModulePriority.UI;
+    private _uiElementEventProcessorList: UIElementEventProcessor[] = [];
+    private _processorListToAdd: UIElementEventProcessor[] = [];
+    private _processorListToRemove: UIElementEventProcessor[] = [];
+
+    //temporarily use this
+    private uiElementProcessor: UIElementEventProcessor | null = null;
 
     constructor() {
         super();
-
+        this.registerNodeEventProcessor();
     }
 
-    public registerNodeEventProcessor() {
-        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addNodeEventProcessor, this);
-        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removeNodeEventProcessor, this);
+    private registerNodeEventProcessor() {
+        UIElementEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addNodeEventProcessor, this);
+        UIElementEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removeNodeEventProcessor, this);
     }
+
+
 
 
     public dispatchEventMouse(eventMouse: EventMouse): boolean {
         let dispatchToNextEventDispatcher = true;
         // const pos = Vec2.ZERO;
         // eventMouse.getLocation(pos);
-        const succeed = true;//uiElement.hitTest(ray);//consider how to get the uiElement param
-        
+        const succeed = this.uiElementProcessor!._handleEventMouse(eventMouse);//uiElement.hitTest(ray);//consider how to get the uiElement param
+
         //TODO: prevent event broadcasting
         if (succeed) {
-            this._nodeEventProcessor!.dispatchEvent(eventMouse);
             dispatchToNextEventDispatcher = false;
         }
         return dispatchToNextEventDispatcher;
@@ -63,25 +73,22 @@ export class PointerInputModule extends BaseInputModule {
     // simulate click
     public dispatchEventTouch(eventTouch: EventTouch): boolean {
         let dispatchToNextEventDispatcher = true;
-        const pointerEventProcessor = this._nodeEventProcessor!;
         const touch = eventTouch.touch!;
-        if (pointerEventProcessor.isEnabled && pointerEventProcessor.shouldHandleEventTouch) {
-            if (eventTouch.type === InputEventType.TOUCH_START) {
-                // @ts-expect-error access private method
-                if (pointerEventProcessor._handleEventTouch(eventTouch)) {
-                    pointerEventProcessor.claimedTouchIdList.push(touch.getID());
+        if (this.uiElementProcessor!.shouldHandleEventTouch) {
+            if (eventTouch.type === NewUIEventType.TOUCH_START) {
+                if (this.uiElementProcessor!._handleEventTouch(eventTouch)) {
+                    this.uiElementProcessor!.claimedTouchIdList.push(touch.getID());
                     dispatchToNextEventDispatcher = false;
                     if (eventTouch.preventSwallow) {
                         eventTouch.preventSwallow = false;  // reset swallow state
                     }
                 }
-            } else if (pointerEventProcessor.claimedTouchIdList.length > 0) {
-                const index = pointerEventProcessor.claimedTouchIdList.indexOf(touch.getID());
+            } else if (this.uiElementProcessor!.claimedTouchIdList.length > 0) {
+                const index = this.uiElementProcessor!.claimedTouchIdList.indexOf(touch.getID());
                 if (index !== -1) {
-                    // @ts-expect-error access private method
-                    pointerEventProcessor._handleEventTouch(eventTouch);
-                    if (eventTouch.type === InputEventType.TOUCH_END || eventTouch.type === InputEventType.TOUCH_CANCEL) {
-                        js.array.removeAt(pointerEventProcessor.claimedTouchIdList, index);
+                    this.uiElementProcessor!._handleEventTouch(eventTouch);
+                    if (eventTouch.type === NewUIEventType.TOUCH_END || eventTouch.type === NewUIEventType.TOUCH_CANCEL) {
+                        js.array.removeAt(this.uiElementProcessor!.claimedTouchIdList, index);
                     }
                     dispatchToNextEventDispatcher = false;
                     if (eventTouch.preventSwallow) {
@@ -93,6 +100,19 @@ export class PointerInputModule extends BaseInputModule {
 
         return dispatchToNextEventDispatcher;
     }
-}
 
-export const pointerInputModule = new PointerInputModule();
+    protected addNodeEventProcessor(processor: UIElementEventProcessor) {
+        //TODO: use list to manage NodeEventProcessor
+        if (!this.uiElementProcessor) {
+            this.uiElementProcessor = processor;
+        }
+    }
+
+    protected removeNodeEventProcessor(processor: UIElementEventProcessor) {
+        //TODO: use list to manage NodeEventProcessor
+        if (this.uiElementProcessor === processor) {
+            this.uiElementProcessor = null;
+        }
+    }
+
+}
