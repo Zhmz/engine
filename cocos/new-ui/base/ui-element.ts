@@ -448,6 +448,7 @@ export class UIElement extends AdvancedObject {
         const { width: marginWidth, height: marginHeight} = this.margin;
         const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
         this.onArrange(arrangeSize);
+        this.layout = new Rect(finalRect.x, finalRect.y, arrangeSize.width, arrangeSize.height);
     }
     
     //#endregion layout

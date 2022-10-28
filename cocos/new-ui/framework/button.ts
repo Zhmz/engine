@@ -1,5 +1,6 @@
-import { ContentElement } from "./content-element";
 
-export class Button extends ContentElement {
-    
+import { ContentControl } from "./content-control";
+
+export class Button extends ContentControl {
+
 }

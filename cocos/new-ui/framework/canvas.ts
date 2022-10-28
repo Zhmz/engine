@@ -25,15 +25,11 @@
 */
 
 import { Size } from "../../core";
-import { UIElement } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
 import { CanvasSlot } from "./canvas-slot";
+import { Panel } from "./panel";
 
-export class Canvas extends UIElement {
-    protected allowMultipleChild () {
-        return true;
-    }
-
+export class Canvas extends Panel {
     protected getSlotClass (): typeof UISlot | null{
         return CanvasSlot;
     }

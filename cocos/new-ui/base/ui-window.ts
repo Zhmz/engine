@@ -28,23 +28,15 @@ import { AdvancedProperty } from "./advanced-property";
 import { UIElement } from "./ui-element";
 import { Rect, Size } from '../../core/math';
 import { UIDocument } from "./ui-document";
-import { ContentSlot } from "../framework/content-slot";
+import { ContentControl } from "../framework/content-control";
 
-export class UIWindow extends UIElement {
-    protected allowMultipleChild () {
-        return false;
-    }
-
-    protected getSlotClass () {
-        return ContentSlot;
-    }
-
+export class UIWindow extends ContentControl {
     constructor (document: UIDocument) {
         super();
         this._document = document;
     }
 
-    onMeasure (availableSize: Size) {
+    onMeasure () {
         this._desiredSize.set(availableSize);
         this._children[0]?.measure(availableSize);
         return this._desiredSize;
