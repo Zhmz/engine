@@ -1,10 +1,11 @@
 import { DEBUG } from 'internal:constants';
+import { Director, director, System } from '../../core';
 import { assert } from '../../core/platform/debug';
 import { js } from '../../core/utils/js';
 import { UIMeshRenderer } from '../components';
 import { UIRenderer } from './ui-renderer';
 
-export class UIRendererManager {
+export class UIRendererManager extends System {
     private _allRenderers: (UIRenderer | UIMeshRenderer)[] = [];
     private _dirtyRenderers: (UIRenderer | UIMeshRenderer)[] = [];
     private _dirtyVersion = 0;
@@ -50,6 +51,11 @@ export class UIRendererManager {
         this._dirtyRenderers.length = 0;
         this._dirtyVersion++;
     }
+
+    init () {
+        director.on(Director.EVENT_UI_UPDATE, this.updateAllDirtyRenderers, this);
+    }
 }
 
 export const uiRendererManager = new UIRendererManager();
+director.registerSystem('legacyUI', uiRendererManager, 0);

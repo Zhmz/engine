@@ -48,7 +48,8 @@ export enum FlowDirection {
 
 export enum Visibility {
     VISIBLE,
-    HIDDEN
+    HIDDEN,
+    
 }
 
 export enum InvalidateReason {
@@ -113,6 +114,7 @@ export class UIElement extends AdvancedObject {
     }
 
     set margin (val: Thickness) {
+        this.invalidate(InvalidateReason.LAYOUT);
         this.setValue(UIElement.MarginProperty, val);
     }
 
@@ -121,6 +123,7 @@ export class UIElement extends AdvancedObject {
     }
 
     set padding (val) {
+        this.invalidate(InvalidateReason.LAYOUT);
         this.setValue(UIElement.PaddingProperty, val);
     }
 
@@ -129,6 +132,7 @@ export class UIElement extends AdvancedObject {
     }
 
     set flowDirection (flowDirection: FlowDirection) {
+        this.invalidate(InvalidateReason.LAYOUT);
         this.setValue(UIElement.FlowDirectionProperty, flowDirection);
     }
     //#endregion Layout
@@ -423,9 +427,9 @@ export class UIElement extends AdvancedObject {
         }
     }
 
-    protected invalidate (dirtyFlags: number) {
+    public invalidate (invalidateReason: InvalidateReason) {
         if (this._document) {
-            this._document.updateContext.invalidate(this, dirtyFlags);
+            this._document.invalidate(this, invalidateReason);
         }
     }
 

@@ -24,17 +24,17 @@
  THE SOFTWARE.
 */
 
+import { UIDocument } from "./ui-document";
 import { UIElement } from "./ui-element";
-import { UIUpdateContext } from "./ui-update-context";
 
 export abstract class UISubSystem {
-    protected _updateContext: UIUpdateContext;
-    constructor (updateContext: UIUpdateContext) {
-        this._updateContext = updateContext;
+    protected _document: UIDocument;
+    constructor (document: UIDocument) {
+        this._document = document;
     }
 
-    get updateContext () {
-        return this._updateContext;
+    get document () {
+        return this._document;
     }
 
     abstract invalidate (element: UIElement, dirtyFlags: number);
