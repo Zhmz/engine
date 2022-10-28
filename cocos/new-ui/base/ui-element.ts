@@ -46,7 +46,7 @@ export enum FlowDirection {
 export enum Visibility {
     VISIBLE,
     HIDDEN,
-    
+    COLLAPSED
 }
 
 export enum InvalidateReason {
@@ -67,7 +67,6 @@ export class UIElement extends AdvancedObject {
     public static ShearProperty = AdvancedProperty.register('Shear', Vec2, UIElement, Vec2.ZERO);
     public static RenderTransformPivotProperty = AdvancedProperty.register('RenderTransformPivot', Vec2, UIElement, Object.freeze(new Vec2(0.5, 0.5)));
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement, Thickness.ZERO);
-    public static PaddingProperty = AdvancedProperty.register('Padding', Thickness, UIElement, Thickness.ZERO);
 
     protected _slot: UISlot | null = null;
     protected _parent: UIElement | null = null;
@@ -87,7 +86,17 @@ export class UIElement extends AdvancedObject {
     }
 
     get desiredSize (): Readonly<Size> {
+        if (this.visibility === Visibility.COLLAPSED) {
+            return Size.ZERO;
+        }
         return this._desiredSize;
+    }
+
+    set desiredSize (val) {
+        if (!this._desiredSize.equals(val)) {
+            this._desiredSize.set(val);
+            this.invalidate(InvalidateReason.LAYOUT);
+        }
     }
 
     get layout () {
@@ -108,15 +117,6 @@ export class UIElement extends AdvancedObject {
     set margin (val: Thickness) {
         this.invalidate(InvalidateReason.LAYOUT);
         this.setValue(UIElement.MarginProperty, val);
-    }
-
-    get padding () {
-        return this.getValue(UIElement.PaddingProperty) as Thickness;
-    }
-
-    set padding (val) {
-        this.invalidate(InvalidateReason.LAYOUT);
-        this.setValue(UIElement.PaddingProperty, val);
     }
 
     get flowDirection () {
@@ -430,7 +430,7 @@ export class UIElement extends AdvancedObject {
      * 
      * @param availableSize 
      */
-    protected onMeasure (availableSize: Size) {
+    protected onMeasure () {
         return new Size(0, 0);
     }
 
@@ -439,15 +439,14 @@ export class UIElement extends AdvancedObject {
     }
 
     // sealed, invoked by layout system
-    public measure (availableSize: Size) {
+    public measure () {
         const { width: marginWidth, height: marginHeight} = this.margin;
-        this.onMeasure(availableSize);
+        this.desiredSize = this.onMeasure();
     }
 
     public arrange (finalRect: Rect) {
         const { width: marginWidth, height: marginHeight} = this.margin;
-        const { width: paddingWidth, height: paddingHeight } = this.padding;
-        const arrangeSize = new Size(Math.max(finalRect.width - marginWidth - paddingWidth, 0), Math.max(finalRect.height - marginHeight - paddingHeight, 0));
+        const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
         this.onArrange(arrangeSize);
     }
     
