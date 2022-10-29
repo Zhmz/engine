@@ -24,47 +24,66 @@
 */
 
 import { Rect, Size } from "../../core";
+import { ContainerElement } from "../base/container-element";
 import { UIElement, Visibility } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
 import { ContentSlot, HorizontalAlignment, VerticalAlignment } from "./content-slot";
 
-export class ContentElement extends UIElement {
-    protected allowMultipleChild () {
+export class ContentControl extends ContainerElement {
+
+    get content (): UIElement | null {
+        return this.childCount > 0 ? this._children[0] : null;
+    }
+
+    set content (element: UIElement | null) {
+        if (element) {
+            this.addChild(element);
+        } else {
+            this.clearChildren();
+        }
+    }
+
+    public addChild (element: UIElement) {
+        this.clearChildren();
+        super.addChild(element);
+    }
+
+    public allowMultipleChild () {
         return false;
     }
 
-    protected getSlotClass (): typeof UISlot | null{
+    public getSlotClass (): typeof UISlot {
         return ContentSlot;
     }
 
-    public onMeasure () {
+    protected onMeasure () {
         const desiredSize = new Size();
-        if (this.childCount > 0) {
-            const child = this._children[0];
-            child.measure();
-            const { width: marginWidth, height: marginHeight } = child.margin;
-            desiredSize.set(child.desiredSize.width + marginWidth, child.desiredSize.height + marginHeight);
+        const content = this.content;
+        if (content) {
+            content.measure();
+            const { width: marginWidth, height: marginHeight } = content.margin;
+            desiredSize.set(content.desiredSize.width + marginWidth, content.desiredSize.height + marginHeight);
         }
         return desiredSize;
     }
 
-    public onArrange (finalRect: Rect) {
-        if (this.childCount > 0) {
-            const child = this._children[0];
-            if (child.visibility !== Visibility.COLLAPSED) {
+    protected onArrange (finalRect: Rect) {
+        const content = this.content;
+        if (content) {
+            if (content.visibility !== Visibility.COLLAPSED) {
                 const childRect = new Rect();
-                const contentSlot = child.slot as ContentSlot;
-                const { width: marginWidth, height: marginHeight } = child.margin;
+                const contentSlot = content.slot as ContentSlot;
+                const { width: marginWidth, height: marginHeight } = content.margin;
                 if (contentSlot.horizontalAlignment === HorizontalAlignment.STRETCH) {
                     childRect.width = finalRect.width;
                 } else {
-                    childRect.width = child.desiredSize.width + marginWidth;
+                    childRect.width = content.desiredSize.width + marginWidth;
                 }
 
                 if (contentSlot.verticalAlignment === VerticalAlignment.STRETCH) {
                     childRect.height = finalRect.height;
                 } else {
-                    childRect.height = child.desiredSize.height + marginHeight;
+                    childRect.height = content.desiredSize.height + marginHeight;
                 }
 
                 switch (contentSlot.horizontalAlignment) {
@@ -82,7 +101,7 @@ export class ContentElement extends UIElement {
                     case VerticalAlignment.BOTTOM:
                         childRect.y = (finalRect.height - childRect.height) / 2;
                 }
-                child.arrange(childRect);
+                content.arrange(childRect);
             }
         }
     }

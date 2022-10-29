@@ -36,9 +36,10 @@ export class UIWindow extends ContentControl {
         this._document = document;
     }
 
-    onMeasure () {
-        this._desiredSize.set(availableSize);
-        this._children[0]?.measure(availableSize);
+    protected onMeasure () {
+        if (this.content) {
+            this.content.measure();
+        }
         return this._desiredSize;
     }
 }

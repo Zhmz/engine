@@ -23,7 +23,6 @@
  THE SOFTWARE.
 */
 
-import { Size } from "../../core";
 import { AttachedObject } from "./attached-object";
 import { UIElement } from "./ui-element";
 

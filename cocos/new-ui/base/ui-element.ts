@@ -23,13 +23,11 @@
  THE SOFTWARE.
 */
 
-import { AdvancedObject } from './advanced-object';
 import { AdvancedProperty, Primitive } from './advanced-property';
 import { Enum } from '../../core/value-types/enum';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec2 } from '../../core/math/vec2';
 import { Quat } from '../../core/math/quat';
-import { IDrawingContext } from './ui-drawing-context';
 import { assert } from '../../core/platform/debug';
 import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
@@ -37,6 +35,8 @@ import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
 import { approx, Mat4, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
+import { ContainerElement } from './container-element';
+import { Visual } from './visual';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -56,7 +56,7 @@ export enum InvalidateReason {
     TRANSFORM = 1 << 3,
     PAINT = 1 << 4
 }
-export class UIElement extends AdvancedObject {
+export class UIElement extends Visual {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement, 1);
     public static VisibilityProperty = AdvancedProperty.register('Visibility', Enum(Visibility), UIElement, Visibility.VISIBLE);
@@ -69,9 +69,9 @@ export class UIElement extends AdvancedObject {
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement, Thickness.ZERO);
 
     protected _slot: UISlot | null = null;
-    protected _parent: UIElement | null = null;
-    protected _children: Array<UIElement> = [];
     protected _document: UIDocument | null = null;
+    protected _parent: ContainerElement | null = null;
+    protected _children: Array<UIElement> = [];
     protected _layout = new Rect();
     protected _desiredSize = new Size();
     protected _worldTransform = new Mat4();
@@ -79,10 +79,29 @@ export class UIElement extends AdvancedObject {
     protected _worldTransformDirty = false;
     protected _localTransformDirty = false;
 
-    //#region Layout
-
     get slot () {
         return this._slot;
+    }
+
+    get parent () {
+        return this._parent;
+    }
+
+    get document () {
+        return this._document;
+    }
+
+    //#region Layout
+
+    get layout () {
+        return this._layout;
+    }
+
+    set layout (val: Readonly<Rect>) {
+        if (!this._layout.equals(val)) {
+            this.invalidateWorldTransform();
+            this._layout.set(val);
+        }
     }
 
     get desiredSize (): Readonly<Size> {
@@ -96,17 +115,6 @@ export class UIElement extends AdvancedObject {
         if (!this._desiredSize.equals(val)) {
             this._desiredSize.set(val);
             this.invalidate(InvalidateReason.LAYOUT);
-        }
-    }
-
-    get layout () {
-        return this._layout;
-    }
-
-    set layout (val: Rect) {
-        if (!this._layout.equals(val)) {
-            this.invalidateWorldTransform();
-            this._layout.set(val);
         }
     }
 
@@ -265,15 +273,6 @@ export class UIElement extends AdvancedObject {
         return this.localTransform;
     }
 
-    private invalidateWorldTransform () {
-        if (!this._worldTransformDirty) {
-            this._worldTransformDirty = true;
-            for (let i = 0; i < this._children.length; i++) {
-                this._children[i].invalidateWorldTransform();
-            }
-        }
-    }
-
     public worldToLocal (out: Vec3, worldPoint: Vec3) {
         const matrix = Mat4.invert(new Mat4(), this.worldTransform);
         return Vec3.transformMat4(out, worldPoint, matrix);
@@ -285,86 +284,12 @@ export class UIElement extends AdvancedObject {
 
     //#endregion RenderTransform
 
-    get document () {
-        return this._document;
-    }
-
-    //#region hierarchy
-    get parent () {
-        return this._parent;
-    }
-
-    get children (): ReadonlyArray<UIElement> {
-        return this._children;
-    }
-
-    get childCount (): number {
-        return this._children.length;
-    }
-
-    public clearChildren () {
-        for (let i = this._children.length - 1; i >= 0; i--) {
-            this.removeChildAt(i);
-        }
-    }
-
-    public getChildIndex (child: UIElement): number {
-        const index = this._children.indexOf(child);
-        if (index !== -1) {
-            return index;
-        } else {
-            throw new UIError(ErrorID.INVALID_INPUT);
-        }
-    }
-
-    public getChildAt (index: number) {
-        if (index < 0 || index > this._children.length - 1) {
-            throw new UIError(ErrorID.OUT_OF_RANGE);
-        }
-        return this._children[index];
-    }
-
-    public addChild (child: UIElement) {
-        if (child._parent === this) {
-            throw new UIError(ErrorID.INVALID_INPUT);
-        }
-        child.setParent(this);
-    }
-
-    public insertChildAt (child: UIElement, index: number) {
-        if (index < 0 || index > this._children.length - 1) {
-            throw new UIError(ErrorID.OUT_OF_RANGE);
-        }
-        if (child._parent === this) {
-            throw new UIError(ErrorID.INVALID_INPUT);
-        }
-        child.setParent(this, index);
-    }
-
-    public removeChild (child: UIElement) {
-        if (child._parent !== this) {
-            throw new UIError(ErrorID.INVALID_INPUT);
-        }
-        child.setParent(null);
-    }
-
-    public removeChildAt (index: number) {
-        if (index < 0 || index > this._children.length - 1) {
-            throw new UIError(ErrorID.OUT_OF_RANGE);
-        }
-        const child = this._children[index];
-        child.setParent(null);
-    }
-
     public removeFromParent () {
         this.setParent(null);
     }
 
-    private setParent (parent: UIElement | null, index = -1) {
-        if (parent && !parent.getSlotClass()) {
-            throw new UIError(ErrorID.SLOT_UNMATCHED);
-        }
-        if (parent && !parent.allowMultipleChild() && parent.children.length === 1) {
+    public setParent (parent: ContainerElement | null) {
+        if (parent && !parent.allowMultipleChild() && parent._children.length === 1) {
             throw new UIError(ErrorID.MULTIPLE_CHILD);
         }
 
@@ -375,11 +300,7 @@ export class UIElement extends AdvancedObject {
         }
         this._parent = parent;
         if (this._parent) {
-            if (index === -1) {
-                this._parent._children.push(this);
-            } else {
-                this._parent._children.splice(index, 0, this);
-            }
+            this._parent._children.push(this);
         }
         this.updateSlot();
         this.updateDocument(this._parent ? this._parent._document : null);
@@ -387,14 +308,6 @@ export class UIElement extends AdvancedObject {
     }
 
     //#endregion hierarchy
-    protected allowMultipleChild () {
-        return false;
-    }
-
-    protected getSlotClass (): typeof UISlot | null {
-        return null;
-    }
-
     private updateSlot () {
         if (!this._parent) {
             this._slot = null;
@@ -415,6 +328,15 @@ export class UIElement extends AdvancedObject {
             this._document = document;
             for (let i = 0; i < this._children.length; i++) {
                 this._children[i].updateDocument(document);
+            }
+        }
+    }
+
+    protected invalidateWorldTransform () {
+        if (!this._worldTransformDirty) {
+            this._worldTransformDirty = true;
+            for (let i = 0; i < this._children.length; i++) {
+                this._children[i].invalidateWorldTransform();
             }
         }
     }
@@ -452,10 +374,6 @@ export class UIElement extends AdvancedObject {
     }
     
     //#endregion layout
-
-    protected onPaint (drawingContext: IDrawingContext) {
-
-    }
 
     //#region EventSystem
     public hitTest (ray: Ray): boolean {
