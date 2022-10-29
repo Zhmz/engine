@@ -51,10 +51,11 @@ export enum Visibility {
 
 export enum InvalidateReason {
     HIERARCHY = 1,
-    LAYOUT = 1 << 1,
-    STYLE = 1 << 2,
-    TRANSFORM = 1 << 3,
-    PAINT = 1 << 4
+    MEASURE = 1 << 1,
+    ARRANGE = 1 << 2,
+    STYLE = 1 << 3,
+    TRANSFORM = 1 << 4,
+    PAINT = 1 << 5
 }
 export class UIElement extends Visual {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
@@ -78,6 +79,8 @@ export class UIElement extends Visual {
     protected _localTransform = new Mat4();
     protected _worldTransformDirty = false;
     protected _localTransformDirty = false;
+    protected _measureDirty = false;
+    protected _arrangeDirty = false;
 
     get slot () {
         return this._slot;
@@ -98,6 +101,9 @@ export class UIElement extends Visual {
     }
 
     set layout (val: Readonly<Rect>) {
+        if (!this._layout.size.equals(val.size)) {
+            this.invalidatePainting();
+        }
         if (!this._layout.equals(val)) {
             this.invalidateWorldTransform();
             this._layout.set(val);
@@ -114,7 +120,7 @@ export class UIElement extends Visual {
     set desiredSize (val) {
         if (!this._desiredSize.equals(val)) {
             this._desiredSize.set(val);
-            this.invalidate(InvalidateReason.LAYOUT);
+            this.invalidateParentArrange();
         }
     }
 
@@ -123,7 +129,7 @@ export class UIElement extends Visual {
     }
 
     set margin (val: Thickness) {
-        this.invalidate(InvalidateReason.LAYOUT);
+        this.invalidateParentMeasure();
         this.setValue(UIElement.MarginProperty, val);
     }
 
@@ -132,7 +138,7 @@ export class UIElement extends Visual {
     }
 
     set flowDirection (flowDirection: FlowDirection) {
-        this.invalidate(InvalidateReason.LAYOUT);
+        this.invalidateParentArrange();
         this.setValue(UIElement.FlowDirectionProperty, flowDirection);
     }
     //#endregion Layout
@@ -172,8 +178,7 @@ export class UIElement extends Visual {
     }
 
     set position (val: Vec3) {
-        this._localTransformDirty = true;
-        this.invalidateWorldTransform();
+        this.invalidateLocalTransform();
         this.setValue(UIElement.PositionProperty, val.clone());
     }
 
@@ -191,8 +196,7 @@ export class UIElement extends Visual {
     }
 
     set rotation (val: Quat) {
-        this._localTransformDirty = true;
-        this.invalidateWorldTransform();
+        this.invalidateLocalTransform();
         this.setValue(UIElement.RotationProperty, val.clone());
     }
 
@@ -201,8 +205,7 @@ export class UIElement extends Visual {
     }
 
     set shear (val: Vec2) {
-        this._localTransformDirty = true;
-        this.invalidateWorldTransform();
+        this.invalidateLocalTransform();
         this.setValue(UIElement.ShearProperty, val);
     }
 
@@ -211,8 +214,7 @@ export class UIElement extends Visual {
     }
 
     set scale (val: Vec3) {
-        this._localTransformDirty = true;
-        this.invalidateWorldTransform();
+        this.invalidateLocalTransform();
         this.setValue(UIElement.ScaleProperty, val.clone());
     }
 
@@ -304,6 +306,7 @@ export class UIElement extends Visual {
         }
         this.updateSlot();
         this.updateDocument(this._parent ? this._parent._document : null);
+
         this.invalidateWorldTransform();
     }
 
@@ -341,6 +344,28 @@ export class UIElement extends Visual {
         }
     }
 
+    protected invalidateParentMeasure () {
+        if (this._parent && !this._parent._measureDirty) {
+            this._parent.invalidateParentMeasure();
+        }
+    }
+
+    protected invalidateParentArrange () {
+        if (this._parent && !this._parent._arrangeDirty) {
+            this._parent._arrangeDirty = true;
+            this._parent.invalidate(InvalidateReason.ARRANGE);
+        }
+    }
+
+    protected invalidateLocalTransform () {
+        this._localTransformDirty = true;
+        this.invalidateWorldTransform();
+    }
+
+    protected invalidatePainting () {
+
+    }
+
     public invalidate (invalidateReason: InvalidateReason) {
         if (this._document) {
             this._document.invalidate(this, invalidateReason);
@@ -362,15 +387,20 @@ export class UIElement extends Visual {
 
     // sealed, invoked by layout system
     public measure () {
-        const { width: marginWidth, height: marginHeight} = this.margin;
-        this.desiredSize = this.onMeasure();
+        if (this._measureDirty) {
+            this.desiredSize = this.onMeasure();
+            this._measureDirty = false;
+        }
     }
 
     public arrange (finalRect: Rect) {
-        const { width: marginWidth, height: marginHeight} = this.margin;
-        const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
-        this.onArrange(arrangeSize);
-        this.layout = new Rect(finalRect.x, finalRect.y, arrangeSize.width, arrangeSize.height);
+        if (this._arrangeDirty || !finalRect.equals(this.layout)) {
+            const { width: marginWidth, height: marginHeight} = this.margin;
+            const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
+            this.onArrange(arrangeSize);
+            this.layout = new Rect(finalRect.x, finalRect.y, arrangeSize.width, arrangeSize.height);
+            this._arrangeDirty = false;
+        }
     }
     
     //#endregion layout

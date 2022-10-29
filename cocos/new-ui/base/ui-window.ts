@@ -24,9 +24,6 @@
  THE SOFTWARE.
 */
 
-import { AdvancedProperty } from "./advanced-property";
-import { UIElement } from "./ui-element";
-import { Rect, Size } from '../../core/math';
 import { UIDocument } from "./ui-document";
 import { ContentControl } from "../framework/content-control";
 
