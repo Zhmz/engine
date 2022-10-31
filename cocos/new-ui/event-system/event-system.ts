@@ -23,11 +23,11 @@
  THE SOFTWARE.
 */
 
-//import { MouseInputSource } from 'pal/input';
-import { MouseInputSource } from '../../../pal/input/web';
+import { Ray } from '../../core/geometry';
 import { Event, EventMouse } from '../../input/types';
 import { InputEventType } from '../../input/types/event-enum';
 import { UIElement } from '../base/ui-element';
+import { UIWindow } from '../base/ui-window';
 import { BaseInputModule } from './input-modules/base-input-module';
 import { RaycastResult } from './raycast-result';
 
@@ -35,11 +35,10 @@ export class EventSystem {
     private _inputModuleList: BaseInputModule[] = [];
     private _currInputModule: BaseInputModule | null = null;
 
+    private _window: UIWindow | null = null;
 
-    // #region event
-    private _mouseInput = new MouseInputSource();
 
-    private _eventMouseList :EventMouse[] = [];
+    private _eventMouseList: EventMouse[] = [];
 
     // #endregion
 
@@ -50,84 +49,70 @@ export class EventSystem {
     private _dragPixelThreshold = 10;
 
 
-    get mouseInput():MouseInputSource {
-        return this._mouseInput;
+    get window(): UIWindow | null {
+        return this._window;
     }
 
-    get currInputModule (): BaseInputModule | null {
+    set window(val: UIWindow | null) {
+        this._window = val;
+    }
+
+    get currInputModule(): BaseInputModule | null {
         return this._currInputModule;
     }
-    set currInputModule (val: BaseInputModule | null) {
+    set currInputModule(val: BaseInputModule | null) {
         this._currInputModule = val;
     }
 
-    get currSelectedUIElement (): UIElement | null {
+    get currSelectedUIElement(): UIElement | null {
         return this._currSelectedUIElement;
     }
-    set currSelectedUIElement (val: UIElement | null) {
+    set currSelectedUIElement(val: UIElement | null) {
         this._currSelectedUIElement = val;
     }
 
-    get dragPixelThreshold ():number {
+    get dragPixelThreshold(): number {
         return this._dragPixelThreshold;
     }
-    set dragPixelThreshold (val:number) {
+    set dragPixelThreshold(val: number) {
         this._dragPixelThreshold = val;
     }
 
-    constructor () {
-        this._registerEvent();
+    constructor() {
+
     }
 
     // update input modules
-    public updateModules () {
+    public updateModules() {
 
     }
 
     // event data
 
     // raycast all
-    public raycastAll () {
+    public raycastAll() {
 
     }
 
-    //raycast comparer
-    private static raycastComparer (left: RaycastResult, right: RaycastResult) {
 
-    }
-
-    // trigger events
-    public _emitEvent (event:Event) {
-        for (let i = 0; i < this._inputModuleList.length; i++) {
-            const inputModule  = this._inputModuleList[i];
-            if (!inputModule.dispatchEvent(event)) {
-                // events block
-                break;
+    public dispatchEvent(event: Event, ray: Ray) {
+        const children: ReadonlyArray<UIElement> = this._window!.children;
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            const hit = child.hitTest(ray);
+            if (hit) {
+                child.dispatchEvent(event);
             }
         }
     }
 
-    // register events(temporarily mouseEvent)
-    private _registerEvent () {
 
-        // TODO: touch
+    //raycast comparer
+    private static raycastComparer(left: RaycastResult, right: RaycastResult) {
 
-
-        this._mouseInput.on(InputEventType.MOUSE_UP, (event) => {
-            this._emitEvent(event);
-        });
-        this._mouseInput.on(InputEventType.MOUSE_MOVE, (event) => {
-            this._emitEvent(event);
-        });
-        this._mouseInput.on(InputEventType.MOUSE_DOWN, (event) => {
-            this._emitEvent(event);
-        });
-        this._mouseInput.on(InputEventType.MOUSE_WHEEL, (event) => {
-            this._emitEvent(event);
-        });
     }
 
-    public registerInputModule (inputModule:BaseInputModule) {
+    public registerInputModule(inputModule: BaseInputModule) {
         this._inputModuleList.push(inputModule);
         this._inputModuleList.sort((a, b) => b.priority - a.priority);
     }

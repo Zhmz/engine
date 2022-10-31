@@ -35,11 +35,14 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
-import { approx, Mat4, Rect, Size } from '../../core';
+import { approx, Mat4, Pool, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
 import { Event, EventMouse, EventTouch } from '../../input/types';
 import { UIElementEventProcessor } from '../event-system/ui-element-event-processor';
 import { NewUIEventType } from '../../input/types/event-enum';
+import { CallbackInfo, CallbackList, CallbacksInvoker, ICallbackTable } from '../../core/event/callbacks-invoker';
+import { createMap } from '../../core/utils/js-typed';
+import { DispatcherEventType } from '../../core/scene-graph/node-event-processor';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -49,7 +52,7 @@ export enum FlowDirection {
 export enum Visibility {
     VISIBLE,
     HIDDEN,
-    
+
 }
 
 export enum InvalidateReason {
@@ -59,6 +62,12 @@ export enum InvalidateReason {
     TRANSFORM = 1 << 3,
     PAINT = 1 << 4
 }
+
+const MAX_SIZE = 16;
+const callbackListPool = new Pool<CallbackList>(() => new CallbackList(), MAX_SIZE);
+
+const callbackInfoPool = new Pool(() => new CallbackInfo(), 32);
+
 export class UIElement extends AdvancedObject {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement, 1);
@@ -90,48 +99,48 @@ export class UIElement extends AdvancedObject {
 
     //#region Layout
 
-    get slot () {
+    get slot() {
         return this._slot;
     }
 
-    get desiredSize (): Readonly<Size> {
+    get desiredSize(): Readonly<Size> {
         return this._desiredSize;
     }
 
-    get layout () {
+    get layout() {
         return this._layout;
     }
 
-    set layout (val: Rect) {
+    set layout(val: Rect) {
         if (!this._layout.equals(val)) {
             this.invalidateWorldTransform();
             this._layout.set(val);
         }
     }
 
-    get margin () {
+    get margin() {
         return this.getValue(UIElement.MarginProperty) as Thickness;
     }
 
-    set margin (val: Thickness) {
+    set margin(val: Thickness) {
         this.invalidate(InvalidateReason.LAYOUT);
         this.setValue(UIElement.MarginProperty, val);
     }
 
-    get padding () {
+    get padding() {
         return this.getValue(UIElement.PaddingProperty) as Thickness;
     }
 
-    set padding (val) {
+    set padding(val) {
         this.invalidate(InvalidateReason.LAYOUT);
         this.setValue(UIElement.PaddingProperty, val);
     }
 
-    get flowDirection () {
+    get flowDirection() {
         return this.getValue(UIElement.FlowDirectionProperty) as FlowDirection;
     }
 
-    set flowDirection (flowDirection: FlowDirection) {
+    set flowDirection(flowDirection: FlowDirection) {
         this.invalidate(InvalidateReason.LAYOUT);
         this.setValue(UIElement.FlowDirectionProperty, flowDirection);
     }
@@ -139,27 +148,27 @@ export class UIElement extends AdvancedObject {
 
     //#region Display
 
-    get opacity () {
+    get opacity() {
         return this.getValue(UIElement.OpacityProperty) as number;
     }
 
-    set opacity (val: number) {
+    set opacity(val: number) {
         this.setValue(UIElement.OpacityProperty, val);
     }
 
-    get visibility () {
+    get visibility() {
         return this.getValue(UIElement.VisibilityProperty) as Visibility;
     }
 
-    set visibility (val: Visibility) {
+    set visibility(val: Visibility) {
         this.setValue(UIElement.VisibilityProperty, val);
     }
 
-    get clipToBounds () {
+    get clipToBounds() {
         return this.getValue(UIElement.ClipToBoundsProperty) as boolean;
     }
 
-    set clipToBounds (val: boolean) {
+    set clipToBounds(val: boolean) {
         this.setValue(UIElement.ClipToBoundsProperty, val);
     }
 
@@ -167,66 +176,66 @@ export class UIElement extends AdvancedObject {
 
     //#region RenderTransform
 
-    get position () {
+    get position() {
         return this.getValue(UIElement.PositionProperty) as Vec3;
     }
 
-    set position (val: Vec3) {
+    set position(val: Vec3) {
         this._localTransformDirty = true;
         this.invalidateWorldTransform();
         this.setValue(UIElement.PositionProperty, val.clone());
     }
 
-    get eulerAngles () {
+    get eulerAngles() {
         return Quat.toEuler(new Vec3(), this.rotation) as Vec3;
     }
 
-    set eulerAngles (val: Vec3) {
+    set eulerAngles(val: Vec3) {
         const quat = Quat.fromEuler(new Quat(), val.x, val.y, val.z);
         this.rotation = quat;
     }
 
-    get rotation () {
+    get rotation() {
         return this.getValue(UIElement.RotationProperty) as Quat;
     }
 
-    set rotation (val: Quat) {
+    set rotation(val: Quat) {
         this._localTransformDirty = true;
         this.invalidateWorldTransform();
         this.setValue(UIElement.RotationProperty, val.clone());
     }
 
-    get shear () {
+    get shear() {
         return this.getValue(UIElement.ShearProperty) as Vec2;
     }
 
-    set shear (val: Vec2) {
+    set shear(val: Vec2) {
         this._localTransformDirty = true;
         this.invalidateWorldTransform();
         this.setValue(UIElement.ShearProperty, val);
     }
 
-    get scale () {
+    get scale() {
         return this.getValue(UIElement.ScaleProperty) as Vec3;
     }
 
-    set scale (val: Vec3) {
+    set scale(val: Vec3) {
         this._localTransformDirty = true;
         this.invalidateWorldTransform();
         this.setValue(UIElement.ScaleProperty, val.clone());
     }
 
-    get renderTransformPivot () {
+    get renderTransformPivot() {
         return this.getValue(UIElement.RenderTransformPivotProperty) as Vec2;
     }
 
-    set renderTransformPivot (val: Vec2) {
+    set renderTransformPivot(val: Vec2) {
         this.invalidateWorldTransform();
         this.setValue(UIElement.RenderTransformPivotProperty, val.clone());
     }
 
 
-    get worldTransform (): Readonly<Mat4> {
+    get worldTransform(): Readonly<Mat4> {
         if (this._worldTransformDirty) {
             Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.x, this.layout.y, 0));
             Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
@@ -238,7 +247,7 @@ export class UIElement extends AdvancedObject {
         return this._worldTransform;
     }
 
-    private get localTransform () {
+    private get localTransform() {
         if (this._localTransformDirty) {
             const { x: shearX, y: shearY } = this.shear;
             if (approx(shearX, 0) && approx(shearY, 0)) {
@@ -258,8 +267,8 @@ export class UIElement extends AdvancedObject {
         return this._localTransform;
     }
 
-    private get renderTransform () {
-        const { x : xOffsetPercentage, y : yOffsetPercentage } = this.renderTransformPivot;
+    private get renderTransform() {
+        const { x: xOffsetPercentage, y: yOffsetPercentage } = this.renderTransformPivot;
         if (!approx(xOffsetPercentage, 0.5) || !approx(yOffsetPercentage, 0.5)) {
             const matrix = new Mat4();
             const xOffset = this.layout.width * (xOffsetPercentage - 0.5);
@@ -273,7 +282,7 @@ export class UIElement extends AdvancedObject {
         return this.localTransform;
     }
 
-    private invalidateWorldTransform () {
+    private invalidateWorldTransform() {
         if (!this._worldTransformDirty) {
             this._worldTransformDirty = true;
             for (let i = 0; i < this._children.length; i++) {
@@ -282,41 +291,41 @@ export class UIElement extends AdvancedObject {
         }
     }
 
-    public worldToLocal (out: Vec3, worldPoint: Vec3) {
+    public worldToLocal(out: Vec3, worldPoint: Vec3) {
         const matrix = Mat4.invert(new Mat4(), this.worldTransform);
         return Vec3.transformMat4(out, worldPoint, matrix);
     }
 
-    public localToWorld (out: Vec3, localPoint: Vec3) {
+    public localToWorld(out: Vec3, localPoint: Vec3) {
         return Vec3.transformMat4(out, localPoint, this.worldTransform);
     }
 
     //#endregion RenderTransform
 
-    get document () {
+    get document() {
         return this._document;
     }
 
     //#region hierarchy
-    get parent () {
+    get parent() {
         return this._parent;
     }
 
-    get children (): ReadonlyArray<UIElement> {
+    get children(): ReadonlyArray<UIElement> {
         return this._children;
     }
 
-    get childCount (): number {
+    get childCount(): number {
         return this._children.length;
     }
 
-    public clearChildren () {
+    public clearChildren() {
         for (let i = this._children.length - 1; i >= 0; i--) {
             this.removeChildAt(i);
         }
     }
 
-    public getChildIndex (child: UIElement): number {
+    public getChildIndex(child: UIElement): number {
         const index = this._children.indexOf(child);
         if (index !== -1) {
             return index;
@@ -325,21 +334,21 @@ export class UIElement extends AdvancedObject {
         }
     }
 
-    public getChildAt (index: number) {
+    public getChildAt(index: number) {
         if (index < 0 || index > this._children.length - 1) {
             throw new UIError(ErrorID.OUT_OF_RANGE);
         }
         return this._children[index];
     }
 
-    public addChild (child: UIElement) {
+    public addChild(child: UIElement) {
         if (child._parent === this) {
             throw new UIError(ErrorID.INVALID_INPUT);
         }
         child.setParent(this);
     }
 
-    public insertChildAt (child: UIElement, index: number) {
+    public insertChildAt(child: UIElement, index: number) {
         if (index < 0 || index > this._children.length - 1) {
             throw new UIError(ErrorID.OUT_OF_RANGE);
         }
@@ -349,14 +358,14 @@ export class UIElement extends AdvancedObject {
         child.setParent(this, index);
     }
 
-    public removeChild (child: UIElement) {
+    public removeChild(child: UIElement) {
         if (child._parent !== this) {
             throw new UIError(ErrorID.INVALID_INPUT);
         }
         child.setParent(null);
     }
 
-    public removeChildAt (index: number) {
+    public removeChildAt(index: number) {
         if (index < 0 || index > this._children.length - 1) {
             throw new UIError(ErrorID.OUT_OF_RANGE);
         }
@@ -364,11 +373,11 @@ export class UIElement extends AdvancedObject {
         child.setParent(null);
     }
 
-    public removeFromParent () {
+    public removeFromParent() {
         this.setParent(null);
     }
 
-    private setParent (parent: UIElement | null, index = -1) {
+    private setParent(parent: UIElement | null, index = -1) {
         if (parent && !parent.getSlotClass()) {
             throw new UIError(ErrorID.SLOT_UNMATCHED);
         }
@@ -395,15 +404,15 @@ export class UIElement extends AdvancedObject {
     }
 
     //#endregion hierarchy
-    protected allowMultipleChild () {
+    protected allowMultipleChild() {
         return false;
     }
 
-    protected getSlotClass (): typeof UISlot | null {
+    protected getSlotClass(): typeof UISlot | null {
         return null;
     }
 
-    private updateSlot () {
+    private updateSlot() {
         if (!this._parent) {
             this._slot = null;
             return;
@@ -418,7 +427,7 @@ export class UIElement extends AdvancedObject {
         }
     }
 
-    private updateDocument (document: UIDocument | null) {
+    private updateDocument(document: UIDocument | null) {
         if (this._document !== document) {
             this._document = document;
             for (let i = 0; i < this._children.length; i++) {
@@ -427,7 +436,7 @@ export class UIElement extends AdvancedObject {
         }
     }
 
-    public invalidate (invalidateReason: InvalidateReason) {
+    public invalidate(invalidateReason: InvalidateReason) {
         if (this._document) {
             this._document.invalidate(this, invalidateReason);
         }
@@ -438,56 +447,211 @@ export class UIElement extends AdvancedObject {
      * 
      * @param availableSize 
      */
-    protected onMeasure (availableSize: Size) {
+    protected onMeasure(availableSize: Size) {
         return new Size(0, 0);
     }
 
-    protected onArrange (arrangeSize: Size) {
+    protected onArrange(arrangeSize: Size) {
 
     }
 
     // sealed, invoked by layout system
-    public measure (availableSize: Size) {
-        const { width: marginWidth, height: marginHeight} = this.margin;
+    public measure(availableSize: Size) {
+        const { width: marginWidth, height: marginHeight } = this.margin;
         this.onMeasure(availableSize);
     }
 
-    public arrange (finalRect: Rect) {
-        const { width: marginWidth, height: marginHeight} = this.margin;
+    public arrange(finalRect: Rect) {
+        const { width: marginWidth, height: marginHeight } = this.margin;
         const { width: paddingWidth, height: paddingHeight } = this.padding;
         const arrangeSize = new Size(Math.max(finalRect.width - marginWidth - paddingWidth, 0), Math.max(finalRect.height - marginHeight - paddingHeight, 0));
         this.onArrange(arrangeSize);
     }
-    
+
     //#endregion layout
 
-    protected onPaint (drawingContext: IDrawingContext) {
+    protected onPaint(drawingContext: IDrawingContext) {
 
     }
+
+    //#region Raycast
+
+    public hitTest(ray: Ray): boolean {
+        return true;
+    }
+
+    public hitTestByScreenPos(screenPos: Vec2): boolean {
+        return true;
+    }
+
+
+    //#endregion
 
     //#region EventSystem
+    public _callbackTable: ICallbackTable = createMap(true);
 
-    protected _eventProcessor: any = new UIElementEventProcessor(this); 
 
-    public hitTest (ray: Ray): boolean {
-        return true;
+    protected _eventProcessor: any = new UIElementEventProcessor(this);
+    /**
+     * @internal
+     */
+    public static callbacksInvoker = new CallbacksInvoker<DispatcherEventType>();
+
+
+    public dispatchEvent(event: Event) {
+        const key = event.type;
+        const target = this;
+        this.emit(key, target);
     }
 
-    public hitTestByScreenPos (screenPos: Vec2): boolean {
-        return true;
+    public emit(key: string | NewUIEventType, arg0?: any, arg1?: any, arg2?: any, arg3?: any, arg4?: any) {
+        const list: CallbackList = this._callbackTable && this._callbackTable[key]!;
+        if (list) {
+            const rootInvoker = !list.isInvoking;
+            list.isInvoking = true;
+
+            const infos = list.callbackInfos;
+            for (let i = 0, len = infos.length; i < len; ++i) {
+                const info = infos[i];
+                if (info) {
+                    const callback = info.callback;
+                    const target = info.target;
+                    // Pre off once callbacks to avoid influence on logic in callback
+                    if (info.once) {
+                        this.off(key, callback, target);
+                    }
+                    // Lazy check validity of callback target,
+                    // if target is CCObject and is no longer valid, then remove the callback info directly
+                    if (!info.check()) {
+                        this.off(key, callback, target);
+                    } else if (target) {
+                        callback.call(target, arg0, arg1, arg2, arg3, arg4);
+                    } else {
+                        callback(arg0, arg1, arg2, arg3, arg4);
+                    }
+                }
+            }
+
+            if (rootInvoker) {
+                list.isInvoking = false;
+                if (list.containCanceled) {
+                    list.purgeCanceled();
+                }
+            }
+        }
     }
 
-    public dispatchEvent(event:Event) {
+    public registerEventListener(key: string | NewUIEventType, callback: Function, target?: unknown, once: boolean = false) {
+        if (!this.hasEventListener(key, callback, target)) {
+            let list = this._callbackTable[key];
+            if (!list) {
+                list = this._callbackTable[key] = callbackListPool.alloc();
+            }
+            const info = callbackInfoPool.alloc();
+            info.set(callback, target, once);
+            list.callbackInfos.push(info);
+
+            //add this in PointerInputModule
+            UIElement.callbacksInvoker.emit(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this);
+        }
+        return callback;
+    }
+
+    public registerEventListenerOnce(key: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
+        this.registerEventListener(key, callback, target, true);
+    }
+
+    public unregisterEventListener(key: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
+        const list = this._callbackTable && this._callbackTable[key];
+        if (list) {
+            const infos = list.callbackInfos;
+            if (callback) {
+                for (let i = 0; i < infos.length; ++i) {
+                    const info = infos[i];
+                    if (info && info.callback === callback && info.target === target) {
+                        list.cancel(i);
+                        break;
+                    }
+                }
+            } else {
+                this.removeAll(key);
+            }
+        }
+
 
     }
 
-    public on (type: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
+    public removeAll(keyOrTarget: string | NewUIEventType | unknown) {
+        const type = typeof keyOrTarget;
+        if (type === 'string' || type === 'number') {
+            // remove by key
+            const list = this._callbackTable && this._callbackTable[keyOrTarget as string | number];
+            if (list) {
+                if (list.isInvoking) {
+                    list.cancelAll();
+                } else {
+                    list.clear();
+                    callbackListPool.free(list);
+                    delete this._callbackTable[keyOrTarget as string | number];
+                }
+            }
+        } else if (keyOrTarget) {
+            // remove by target
+            for (const key in this._callbackTable) {
+                const list = this._callbackTable[key]!;
+                if (list.isInvoking) {
+                    const infos = list.callbackInfos;
+                    for (let i = 0; i < infos.length; ++i) {
+                        const info = infos[i];
+                        if (info && info.target === keyOrTarget) {
+                            list.cancel(i);
+                        }
+                    }
+                } else {
+                    list.removeByTarget(keyOrTarget);
+                }
+            }
+        }
+    }
+
+    public hasEventListener(key: string | NewUIEventType, callback?: Function, target?: unknown) {
+        const list = this._callbackTable && this._callbackTable[key];
+        if (!list) {
+            return false;
+        }
+
+        // check any valid callback
+        const infos = list.callbackInfos;
+        if (!callback) {
+            // Make sure no cancelled callbacks
+            if (list.isInvoking) {
+                for (let i = 0; i < infos.length; ++i) {
+                    if (infos[i]) {
+                        return true;
+                    }
+                }
+                return false;
+            } else {
+                return infos.length > 0;
+            }
+        }
+
+        for (let i = 0; i < infos.length; ++i) {
+            const info = infos[i];
+            if (info && info.check() && info.callback === callback && info.target === target) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public on(type: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
         this._eventProcessor.on(type, callback, target, useCapture);
     }
-    public off (type: string | NewUIEventType, callback?: Function, target?: unknown, useCapture: any = false) {
+    public off(type: string | NewUIEventType, callback?: Function, target?: unknown, useCapture: any = false) {
         this._eventProcessor.off(type, callback, target, useCapture);
     }
-    public once (type: string | NewUIEventType, callback: Function, target?: unknown, useCapture?: any) {
+    public once(type: string | NewUIEventType, callback: Function, target?: unknown, useCapture?: any) {
         this._eventProcessor.once(type, callback, target, useCapture);
     }
 
@@ -495,46 +659,8 @@ export class UIElement extends AdvancedObject {
 
     //#region register
 
-    protected _registerEvent() {
-        this.on(NewUIEventType.TOUCH_START, this._onTouchBegan, this);
-        this.on(NewUIEventType.TOUCH_MOVE, this._onTouchMove, this);
-        this.on(NewUIEventType.TOUCH_END, this._onTouchEnded,  this);
-        this.on(NewUIEventType.TOUCH_CANCEL, this._onTouchCancel,  this);
-
-        this.on(NewUIEventType.MOUSE_ENTER, this._onMouseMoveIn,  this);
-        this.on(NewUIEventType.MOUSE_LEAVE, this._onMouseMoveOut,  this);
-        this.on(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
-        this.on(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
-    }
-
-    protected _unregisterEvent() {
-        this.off(NewUIEventType.TOUCH_START, this._onTouchBegan,  this);
-        this.off(NewUIEventType.TOUCH_MOVE, this._onTouchMove,  this);
-        this.off(NewUIEventType.TOUCH_END, this._onTouchEnded,  this);
-        this.off(NewUIEventType.TOUCH_CANCEL, this._onTouchCancel,  this);
-
-        this.off(NewUIEventType.MOUSE_ENTER, this._onMouseMoveIn,  this);
-        this.off(NewUIEventType.MOUSE_LEAVE, this._onMouseMoveOut,  this);
-        this.off(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
-        this.off(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
-    }
-
-
-    protected _onTouchBegan() {}
-
-    protected _onTouchMove() {}
-
-    protected _onTouchEnded() {}
-
-    protected _onTouchCancel() {}
-
-    protected _onMouseMoveIn() {}
-
-    protected _onMouseMoveOut() {}
-
-    protected _onMouseDown() {}
-
-    protected _onMouseUp() {}
+    protected _registerEvent() {}
+    protected _unregisterEvent() {}
 
     //#endregion register
 

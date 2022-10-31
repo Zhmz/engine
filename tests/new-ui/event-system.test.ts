@@ -6,16 +6,21 @@ import { eventSystem } from "../../cocos/new-ui/event-system/event-system";
 import { PointerInputModule } from "../../cocos/new-ui/event-system/input-modules/pointer-input-module";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { Button } from "../../cocos/new-ui/framework/button";
+import { UIWindow } from "../../cocos/new-ui/base/ui-window";
+import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 
 test('simple-button-mouse-enter', () => {
     const pointerInputModule = new PointerInputModule();
     //pointerInputModule.registerNodeEventProcessor();
 
     const button = new Button();
-    // for change timing forcedly in unit test, it is not permitted in real runtime.
+    const document = new UIDocument();
+    const window = document.window;
+    document.window.addChild(button);
+    eventSystem.window = window;
 
     // @ts-expect-error access private method
-    const eventTarget: EventTarget = eventSystem.mouseInput._eventTarget;
+    const eventTarget: EventTarget = pointerInputModule.mouseInput._eventTarget;
 
     const eventMouseUpStr = 'mouse-up';
     const eventMouseUp = new EventMouse(eventMouseUpStr, false, Vec2.ZERO);

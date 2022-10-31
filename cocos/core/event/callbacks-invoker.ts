@@ -34,7 +34,7 @@ const fastRemoveAt = array.fastRemoveAt;
 
 function empty () { }
 
-class CallbackInfo {
+export class CallbackInfo {
     public callback: AnyFunction = empty;
     public target: unknown | undefined = undefined;
     public once = false;

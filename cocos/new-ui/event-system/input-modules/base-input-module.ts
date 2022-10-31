@@ -68,18 +68,18 @@ export abstract class BaseInputModule {
         // //TODO： mark dirty
     }
 
-    public dispatchEvent (event:Event) :boolean {
-        const eventType = event.type as Input.EventType;
-        if (touchEvents.includes(eventType)) {
-            return this.dispatchEventTouch(event as EventTouch);
-        } else if (mouseEvents.includes(eventType)) {
-            return  this.dispatchEventMouse(event as EventMouse);
-        }
-        return true;
-    }
+    // public dispatchEvent (event:Event) :boolean {
+    //     const eventType = event.type as Input.EventType;
+    //     if (touchEvents.includes(eventType)) {
+    //         return this.dispatchEventTouch(event as EventTouch);
+    //     } else if (mouseEvents.includes(eventType)) {
+    //         return  this.dispatchEventMouse(event as EventMouse);
+    //     }
+    //     return true;
+    // }
 
-    public abstract dispatchEventMouse (eventMouse:EventMouse):boolean;
-    public abstract dispatchEventTouch (eventTouch:EventTouch):boolean;
+    // public abstract dispatchEventMouse (eventMouse:EventMouse):boolean;
+    // public abstract dispatchEventTouch (eventTouch:EventTouch):boolean;
 
 
 }

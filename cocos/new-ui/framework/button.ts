@@ -23,6 +23,7 @@
  THE SOFTWARE.
 */
 
+import { NewUIEventType } from "../../input/types/event-enum";
 import { UIElement } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
 import { ContentSlot } from "./content-slot";
@@ -49,6 +50,38 @@ export class Button extends UIElement {
     public onArrange() {
 
     }
+
+    protected _registerEvent() {
+        // this.on(NewUIEventType.TOUCH_START, this._onTouchBegan, this);
+        // this.on(NewUIEventType.TOUCH_MOVE, this._onTouchMove, this);
+        // this.on(NewUIEventType.TOUCH_END, this._onTouchEnded,  this);
+        // this.on(NewUIEventType.TOUCH_CANCEL, this._onTouchCancel,  this);
+
+        // this.on(NewUIEventType.MOUSE_ENTER, this._onMouseMoveIn,  this);
+        // this.on(NewUIEventType.MOUSE_LEAVE, this._onMouseMoveOut,  this);
+        // this.on(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
+        // this.on(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
+
+        this.registerEventListener(NewUIEventType.MOUSE_UP, this._onMouseUp, this);
+        this.registerEventListener(NewUIEventType.MOUSE_DOWN, this._onMouseDown, this);
+    }
+
+    protected _unregisterEvent() {
+        // this.off(NewUIEventType.TOUCH_START, this._onTouchBegan,  this);
+        // this.off(NewUIEventType.TOUCH_MOVE, this._onTouchMove,  this);
+        // this.off(NewUIEventType.TOUCH_END, this._onTouchEnded,  this);
+        // this.off(NewUIEventType.TOUCH_CANCEL, this._onTouchCancel,  this);
+
+        // this.off(NewUIEventType.MOUSE_ENTER, this._onMouseMoveIn,  this);
+        // this.off(NewUIEventType.MOUSE_LEAVE, this._onMouseMoveOut,  this);
+        // this.off(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
+        // this.off(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
+
+        this.unregisterEventListener(NewUIEventType.MOUSE_UP, this._onMouseUp, this);
+        this.unregisterEventListener(NewUIEventType.MOUSE_DOWN, this._onMouseDown, this);
+    }
+
+
 
     protected _onTouchBegan() {
         console.log('_onTouchBegan');
