@@ -26,6 +26,8 @@
 import { NewUIEventType } from "../../input/types/event-enum";
 import { UIElement } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
+import { PointerDownEvent } from "../event-system/event-data/pointer-down-event";
+import { PointerUpEvent } from "../event-system/event-data/pointer-up-event";
 import { ContentSlot } from "./content-slot";
 
 export class Button extends UIElement {
@@ -62,8 +64,8 @@ export class Button extends UIElement {
         // this.on(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
         // this.on(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
 
-        this.registerEventListener(NewUIEventType.MOUSE_UP, this._onMouseUp, this);
-        this.registerEventListener(NewUIEventType.MOUSE_DOWN, this._onMouseDown, this);
+        this.registerEventListener(PointerUpEvent, this._onMouseUp, this);
+        this.registerEventListener(PointerDownEvent, this._onMouseDown, this);
     }
 
     protected _unregisterEvent() {
@@ -77,8 +79,8 @@ export class Button extends UIElement {
         // this.off(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
         // this.off(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
 
-        this.unregisterEventListener(NewUIEventType.MOUSE_UP, this._onMouseUp, this);
-        this.unregisterEventListener(NewUIEventType.MOUSE_DOWN, this._onMouseDown, this);
+        this.unregisterEventListener(PointerUpEvent, this._onMouseUp, this);
+        this.unregisterEventListener(PointerDownEvent, this._onMouseDown, this);
     }
 
 

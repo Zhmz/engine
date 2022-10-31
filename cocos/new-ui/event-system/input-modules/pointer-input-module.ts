@@ -30,12 +30,12 @@ import { CallbacksInvoker } from '../../../core/event/callbacks-invoker';
 import { Ray } from '../../../core/geometry';
 import { DispatcherEventType, NodeEventProcessor } from '../../../core/scene-graph/node-event-processor';
 import { input } from '../../../input';
-import { Event, EventMouse, EventTouch, Touch } from '../../../input/types';
 import { InputEventType, NewUIEventType, SystemEventTypeUnion } from '../../../input/types/event-enum';
 import { UIElement } from '../../base/ui-element';
 import { eventSystem } from '../event-system';
 import { UIElementEventProcessor } from '../ui-element-event-processor';
 import { BaseInputModule, InputModulePriority } from './base-input-module';
+import { Event } from '../event-data/event';
 
 const pos: Vec2 = new Vec2();
 

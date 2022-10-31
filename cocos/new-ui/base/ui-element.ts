@@ -37,12 +37,14 @@ import { UISlot } from './ui-slot';
 import { UIDocument } from './ui-document';
 import { approx, Mat4, Pool, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
-import { Event, EventMouse, EventTouch } from '../../input/types';
 import { UIElementEventProcessor } from '../event-system/ui-element-event-processor';
 import { NewUIEventType } from '../../input/types/event-enum';
 import { CallbackInfo, CallbackList, CallbacksInvoker, ICallbackTable } from '../../core/event/callbacks-invoker';
 import { createMap } from '../../core/utils/js-typed';
 import { DispatcherEventType } from '../../core/scene-graph/node-event-processor';
+import { Event } from '../event-system/event-data/event';
+import { PointerDownEvent } from '../event-system/event-data/pointer-down-event';
+import { PointerUpEvent } from '../event-system/event-data/pointer-up-event';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -67,6 +69,8 @@ const MAX_SIZE = 16;
 const callbackListPool = new Pool<CallbackList>(() => new CallbackList(), MAX_SIZE);
 
 const callbackInfoPool = new Pool(() => new CallbackInfo(), 32);
+
+declare type Constructor<T = unknown> = new (...args: any[]) => T;
 
 export class UIElement extends AdvancedObject {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
@@ -488,7 +492,8 @@ export class UIElement extends AdvancedObject {
     //#endregion
 
     //#region EventSystem
-    public _callbackTable: ICallbackTable = createMap(true);
+    //public _callbackTable: ICallbackTable = createMap(true);
+    public _callbackMap: Map<Constructor, CallbackList> = new Map();
 
 
     protected _eventProcessor: any = new UIElementEventProcessor(this);
@@ -499,13 +504,21 @@ export class UIElement extends AdvancedObject {
 
 
     public dispatchEvent(event: Event) {
-        const key = event.type;
+        //  const key = event.eventType as NewUIEventType;
         const target = this;
-        this.emit(key, target);
+        if (event instanceof PointerDownEvent) {
+            this.emit(PointerDownEvent, target);
+        } else if (event instanceof PointerUpEvent) {
+            this.emit(PointerUpEvent, target);
+        }
     }
 
-    public emit(key: string | NewUIEventType, arg0?: any, arg1?: any, arg2?: any, arg3?: any, arg4?: any) {
-        const list: CallbackList = this._callbackTable && this._callbackTable[key]!;
+    
+
+
+    public emit<T extends Event>(classConstructor: Constructor<T>, arg0?: any, arg1?: any, arg2?: any, arg3?: any, arg4?: any) {
+        const key = classConstructor;
+        const list: CallbackList = this._callbackMap && this._callbackMap.get(key)!;
         if (list) {
             const rootInvoker = !list.isInvoking;
             list.isInvoking = true;
@@ -541,11 +554,15 @@ export class UIElement extends AdvancedObject {
         }
     }
 
-    public registerEventListener(key: string | NewUIEventType, callback: Function, target?: unknown, once: boolean = false) {
-        if (!this.hasEventListener(key, callback, target)) {
-            let list = this._callbackTable[key];
+
+    public registerEventListener<T extends Event>(classConstructor: Constructor<T>, callback: Function, target?: unknown, once: boolean = false) {
+        //const object = new classConstructor();
+        const key = classConstructor;
+        if (!this._hasEventListener(key, callback, target)) {
+            let list = this._callbackMap.get(key);
             if (!list) {
-                list = this._callbackTable[key] = callbackListPool.alloc();
+                list = callbackListPool.alloc();
+                this._callbackMap.set(key, list);
             }
             const info = callbackInfoPool.alloc();
             info.set(callback, target, once);
@@ -557,8 +574,10 @@ export class UIElement extends AdvancedObject {
         return callback;
     }
 
-    public unregisterEventListener(key: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
-        const list = this._callbackTable && this._callbackTable[key];
+    public unregisterEventListener<T extends Event>(classConstructor: Constructor<T>, callback: Function, target?: unknown, useCapture: any = false) {
+        //const object = new classConstructor();
+        const key = classConstructor;
+        const list = this._callbackMap && this._callbackMap.get(key);
         if (list) {
             const infos = list.callbackInfos;
             if (callback) {
@@ -570,46 +589,64 @@ export class UIElement extends AdvancedObject {
                     }
                 }
             } else {
-                this.removeAll(key);
+                this._removeAll(key);
             }
         }
     }
 
-    public removeAll(keyOrTarget: string | NewUIEventType | unknown) {
-        const type = typeof keyOrTarget;
-        if (type === 'string' || type === 'number') {
-            // remove by key
-            const list = this._callbackTable && this._callbackTable[keyOrTarget as string | number];
-            if (list) {
-                if (list.isInvoking) {
-                    list.cancelAll();
-                } else {
-                    list.clear();
-                    callbackListPool.free(list);
-                    delete this._callbackTable[keyOrTarget as string | number];
-                }
-            }
-        } else if (keyOrTarget) {
-            // remove by target
-            for (const key in this._callbackTable) {
-                const list = this._callbackTable[key]!;
-                if (list.isInvoking) {
-                    const infos = list.callbackInfos;
-                    for (let i = 0; i < infos.length; ++i) {
-                        const info = infos[i];
-                        if (info && info.target === keyOrTarget) {
-                            list.cancel(i);
-                        }
-                    }
-                } else {
-                    list.removeByTarget(keyOrTarget);
-                }
+    // public registerEventListener(key: NewUIEventType, callback: Function, target?: unknown, once: boolean = false) {
+    //     if (!this.hasEventListener(key, callback, target)) {
+    //         let list = this._callbackTable[key];
+    //         if (!list) {
+    //             list = this._callbackTable[key] = callbackListPool.alloc();
+    //         }
+    //         const info = callbackInfoPool.alloc();
+    //         info.set(callback, target, once);
+    //         list.callbackInfos.push(info);
+
+    //         //add this in PointerInputModule
+    //         UIElement.callbacksInvoker.emit(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this);
+    //     }
+    //     return callback;
+    // }
+
+    // public unregisterEventListener(key: NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
+    //     const list = this._callbackTable && this._callbackTable[key];
+    //     if (list) {
+    //         const infos = list.callbackInfos;
+    //         if (callback) {
+    //             for (let i = 0; i < infos.length; ++i) {
+    //                 const info = infos[i];
+    //                 if (info && info.callback === callback && info.target === target) {
+    //                     list.cancel(i);
+    //                     break;
+    //                 }
+    //             }
+    //         } else {
+    //             this.removeAll(key);
+    //         }
+    //     }
+    // }
+
+    private _removeAll<T extends Event>(classConstructor: Constructor<T>) {
+        const key = classConstructor;
+        // remove by key
+        const list = this._callbackMap && this._callbackMap.get(key);
+        if (list) {
+            if (list.isInvoking) {
+                list.cancelAll();
+            } else {
+                list.clear();
+                callbackListPool.free(list);
+                this._callbackMap.delete(key);
             }
         }
+
     }
 
-    public hasEventListener(key: string | NewUIEventType, callback?: Function, target?: unknown) {
-        const list = this._callbackTable && this._callbackTable[key];
+    private _hasEventListener<T extends Event>(classConstructor: Constructor<T>, callback?: Function, target?: unknown) {
+        //const list = this._callbackTable && this._callbackTable[key];
+        const list = this._callbackMap && this._callbackMap.get(classConstructor);
         if (!list) {
             return false;
         }
@@ -643,8 +680,8 @@ export class UIElement extends AdvancedObject {
 
     //#region register
 
-    protected _registerEvent() {}
-    protected _unregisterEvent() {}
+    protected _registerEvent() { }
+    protected _unregisterEvent() { }
 
     //#endregion register
 

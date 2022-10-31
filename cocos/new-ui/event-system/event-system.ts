@@ -28,8 +28,24 @@ import { Event, EventMouse } from '../../input/types';
 import { InputEventType } from '../../input/types/event-enum';
 import { UIElement } from '../base/ui-element';
 import { UIWindow } from '../base/ui-window';
+import { Event as NewUIEvent } from './event-data/event';
+import { PointerDownEvent } from './event-data/pointer-down-event';
+import { PointerUpEvent } from './event-data/pointer-up-event';
 import { BaseInputModule } from './input-modules/base-input-module';
 import { RaycastResult } from './raycast-result';
+
+const mouseEvents = [
+    InputEventType.MOUSE_DOWN,
+    InputEventType.MOUSE_MOVE,
+    InputEventType.MOUSE_UP,
+    InputEventType.MOUSE_WHEEL,
+];
+const touchEvents = [
+    InputEventType.TOUCH_START,
+    InputEventType.TOUCH_MOVE,
+    InputEventType.TOUCH_END,
+    InputEventType.TOUCH_CANCEL,
+];
 
 export class EventSystem {
     private _inputModuleList: BaseInputModule[] = [];
@@ -96,15 +112,41 @@ export class EventSystem {
 
 
     public dispatchEvent(event: Event, ray: Ray) {
+        const eventType = event.type as InputEventType;
         const children: ReadonlyArray<UIElement> = this._window!.children;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             const hit = child.hitTest(ray);
             if (hit) {
-                child.dispatchEvent(event);
+                if (touchEvents.includes(eventType)) {
+                    this.dispatchTouchEvent(child, event, ray);
+                } else if (mouseEvents.includes(eventType)) {
+                    this.dispatchMouseEvent(child, event, ray);
+                }
+                //child.dispatchEvent(event);
             }
         }
     }
+
+    protected dispatchTouchEvent(element: UIElement, event: Event, ray: Ray) {
+
+    }
+
+
+    protected dispatchMouseEvent(element: UIElement, event: Event, ray: Ray) {
+        let newUIEvent: NewUIEvent|null = null;
+        switch (event.type) {
+            case InputEventType.MOUSE_DOWN:
+                newUIEvent = new PointerDownEvent();
+                break;
+            case InputEventType.MOUSE_UP:
+                newUIEvent = new PointerUpEvent();
+                break;
+        }
+        element.dispatchEvent(newUIEvent!);
+    }
+
+
 
 
     //raycast comparer
