@@ -24,22 +24,22 @@
  THE SOFTWARE.
 */
 
-import { InvalidateReason, UIElement } from "../base/ui-element";
+import { UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
 
 export class UILayoutSubsystem extends UISubSystem {
-    private _dirtyElementMap = new Set;
+    private _dirtyArrangeElement = new Array<UIElement>();
 
     invalidate(element: UIElement) {
-        if (!this._dirtyElementMap.has(element)) {
-            this._dirtyElementMap.add(element)
-            if (element.parent) {
-                this.invalidate(element.parent);
-            }
-        }
+        this._dirtyArrangeElement.push(element);
     }
 
     update () {
-
+        this.document.window.measure();
+        for (let i = 0; i < this._dirtyArrangeElement.length; i++) {
+            const uiElement = this._dirtyArrangeElement[i];
+            uiElement.arrange(uiElement.layout);
+        }
+        this._dirtyArrangeElement.length = 0;
     }
 }

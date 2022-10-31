@@ -37,7 +37,7 @@ export class UIDocument {
     set viewport (val) {
         if (!this._viewport.equals(val)) {
             this._viewport.set(val);
-            this.invalidate(this.window, InvalidateReason.LAYOUT);
+            this.invalidate(this.window, InvalidateReason.ARRANGE);
         }
     }
 
@@ -46,7 +46,7 @@ export class UIDocument {
     }
 
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
-        if (invalidateReason & InvalidateReason.LAYOUT) {
+        if (invalidateReason & InvalidateReason.ARRANGE) {
             this._layoutSubsystem.invalidate(element);
         }
     }

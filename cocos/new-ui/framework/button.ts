@@ -23,6 +23,7 @@
  THE SOFTWARE.
 */
 
+import { ContentControl } from "./content-control";
 import { NewUIEventType } from "../../input/types/event-enum";
 import { UIElement } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
@@ -30,7 +31,7 @@ import { PointerDownEvent } from "../event-system/event-data/pointer-down-event"
 import { PointerUpEvent } from "../event-system/event-data/pointer-up-event";
 import { ContentSlot } from "./content-slot";
 
-export class Button extends UIElement {
+export class Button extends ContentControl {
 
     public static MOUSE_UP_COUNTER = 0;
     public static MOUSE_DOWN_COUNTER = 0;
@@ -39,18 +40,6 @@ export class Button extends UIElement {
         super();
         Button.MOUSE_DOWN_COUNTER = 0;
         Button.MOUSE_UP_COUNTER = 0;
-    }
-
-    protected allowMultipleChild() {
-        return false;
-    }
-
-    protected getSlotClass(): typeof UISlot | null {
-        return ContentSlot;
-    }
-
-    public onArrange() {
-
     }
 
     protected _registerEvent() {

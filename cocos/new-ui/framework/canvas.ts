@@ -25,24 +25,20 @@
 */
 
 import { Size } from "../../core";
-import { UIElement } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
 import { CanvasSlot } from "./canvas-slot";
+import { Panel } from "./panel";
 
-export class Canvas extends UIElement {
-    protected allowMultipleChild () {
-        return true;
-    }
-
-    protected getSlotClass (): typeof UISlot | null{
+export class Canvas extends Panel {
+    public getSlotClass (): typeof UISlot {
         return CanvasSlot;
     }
 
-    onMeasure (availableSize: Size) {
+    protected onMeasure () {
         return Size.ZERO;
     }
 
-    onArrange () {
+    protected onArrange () {
         const childCount = this.childCount;
         if (childCount === 0) return;
         for (let i = 0; i < childCount; i++) {

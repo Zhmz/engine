@@ -4,35 +4,34 @@ import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { UISlot } from "../../cocos/new-ui/base/ui-slot";
 import { ContentSlot } from "../../cocos/new-ui/framework/content-slot";
 import { Node } from '../../cocos/core/scene-graph';
+import { ContainerElement } from "../../cocos/new-ui/base/container-element";
+import { Panel } from "../../cocos/new-ui/framework/panel";
 
-class SingleChildElement extends UIElement {
-    protected allowMultipleChild () {
+class SingleChildElement extends ContainerElement {
+    public allowMultipleChild () {
         return false;
     }
 
-    protected getSlotClass () {
+    public getSlotClass () {
         return ContentSlot;
     }
 }
 
 
-class MultipleChildElement extends UIElement {
-    protected allowMultipleChild () {
+class MultipleChildElement extends ContainerElement {
+    public allowMultipleChild () {
         return true;
     }
 
-    protected getSlotClass () {
+    public getSlotClass () {
         return ContentSlot;
     }
 }
 
 test('slot', () => {
     const element1 = new UIElement();
-    expect(() => element1.addChild(new UIElement())).toThrowError();
-    expect(element1.children.length).toBe(0);
-    expect(() => element1.insertChildAt(new UIElement(), 0)).toThrowError();
-    class TestElement extends UIElement {
-        protected getSlotClass () {
+    class TestElement extends ContainerElement {
+        public getSlotClass () {
             return ContentSlot;
         }
     }
@@ -41,14 +40,13 @@ test('slot', () => {
         
     }
 
-    class TestElement2 extends UIElement {
-        protected getSlotClass () {
+    class TestElement2 extends ContainerElement {
+        public getSlotClass () {
             return TestSlot;
         }
     }
 
     const testElement = new TestElement();
-    expect(() => element1.addChild(testElement)).toThrowError();
     testElement.addChild(element1);
     expect(testElement.childCount).toBe(1);
     expect(element1.slot).toBeTruthy();
@@ -98,9 +96,7 @@ test('multiple child', () => {
     const singleChildElement = new SingleChildElement();
     singleChildElement.addChild(new UIElement());
     expect(singleChildElement.childCount).toBe(1);
-    expect(() => singleChildElement.addChild(new UIElement())).toThrowError();
     expect(singleChildElement.childCount).toBe(1);
-    expect(() => singleChildElement.insertChildAt(new UIElement, 0)).toThrowError();
     expect(singleChildElement.childCount).toBe(1);
     singleChildElement.removeChildAt(0);
     expect(singleChildElement.childCount).toBe(0);
@@ -116,12 +112,12 @@ test('multiple child', () => {
 })
 
 test('hierarchy', () => {
-    class TestElement extends UIElement {
-        protected allowMultipleChild () {
+    class TestElement extends Panel {
+        public allowMultipleChild () {
             return true;
         }
 
-        protected getSlotClass () {
+        public getSlotClass () {
             return ContentSlot;
         }
     }
@@ -200,12 +196,12 @@ test('hierarchy', () => {
 });
 
 test('other', () => {
-    class TestElement extends UIElement {
-        protected allowMultipleChild () {
+    class TestElement extends ContainerElement {
+        public allowMultipleChild () {
             return true;
         }
 
-        protected getSlotClass () {
+        public getSlotClass () {
             return ContentSlot;
         }
     }

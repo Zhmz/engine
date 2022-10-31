@@ -31,6 +31,7 @@ import { Size } from './size';
 import { IRectLike, IVec2Like } from './type-define';
 import { Vec2 } from './vec2';
 import { legacyCC } from '../global-exports';
+import { approx } from './utils';
 
 /**
  * @en
@@ -331,10 +332,10 @@ export class Rect extends ValueType {
      * @returns Returns `true' when the minimum and maximum values of both rectangles are equal, respectively; otherwise, returns `false'.
      */
     public equals (other: Rect) {
-        return this.x === other.x
-            && this.y === other.y
-            && this.width === other.width
-            && this.height === other.height;
+        return approx(this.x, other.x)
+            && approx(this.y, other.y)
+            && approx(this.width, other.width)
+            && approx(this.height, other.height);
     }
 
     /**

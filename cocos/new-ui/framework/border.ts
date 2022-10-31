@@ -26,8 +26,9 @@
 import { AdvancedProperty } from "../base/advanced-property";
 import { Thickness } from "../base/thickness";
 import { UIElement } from "../base/ui-element";
+import { ContentControl } from "./content-control";
 
-export class Border extends UIElement {
+export class Border extends ContentControl {
     public static BorderWidthProperty = AdvancedProperty.register('BorderWidth', Thickness, UIElement, Thickness.ZERO);
 
     get borderWidth () {
