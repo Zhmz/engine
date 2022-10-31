@@ -518,12 +518,12 @@ export class UIElement extends AdvancedObject {
                     const target = info.target;
                     // Pre off once callbacks to avoid influence on logic in callback
                     if (info.once) {
-                        this.off(key, callback, target);
+                        this.unregisterEventListener(key, callback, target);
                     }
                     // Lazy check validity of callback target,
                     // if target is CCObject and is no longer valid, then remove the callback info directly
                     if (!info.check()) {
-                        this.off(key, callback, target);
+                        this.unregisterEventListener(key, callback, target);
                     } else if (target) {
                         callback.call(target, arg0, arg1, arg2, arg3, arg4);
                     } else {
@@ -557,10 +557,6 @@ export class UIElement extends AdvancedObject {
         return callback;
     }
 
-    public registerEventListenerOnce(key: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
-        this.registerEventListener(key, callback, target, true);
-    }
-
     public unregisterEventListener(key: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
         const list = this._callbackTable && this._callbackTable[key];
         if (list) {
@@ -577,8 +573,6 @@ export class UIElement extends AdvancedObject {
                 this.removeAll(key);
             }
         }
-
-
     }
 
     public removeAll(keyOrTarget: string | NewUIEventType | unknown) {
@@ -643,16 +637,6 @@ export class UIElement extends AdvancedObject {
             }
         }
         return false;
-    }
-
-    public on(type: string | NewUIEventType, callback: Function, target?: unknown, useCapture: any = false) {
-        this._eventProcessor.on(type, callback, target, useCapture);
-    }
-    public off(type: string | NewUIEventType, callback?: Function, target?: unknown, useCapture: any = false) {
-        this._eventProcessor.off(type, callback, target, useCapture);
-    }
-    public once(type: string | NewUIEventType, callback: Function, target?: unknown, useCapture?: any) {
-        this._eventProcessor.once(type, callback, target, useCapture);
     }
 
     //#endregion EventSystem

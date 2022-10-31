@@ -62,10 +62,6 @@ export abstract class BaseInputModule {
 
     constructor () {
         eventSystem.registerInputModule(this);
-
-        // NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addNodeEventProcessor, this);
-        // NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removeNodeEventProcessor, this);
-        // //TODO： mark dirty
     }
 
     // public dispatchEvent (event:Event) :boolean {
