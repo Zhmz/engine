@@ -23,7 +23,7 @@
  THE SOFTWARE.
 */
 
-import { Rect, Size } from "../../core";
+import { Rect, Size, Vec2 } from "../../core";
 import { ContainerElement } from "../base/container-element";
 import { UIElement, Visibility } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
@@ -86,20 +86,24 @@ export class ContentControl extends ContainerElement {
                     childRect.height = content.desiredSize.height + marginHeight;
                 }
 
+                childRect.center = new Vec2(0, 0);
+
                 switch (contentSlot.horizontalAlignment) {
                     case HorizontalAlignment.LEFT:
-                        childRect.x = (childRect.width - finalRect.width) / 2;
+                        childRect.x = -finalRect.width / 2;
                         break;
                     case HorizontalAlignment.RIGHT:
-                        childRect.x = (finalRect.width - childRect.width) / 2;
+                        childRect.x = finalRect.width - childRect.width;
+                        break;
                 }
 
                 switch (contentSlot.verticalAlignment) {
                     case VerticalAlignment.TOP:
-                        childRect.y = (childRect.height - finalRect.height) / 2;
+                        childRect.y = finalRect.height - childRect.width;
                         break;
                     case VerticalAlignment.BOTTOM:
-                        childRect.y = (finalRect.height - childRect.height) / 2;
+                        childRect.y = -finalRect.height / 2;
+                        break;
                 }
                 content.arrange(childRect);
             }

@@ -62,6 +62,14 @@ export class Rect extends ValueType {
         return out;
     }
 
+    public static fromCenterSize<Out extends IRectLike> (out: Out, center: Vec2, size: Size) {
+        out.width = size.width;
+        out.height = size.height;
+        out.x = center.x - size.width * 0.5;
+        out.y = center.y - size.height * 0.5;
+        return out;
+    }
+
     /**
      * @en Calculate the interpolation result between this rect and another one with given ratio
      * @zh 根据指定的插值比率，从当前矩形到目标矩形之间做插值。

@@ -1,4 +1,4 @@
-import { Mat4, Quat, Rect, Scene, Vec2, Vec3 } from "../../cocos/core";
+import { Mat4, Quat, Rect, Scene, Size, Vec2, Vec3 } from "../../cocos/core";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { UISlot } from "../../cocos/new-ui/base/ui-slot";
@@ -358,12 +358,12 @@ test('layout-transform', () => {
     const element = new SingleChildElement();
     expect(element.worldTransform.m12).toBe(0);
     expect(element.worldTransform.m13).toBe(0);
-    element.layout = new Rect(20, 10, 100, 200);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(100, 200));
     document.window.addChild(element);
     expect(element.worldTransform.m12).toBe(20);
     expect(element.worldTransform.m13).toBe(10);
     expect(element.worldTransform.m14).toBe(0);
-    element.layout = new Rect(10, 20, 0, 0);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(10, 20), new Size(0, 0));
     expect(element.worldTransform.m12).toBe(10);
     expect(element.worldTransform.m13).toBe(20);
     expect(element.worldTransform.m14).toBe(0);
@@ -373,7 +373,7 @@ test('layout-transform', () => {
     expect(element2.worldTransform.m12).toBe(10);
     expect(element2.worldTransform.m13).toBe(20);
     expect(element2.worldTransform.m14).toBe(0);
-    element2.layout = new Rect(-10, -10, 200, 50);
+    element2.layout = Rect.fromCenterSize(new Rect(), new Vec2(-10, -10), new Size(200, 50));
     expect(element2.worldTransform.m12).toBe(0);
     expect(element2.worldTransform.m13).toBe(10);
     expect(element2.worldTransform.m14).toBe(0);
@@ -388,13 +388,13 @@ test('world-transform', () => {
     // only position and layout
     const document = new UIDocument();
     const element = new SingleChildElement();
-    element.layout = new Rect(20, 10, 100, 200);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(100, 200));
     element.position = new Vec3(10, 50, -5);
     document.window.addChild(element);
     expect(element.worldTransform.m12).toBe(30);
     expect(element.worldTransform.m13).toBe(60);
     expect(element.worldTransform.m14).toBe(-5);
-    element.layout = new Rect(10, 20, 0, 0);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(10, 20), new Size(0, 0));
     element.position = new Vec3(-10, -20, 0);
     expect(element.worldTransform.m12).toBe(0);
     expect(element.worldTransform.m13).toBe(0);
@@ -407,16 +407,16 @@ test('world-transform', () => {
     expect(element2.worldTransform.m14).toBe(0);
 
     element.position = new Vec3(5, 5, 5);
-    element.layout = new Rect(7, 5, 2, 2);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(7, 5), new Size(2, 2));
     element2.position = new Vec3(30, 20, 10);
-    element2.layout = new Rect(-10, -15, 0, 0);
+    element2.layout = Rect.fromCenterSize(new Rect(), new Vec2(-10, -15), new Size(0, 0));
     expect(element2.worldTransform.m12).toBe(32);
     expect(element2.worldTransform.m13).toBe(15);
     expect(element2.worldTransform.m14).toBe(15);
 
     // apply all transform
 
-    element.layout = new Rect(-10, -20, 200, 100);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(-10, -20), new Size(200, 100));
     element.position = new Vec3(5, 10, -5);
     element.rotation = Quat.fromEuler(new Quat, 45, 100, 75);
     element.scale = new Vec3(1.2, 1.5, 0.7);
@@ -433,7 +433,7 @@ test('world-transform', () => {
 
     expect(element.worldTransform.equals(transformNode.worldMatrix)).toBeTruthy();
 
-    element2.layout = new Rect(5, 25, 100, 50);
+    element2.layout = Rect.fromCenterSize(new Rect(), new Vec2(5, 25), new Size(100, 50));
     element2.position = new Vec3(5, 7, 8);
     element2.eulerAngles = new Vec3(75, 108,160);
     element2.scale = new Vec3(0.2, 0.1, 0.3);
@@ -449,7 +449,7 @@ test('world-transform', () => {
 
     expect(element2.worldTransform.equals(transformNode2.worldMatrix)).toBeTruthy();
 
-    element.layout = new Rect(10, -10, 100, 50);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(10, -10), new Size(100, 50));
     element.position = new Vec3(0.5, -0.7, 1);
     element.eulerAngles = new Vec3(0, 90, 65);
     element.scale = new Vec3(0.5, 0.1, 0.2);
@@ -466,7 +466,7 @@ test('world-transform', () => {
 test('world-transform with pivot', () => {
     const document = new UIDocument();
     const element = new SingleChildElement();
-    element.layout = new Rect(20, 10, 100, 200);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(100, 200));
     element.position = new Vec3(10, 50, -5);
     element.renderTransformPivot = new Vec2(0, 0);
     document.window.addChild(element);
@@ -475,7 +475,7 @@ test('world-transform with pivot', () => {
     expect(element.worldTransform.m12).toBe(30);
     expect(element.worldTransform.m13).toBe(60);
     expect(element.worldTransform.m14).toBe(-5);
-    element.layout = new Rect(20, 10, 0, 0);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(0, 0));
     expect(element.worldTransform.m12).toBe(30);
     expect(element.worldTransform.m13).toBe(60);
     expect(element.worldTransform.m14).toBe(-5);
@@ -483,14 +483,14 @@ test('world-transform with pivot', () => {
     expect(element.worldTransform.m12).toBe(30);
     expect(element.worldTransform.m13).toBe(60);
     expect(element.worldTransform.m14).toBe(-5);
-    element.layout = new Rect(10, 20, 0, 0);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(10, 20), new Size(0, 0));
     element.position = new Vec3(-10, -20, 0);
     element.renderTransformPivot = new Vec2(0.2, 0.2);
     expect(element.worldTransform.m12).toBe(0);
     expect(element.worldTransform.m13).toBe(0);
     expect(element.worldTransform.m14).toBe(0);
 
-    element.layout = new Rect(20, 10, 100, 200);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(100, 200));
     element.position = new Vec3(10, 50, -5);
     element.eulerAngles = new Vec3(0, 0, -45);
     element.renderTransformPivot = new Vec2(0, 0);
@@ -519,7 +519,7 @@ test('world-transform with pivot', () => {
     expect(element.worldTransform.getScale(new Vec3).equals(new Vec3(1, 2.5, 1))).toBeTruthy();
 
     element.eulerAngles = new Vec3(0, 0, 45);
-    element2.layout = new Rect(5, -5, 100, 100);
+    element2.layout = Rect.fromCenterSize(new Rect(), new Vec2(5, -5), new Size(100, 100));
     element2.position = new Vec3(20, 30, 5);
     element2.eulerAngles = new Vec3(0, 0, 0);
     element2.scale = new Vec3(2, 0.2, 1.7);
@@ -535,43 +535,43 @@ test('shear', () => {
     const document = new UIDocument();
     const element = new MultipleChildElement();
     document.window.addChild(element);
-    element.layout = new Rect(0, 0, 100, 100);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(0, 0), new Size(100, 100));
     // left top
     const leftTopAnchorElement = new SingleChildElement();
     element.addChild(leftTopAnchorElement);
-    leftTopAnchorElement.layout = new Rect(-50, 50, 0, 0);
+    leftTopAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(-50, 50), new Size(0, 0));
     // left center
     const leftCenterAnchorElement = new SingleChildElement();
     element.addChild(leftCenterAnchorElement);
-    leftCenterAnchorElement.layout = new Rect(-50, 0, 0, 0);
+    leftCenterAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(-50, 0), new Size(0, 0));
     // left bottom
     const leftBottomAnchorElement = new SingleChildElement();
     element.addChild(leftBottomAnchorElement);
-    leftBottomAnchorElement.layout = new Rect(-50, -50, 0, 0);
+    leftBottomAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(-50, -50), new Size(0, 0));
     // center top
     const centerTopAnchorElement = new SingleChildElement();
     element.addChild(centerTopAnchorElement);
-    centerTopAnchorElement.layout = new Rect(0, 50, 0, 0);
+    centerTopAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(0, 50), new Size(0, 0));
     // center center
     const centerCenterAnchorElement = new SingleChildElement();
     element.addChild(centerCenterAnchorElement);
-    centerCenterAnchorElement.layout = new Rect(0, 0, 0, 0);
+    centerCenterAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(0, 0), new Size(0, 0));
     // center bottom
     const centerBottomAnchorElement = new SingleChildElement();
     element.addChild(centerBottomAnchorElement);
-    centerBottomAnchorElement.layout = new Rect(0, -50, 0, 0);
+    centerBottomAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(0, -50), new Size(0, 0));
     // right top
     const rightTopAnchorElement = new SingleChildElement();
     element.addChild(rightTopAnchorElement);
-    rightTopAnchorElement.layout = new Rect(50, 50, 0, 0);
+    rightTopAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(50, 50), new Size(0, 0));
     // center center
     const rightCenterAnchorElement = new SingleChildElement();
     element.addChild(rightCenterAnchorElement);
-    rightCenterAnchorElement.layout = new Rect(50, 0, 0, 0);
+    rightCenterAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(50, 0), new Size(0, 0));
     // right bottom
     const rightBottomAnchorElement = new SingleChildElement();
     element.addChild(rightBottomAnchorElement);
-    rightBottomAnchorElement.layout = new Rect(50, -50, 0, 0);
+    rightBottomAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(50, -50), new Size(0, 0));
     //    __________
     //   /    .    /
     //  /_________/      
@@ -643,7 +643,7 @@ test('local-world transform', () => {
     const document = new UIDocument();
     const uiElement = new SingleChildElement();
     document.window.addChild(uiElement);
-    uiElement.layout = new Rect(-20, 20, 100, 50);
+    uiElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(-20, 20), new Size(100, 50));
     uiElement.renderTransformPivot = new Vec2(0, 0);
     uiElement.position = new Vec3(25, 74, 0);
     uiElement.rotation = Quat.fromEuler(new Quat(), 0, 0, 45);
@@ -656,7 +656,7 @@ test('local-world transform', () => {
 
     const uiElement2 = new SingleChildElement();
     uiElement.addChild(uiElement2);
-    uiElement2.layout = new Rect(64, -30, 50, 20);
+    uiElement2.layout = Rect.fromCenterSize(new Rect(), new Vec2(64, -30), new Size(50, 20));
     uiElement2.renderTransformPivot = new Vec2(1, 1);
     uiElement2.position = new Vec3(10, 5, 3);
     uiElement2.scale = new Vec3 (2, 1, 1);

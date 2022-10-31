@@ -230,7 +230,7 @@ export class UIElement extends Visual {
 
     get worldTransform (): Readonly<Mat4> {
         if (this._worldTransformDirty) {
-            Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.x, this.layout.y, 0));
+            Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.center.x, this.layout.center.y, 0));
             Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
             if (this.parent) {
                 Mat4.multiply(this._worldTransform, this.parent.worldTransform, this._worldTransform);
@@ -300,13 +300,14 @@ export class UIElement extends Visual {
             assert(index !== -1);
             this._parent._children.splice(index, 1);
         }
+        this.invalidateParentMeasure();
         this._parent = parent;
         if (this._parent) {
             this._parent._children.push(this);
         }
         this.updateSlot();
         this.updateDocument(this._parent ? this._parent._document : null);
-
+        this.invalidateParentMeasure();
         this.invalidateWorldTransform();
     }
 
@@ -344,9 +345,18 @@ export class UIElement extends Visual {
         }
     }
 
+    protected invalidateMeasure () {
+        if (!this._measureDirty) {
+            this._measureDirty = true;
+            if (this._parent) {
+                this._parent.invalidateMeasure();
+            }
+        }
+    }
+
     protected invalidateParentMeasure () {
-        if (this._parent && !this._parent._measureDirty) {
-            this._parent.invalidateParentMeasure();
+        if (this._parent) {
+            this._parent.invalidateMeasure();
         }
     }
 
@@ -395,10 +405,10 @@ export class UIElement extends Visual {
 
     public arrange (finalRect: Rect) {
         if (this._arrangeDirty || !finalRect.equals(this.layout)) {
-            const { width: marginWidth, height: marginHeight} = this.margin;
+            const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight} = this.margin;
             const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
             this.onArrange(arrangeSize);
-            this.layout = new Rect(finalRect.x, finalRect.y, arrangeSize.width, arrangeSize.height);
+            this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
             this._arrangeDirty = false;
         }
     }
