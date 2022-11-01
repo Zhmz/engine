@@ -26,8 +26,10 @@
 import { Rect, Size, Vec2 } from "../../core";
 import { ContainerElement } from "../base/container-element";
 import { UIElement, Visibility } from "../base/ui-element";
-import { UISlot } from "../base/ui-slot";
+import { UISlot } from "../base/ui-behavior";
 import { ContentSlot, HorizontalAlignment, VerticalAlignment } from "./content-slot";
+import { assert } from "console";
+import { assertIsNonNullable } from "../../core/data/utils/asserts";
 
 export class ContentControl extends ContainerElement {
 
@@ -72,7 +74,8 @@ export class ContentControl extends ContainerElement {
         if (content) {
             if (content.visibility !== Visibility.COLLAPSED) {
                 const childRect = new Rect();
-                const contentSlot = content.slot as ContentSlot;
+                const contentSlot = content.getBehavior(ContentSlot);
+                assertIsNonNullable(contentSlot);
                 const { width: marginWidth, height: marginHeight } = content.margin;
                 if (contentSlot.horizontalAlignment === HorizontalAlignment.STRETCH) {
                     childRect.width = finalRect.width;
@@ -93,13 +96,13 @@ export class ContentControl extends ContainerElement {
                         childRect.x = -finalRect.width / 2;
                         break;
                     case HorizontalAlignment.RIGHT:
-                        childRect.x = finalRect.width - childRect.width;
+                        childRect.x = finalRect.width / 2 - childRect.width;
                         break;
                 }
 
                 switch (contentSlot.verticalAlignment) {
                     case VerticalAlignment.TOP:
-                        childRect.y = finalRect.height - childRect.width;
+                        childRect.y = finalRect.height / 2  - childRect.height;
                         break;
                     case VerticalAlignment.BOTTOM:
                         childRect.y = -finalRect.height / 2;

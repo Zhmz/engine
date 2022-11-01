@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -23,7 +22,22 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { UIBehavior } from "./ui-behavior";
 
-export class UISlot extends UIBehavior {
+import { AttachedObject } from "./attached-object";
+import { UIElement } from "./ui-element";
+
+export type UIBehaviorType<T extends UIBehavior> = new (element: UIElement) => T;
+
+export class UIBehavior extends AttachedObject {
+    get element (): UIElement {
+        return this._owner as UIElement;
+    }
+
+    static produce<T extends UIBehavior> (type: UIBehaviorType<T>, owner: UIElement) {
+        return new type(owner);
+    }
+
+    public constructor (element: UIElement) {
+        super(element);
+    }
 }

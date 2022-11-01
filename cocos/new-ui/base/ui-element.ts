@@ -31,7 +31,7 @@ import { Quat } from '../../core/math/quat';
 import { assert } from '../../core/platform/debug';
 import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
-import { UISlot } from './ui-slot';
+import { UIBehavior, UIBehaviorType } from './ui-behavior';
 import { UIDocument } from './ui-document';
 import { approx, Mat4, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
@@ -69,7 +69,7 @@ export class UIElement extends Visual {
     public static RenderTransformPivotProperty = AdvancedProperty.register('RenderTransformPivot', Vec2, UIElement, Object.freeze(new Vec2(0.5, 0.5)));
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement, Thickness.ZERO);
 
-    protected _slot: UISlot | null = null;
+    protected _behaviors: Array<UIBehavior> = [];
     protected _document: UIDocument | null = null;
     protected _parent: ContainerElement | null = null;
     protected _children: Array<UIElement> = [];
@@ -81,10 +81,6 @@ export class UIElement extends Visual {
     protected _localTransformDirty = false;
     protected _measureDirty = false;
     protected _arrangeDirty = false;
-
-    get slot () {
-        return this._slot;
-    }
 
     get parent () {
         return this._parent;
@@ -130,6 +126,7 @@ export class UIElement extends Visual {
 
     set margin (val: Thickness) {
         this.invalidateParentMeasure();
+        this.invalidateParentArrange();
         this.setValue(UIElement.MarginProperty, val);
     }
 
@@ -299,34 +296,20 @@ export class UIElement extends Visual {
             const index = this._parent._children.indexOf(this);
             assert(index !== -1);
             this._parent._children.splice(index, 1);
+            this._parent.onChildRemoved(this);
         }
         this.invalidateParentMeasure();
         this._parent = parent;
         if (this._parent) {
             this._parent._children.push(this);
+            this._parent.onChildAdded(this);
         }
-        this.updateSlot();
         this.updateDocument(this._parent ? this._parent._document : null);
         this.invalidateParentMeasure();
         this.invalidateWorldTransform();
     }
 
     //#endregion hierarchy
-    private updateSlot () {
-        if (!this._parent) {
-            this._slot = null;
-            return;
-        }
-        const slotClass = this._parent.getSlotClass();
-        if (!this._slot && slotClass) {
-            this._slot = new slotClass(this);
-            return;
-        }
-        if (this._slot && slotClass && this._slot.constructor !== slotClass) {
-            this._slot = new slotClass(this);
-        }
-    }
-
     private updateDocument (document: UIDocument | null) {
         if (this._document !== document) {
             this._document = document;
@@ -336,7 +319,7 @@ export class UIElement extends Visual {
         }
     }
 
-    protected invalidateWorldTransform () {
+    public invalidateWorldTransform () {
         if (!this._worldTransformDirty) {
             this._worldTransformDirty = true;
             for (let i = 0; i < this._children.length; i++) {
@@ -345,7 +328,7 @@ export class UIElement extends Visual {
         }
     }
 
-    protected invalidateMeasure () {
+    public invalidateMeasure () {
         if (!this._measureDirty) {
             this._measureDirty = true;
             if (this._parent) {
@@ -354,20 +337,20 @@ export class UIElement extends Visual {
         }
     }
 
-    protected invalidateParentMeasure () {
+    public invalidateParentMeasure () {
         if (this._parent) {
             this._parent.invalidateMeasure();
         }
     }
 
-    protected invalidateParentArrange () {
+    public invalidateParentArrange () {
         if (this._parent && !this._parent._arrangeDirty) {
             this._parent._arrangeDirty = true;
             this._parent.invalidate(InvalidateReason.ARRANGE);
         }
     }
 
-    protected invalidateLocalTransform () {
+    public invalidateLocalTransform () {
         this._localTransformDirty = true;
         this.invalidateWorldTransform();
     }
@@ -381,6 +364,43 @@ export class UIElement extends Visual {
             this._document.invalidate(this, invalidateReason);
         }
     }
+
+    //#region Behavior
+    
+    public getBehavior <T extends UIBehavior> (type: UIBehaviorType<T>): T | null {
+        for (let i = 0; i < this._behaviors.length; i++) {
+            const behavior = this._behaviors[i];
+            if (behavior instanceof type) {
+                return behavior;
+            }
+        }
+        return null;
+    }
+
+    public addBehavior<T extends UIBehavior> (type: UIBehaviorType<T>): T {
+        if (this.getBehavior(type)) {
+            console.warn('Add Duplicate Behavior, the old one will be removed!');
+            this.removeBehavior(type);
+        }
+        const newBehavior = UIBehavior.produce(type, this);
+        this._behaviors.push(newBehavior);
+        return newBehavior;
+    }
+
+    public removeBehavior<T extends UIBehavior> (type: UIBehaviorType<T>) {
+        for (let i = this._behaviors.length - 1; i >= 0; i--) {
+            const behavior = this._behaviors[i];
+            if (behavior instanceof type) {
+                this._behaviors.splice(i, 1);
+            }
+            const registeredProperties = AdvancedProperty.getRegisteredPropertiesForOwnerType(type);
+            for (let i = 0; i < registeredProperties.length; i++) {
+                this.clearValue(registeredProperties[i]);
+            }
+        }
+    }
+
+    //#endregion Behavior
 
     //#region layout
     /**
@@ -404,13 +424,14 @@ export class UIElement extends Visual {
     }
 
     public arrange (finalRect: Rect) {
-        if (this._arrangeDirty || !finalRect.equals(this.layout)) {
-            const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight} = this.margin;
-            const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
+        const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight} = this.margin;
+        const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
+        if (this._arrangeDirty || !arrangeSize.equals(this.layout.size)) {
             this.onArrange(arrangeSize);
-            this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
             this._arrangeDirty = false;
         }
+        this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
+
     }
     
     //#endregion layout

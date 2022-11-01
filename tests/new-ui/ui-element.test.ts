@@ -6,6 +6,7 @@ import { ContentSlot } from "../../cocos/new-ui/framework/content-slot";
 import { Node } from '../../cocos/core/scene-graph';
 import { ContainerElement } from "../../cocos/new-ui/base/container-element";
 import { Panel } from "../../cocos/new-ui/framework/panel";
+import { UIBehavior } from "../../cocos/new-ui/base/ui-behavior";
 
 class SingleChildElement extends ContainerElement {
     public allowMultipleChild () {
@@ -41,7 +42,7 @@ test('slot', () => {
     }
 
     class TestElement2 extends ContainerElement {
-        public getSlotClass () {
+        protected getSlotClass () {
             return TestSlot;
         }
     }
@@ -49,22 +50,22 @@ test('slot', () => {
     const testElement = new TestElement();
     testElement.addChild(element1);
     expect(testElement.childCount).toBe(1);
-    expect(element1.slot).toBeTruthy();
-    expect(element1.slot!.constructor).toBe(ContentSlot);
+    expect(element1.getBehavior(UISlot)).toBeTruthy();
+    expect(element1.getBehavior(UISlot)!.constructor).toBe(ContentSlot);
 
     testElement.removeChild(element1);
-    expect(element1.slot).toBeNull();
+    expect(element1.getBehavior(UISlot)).toBeNull();
     testElement.addChild(element1);
-    expect(element1.slot).toBeTruthy();
-    expect(element1.slot!.constructor).toBe(ContentSlot);
+    expect(element1.getBehavior(UISlot)).toBeTruthy();
+    expect(element1.getBehavior(UISlot)!.constructor).toBe(ContentSlot);
 
     const testElement2 = new TestElement2();
     testElement2.addChild(element1);
-    expect(element1.slot).toBeTruthy();
-    expect(element1.slot!.constructor).toBe(TestSlot);
+    expect(element1.getBehavior(UISlot)).toBeTruthy();
+    expect(element1.getBehavior(UISlot)!.constructor).toBe(TestSlot);
 
     testElement2.removeChild(element1);
-    expect(element1.slot).toBeNull();
+    expect(element1.getBehavior(UISlot)).toBeNull();
 });
 
 test('document', () => {
@@ -218,15 +219,15 @@ test('other', () => {
     expect(testElement.childCount).toBe(2);
     expect(childElement1.parent).toBe(testElement);
     expect(childElement2.parent).toBe(testElement);
-    expect(childElement1.slot).toBeTruthy();
-    expect(childElement2.slot).toBeTruthy();
+    expect(childElement1.getBehavior(UISlot)).toBeTruthy();
+    expect(childElement2.getBehavior(UISlot)).toBeTruthy();
 
     testElement.clearChildren();
     expect(testElement.childCount).toBe(0);
     expect(childElement1.parent).toBe(null);
     expect(childElement2.parent).toBe(null);
-    expect(childElement1.slot).toBeFalsy();
-    expect(childElement2.slot).toBeFalsy();
+    expect(childElement1.getBehavior(UISlot)).toBeFalsy();
+    expect(childElement2.getBehavior(UISlot)).toBeFalsy();
 
     testElement.addChild(childElement1);
     // change parent
@@ -674,4 +675,17 @@ test('local-world transform', () => {
     expect(worldPos3.x).toBeCloseTo(53.28784);
     expect(worldPos3.y).toBeCloseTo(181.42997);
 
+});
+
+test('behavior', () => {
+    class MyTestBehavior extends UIBehavior {
+    };
+
+    const element = new UIElement;
+    const behavior = element.addBehavior(MyTestBehavior);
+    expect(behavior).toBeTruthy();
+    expect(behavior.element).toBe(element);
+    expect(element.getBehavior(MyTestBehavior)).toBe(behavior);
+    element.removeBehavior(MyTestBehavior);
+    expect(element.getBehavior(MyTestBehavior)).toBeNull();
 });

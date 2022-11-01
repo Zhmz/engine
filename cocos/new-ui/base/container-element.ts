@@ -62,7 +62,15 @@ export class ContainerElement extends UIElement {
         return false;
     }
 
-    public getSlotClass (): typeof UISlot {
+    protected getSlotClass (): typeof UISlot {
         return UISlot;
+    }
+
+    public onChildAdded (child: UIElement) {
+        child.addBehavior(this.getSlotClass());
+    }
+
+    public onChildRemoved (oldChild: UIElement) {
+        oldChild.removeBehavior(UISlot);
     }
 }
