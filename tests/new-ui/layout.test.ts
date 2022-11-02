@@ -1,6 +1,7 @@
 import { toBindingIdentifierName } from "@babel/types";
 import { Rect, Size, Vec2 } from "../../cocos/core";
 import { Thickness } from "../../cocos/new-ui/base/thickness";
+import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { ContentControl } from "../../cocos/new-ui/framework/content-control";
 import { ContentSlot, HorizontalAlignment, VerticalAlignment } from "../../cocos/new-ui/framework/content-slot";
@@ -26,7 +27,7 @@ class FixedContentElement extends UIElement {
         this.invalidateMeasure();
     }
 
-    onMeasure () {
+    computeDesiredSize () {
         return new Size(this._width, this._height);
     }
 }
@@ -224,5 +225,46 @@ test('arrange', () => {
     expect(content.layout.size).toStrictEqual(new Size(40, 100));
     expect(content.layout.center).toStrictEqual(new Vec2(2.5, -5));
 
-    
+
+    //             
+    //       _______________
+    //      |          _____|_
+    //      |         |     | |
+    //      |         |_____|_|
+    //      |_______________|
+    //          
+
+    content.width = 60;
+    content.height = 40;
+    content.margin = new Thickness(5, 2, -10, 5);
+    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.RIGHT;
+    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.CENTER;
+
+    parent.measure();
+    parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
+    expect(content.layout.size).toStrictEqual(new Size(60, 40));
+    expect(content.layout.center).toStrictEqual(new Vec2(20, 1.5));
+
+});
+
+
+test('auto layout', () => {
+    const document = new UIDocument();
+    document.viewport = new Rect(0, 0, 960, 640);
+    const content = new ContentControl();
+    const fixedSizeContent = new FixedContentElement();
+    content.addChild(fixedSizeContent);
+    fixedSizeContent.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.LEFT;
+    fixedSizeContent.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.TOP;
+    fixedSizeContent.width = fixedSizeContent.height = 100;
+    document.window.addChild(content);
+    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.STRETCH;
+    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.STRETCH;
+    content.margin = new Thickness(10, 10, 10, 10);
+    document.update();
+
+    expect(content.layout.size).toStrictEqual(new Size(940, 620));
+    expect(content.layout.origin).toStrictEqual(new Vec2(-470, -310));
+    expect(fixedSizeContent.layout.size).toStrictEqual(new Size(100, 100));
+    expect(fixedSizeContent.layout.center).toStrictEqual(new Vec2(-420, 260));
 });

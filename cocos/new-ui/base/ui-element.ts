@@ -74,6 +74,7 @@ export class UIElement extends Visual {
     protected _parent: ContainerElement | null = null;
     protected _children: Array<UIElement> = [];
     protected _layout = new Rect();
+    protected _previousArrangeRect = new Rect();
     protected _desiredSize = new Size();
     protected _worldTransform = new Mat4();
     protected _localTransform = new Mat4();
@@ -81,6 +82,7 @@ export class UIElement extends Visual {
     protected _localTransformDirty = false;
     protected _measureDirty = false;
     protected _arrangeDirty = false;
+    protected _hierarchyLevel = 0;
 
     get parent () {
         return this._parent;
@@ -90,7 +92,15 @@ export class UIElement extends Visual {
         return this._document;
     }
 
+    get hierarchyLevel () {
+        return this._hierarchyLevel;
+    }
+
     //#region Layout
+
+    get previousArrangeRect () {
+        return this._previousArrangeRect;
+    }
 
     get layout () {
         return this._layout;
@@ -111,13 +121,6 @@ export class UIElement extends Visual {
             return Size.ZERO;
         }
         return this._desiredSize;
-    }
-
-    set desiredSize (val) {
-        if (!this._desiredSize.equals(val)) {
-            this._desiredSize.set(val);
-            this.invalidateParentArrange();
-        }
     }
 
     get margin () {
@@ -155,6 +158,7 @@ export class UIElement extends Visual {
     }
 
     set visibility (val: Visibility) {
+        this.invalidateParentMeasure();
         this.setValue(UIElement.VisibilityProperty, val);
     }
 
@@ -304,12 +308,22 @@ export class UIElement extends Visual {
             this._parent._children.push(this);
             this._parent.onChildAdded(this);
         }
+        this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
         this.updateDocument(this._parent ? this._parent._document : null);
         this.invalidateParentMeasure();
         this.invalidateWorldTransform();
     }
 
     //#endregion hierarchy
+    private updateHierarchyLevel (level: number) {
+        if (this._hierarchyLevel !== level) {
+            this._hierarchyLevel = level;
+            for (let i = 0; i < this._children.length; i++) {
+                this._children[i].updateHierarchyLevel(level + 1);
+            }
+        }
+    }
+
     private updateDocument (document: UIDocument | null) {
         if (this._document !== document) {
             this._document = document;
@@ -328,6 +342,18 @@ export class UIElement extends Visual {
         }
     }
 
+    public invalidateParentMeasure () {
+        if (this._parent) {
+            this._parent.invalidateMeasure();
+        }
+    }
+
+    public invalidateParentArrange () {
+        if (this._parent) {
+            this._parent.invalidateArrange();
+        }
+    }
+
     public invalidateMeasure () {
         if (!this._measureDirty) {
             this._measureDirty = true;
@@ -337,16 +363,10 @@ export class UIElement extends Visual {
         }
     }
 
-    public invalidateParentMeasure () {
-        if (this._parent) {
-            this._parent.invalidateMeasure();
-        }
-    }
-
-    public invalidateParentArrange () {
-        if (this._parent && !this._parent._arrangeDirty) {
-            this._parent._arrangeDirty = true;
-            this._parent.invalidate(InvalidateReason.ARRANGE);
+    public invalidateArrange () {
+        if (!this._arrangeDirty) {
+            this._arrangeDirty = true;
+            this.invalidate(InvalidateReason.ARRANGE);
         }
     }
 
@@ -403,22 +423,20 @@ export class UIElement extends Visual {
     //#endregion Behavior
 
     //#region layout
-    /**
-     * 
-     * @param availableSize 
-     */
-    protected onMeasure () {
+    protected computeDesiredSize () {
         return new Size(0, 0);
     }
 
-    protected onArrange (arrangeSize: Size) {
-
-    }
+    protected arrangeContent (arrangeSize: Size) {}
 
     // sealed, invoked by layout system
     public measure () {
         if (this._measureDirty) {
-            this.desiredSize = this.onMeasure();
+            const desiredSize = this.computeDesiredSize();
+            if (!this._desiredSize.equals(desiredSize)) {
+                this._desiredSize.set(desiredSize);
+                this.invalidateParentArrange();
+            }
             this._measureDirty = false;
         }
     }
@@ -427,11 +445,11 @@ export class UIElement extends Visual {
         const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight} = this.margin;
         const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
         if (this._arrangeDirty || !arrangeSize.equals(this.layout.size)) {
-            this.onArrange(arrangeSize);
+            this.arrangeContent(arrangeSize);
             this._arrangeDirty = false;
         }
+        this._previousArrangeRect.set(finalRect);
         this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
-
     }
     
     //#endregion layout

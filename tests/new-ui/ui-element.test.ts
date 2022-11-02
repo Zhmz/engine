@@ -124,12 +124,17 @@ test('hierarchy', () => {
     }
 
     const parent = new TestElement();
+    expect(parent.hierarchyLevel).toBe(0);
     expect(() => parent.insertChildAt(new TestElement, 0)).toThrowError();
     const child1 = new TestElement();
+    expect(child1.hierarchyLevel).toBe(0);
     const child2 = new TestElement();
+    expect(child2.hierarchyLevel).toBe(0);
     parent.addChild(child1);
     parent.addChild(child2);
 
+    expect(child1.hierarchyLevel).toBe(1);
+    expect(child2.hierarchyLevel).toBe(1);
     expect(parent.children.length).toBe(2);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child1.parent).toBe(parent);
@@ -140,10 +145,12 @@ test('hierarchy', () => {
     expect(() => parent.addChild(child1)).toThrowError();
 
     const child3 = new TestElement();
+    expect(child3.hierarchyLevel).toBe(0);
     parent.addChild(child3);
     expect(parent.children[0]).toBe(child1);
     expect(parent.children[1]).toBe(child2);
     expect(parent.children[2]).toBe(child3);
+    expect(child3.hierarchyLevel).toBe(1);
     expect(parent.children.length).toBe(3);
     expect(parent.childCount).toBe(parent.children.length);
 
@@ -153,21 +160,27 @@ test('hierarchy', () => {
     expect(parent.children.length).toBe(2);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child1.parent).toBeNull();
+    expect(child1.hierarchyLevel).toBe(0);
     expect(parent.children[0]).toBe(child2);
+    expect(child2.hierarchyLevel).toBe(1);
     expect(parent.children[1]).toBe(child3);
+    expect(child3.hierarchyLevel).toBe(1);
 
     expect(() => parent.removeChild(child1)).toThrowError();
     parent.removeChild(child2);
+    expect(child2.hierarchyLevel).toBe(0);
     expect(parent.children.length).toBe(1);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child2.parent).toBeNull();
     expect(parent.children[0]).toBe(child3);
+    expect(child3.hierarchyLevel).toBe(1);
 
     expect(() => parent.removeChildAt(1)).toThrowError();
     parent.removeChildAt(0);
     expect(parent.children.length).toBe(0);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child3.parent).toBeNull();
+    expect(child3.hierarchyLevel).toBe(0);
 
     parent.addChild(child1);
     parent.insertChildAt(child2, 0);
@@ -175,10 +188,13 @@ test('hierarchy', () => {
     expect(parent.childCount).toBe(parent.children.length);
     expect(parent.children[0]).toBe(child2);
     expect(parent.children[1]).toBe(child1);
+    expect(child1.hierarchyLevel).toBe(1);
+    expect(child2.hierarchyLevel).toBe(1);
     expect(child2.parent).toBe(parent);
     expect(child1.parent).toBe(parent);
     parent.insertChildAt(child3, 1);
     expect(parent.children.length).toBe(3);
+    expect(child3.hierarchyLevel).toBe(1);
     expect(parent.childCount).toBe(parent.children.length);
     expect(parent.children[0]).toBe(child2);
     expect(parent.children[1]).toBe(child3);
@@ -187,13 +203,64 @@ test('hierarchy', () => {
 
     const child4 = new TestElement();
     const child5 = new TestElement();
+    expect(child4.hierarchyLevel).toBe(0);
+    expect(child5.hierarchyLevel).toBe(0);
     child4.addChild(child5);
+    expect(child5.hierarchyLevel).toBe(1);
     child3.addChild(child4);
+    expect(child4.hierarchyLevel).toBe(2);
+    expect(child5.hierarchyLevel).toBe(3);
     expect(child4.children.length).toBe(1);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child4.children[0]).toBe(child5);
     expect(child3.children.length).toBe(1);
     expect(child3.children[0]).toBe(child4);
+});
+
+test('hierarchy level', () => {
+    const rootElement = new SingleChildElement();
+    expect(rootElement.hierarchyLevel).toBe(0);
+    const document = new UIDocument();
+    document.window.addChild(rootElement);
+    expect(rootElement.hierarchyLevel).toBe(1);
+
+    const childLevel1 = new SingleChildElement();
+    const childLevel2 = new SingleChildElement();
+    const childLevel3 = new SingleChildElement();
+    const childLevel4 = new SingleChildElement();
+
+    childLevel1.addChild(childLevel2);
+    childLevel2.addChild(childLevel3);
+    childLevel3.addChild(childLevel4);
+
+    expect(childLevel1.hierarchyLevel).toBe(0);
+    expect(childLevel2.hierarchyLevel).toBe(1);
+    expect(childLevel3.hierarchyLevel).toBe(2);
+    expect(childLevel4.hierarchyLevel).toBe(3);
+
+    rootElement.addChild(childLevel1);
+
+    expect(childLevel1.hierarchyLevel).toBe(2);
+    expect(childLevel2.hierarchyLevel).toBe(3);
+    expect(childLevel3.hierarchyLevel).toBe(4);
+    expect(childLevel4.hierarchyLevel).toBe(5);
+
+    childLevel2.removeChild(childLevel3);
+    expect(childLevel3.hierarchyLevel).toBe(0);
+    expect(childLevel4.hierarchyLevel).toBe(1);
+
+    document.window.removeChild(rootElement);
+
+    expect(rootElement.hierarchyLevel).toBe(0);
+    expect(childLevel1.hierarchyLevel).toBe(1);
+    expect(childLevel2.hierarchyLevel).toBe(2);
+    expect(childLevel3.hierarchyLevel).toBe(0);
+    expect(childLevel4.hierarchyLevel).toBe(1);
+
+    childLevel2.addChild(childLevel3);
+    expect(childLevel3.hierarchyLevel).toBe(3);
+    expect(childLevel4.hierarchyLevel).toBe(4);
+
 });
 
 test('other', () => {

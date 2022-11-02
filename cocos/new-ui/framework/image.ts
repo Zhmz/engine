@@ -49,7 +49,7 @@ export class Image extends UIElement {
         return null;
     }
 
-    onMeasure () {
+    computeDesiredSize () {
         const { width: naturalWidth, height: naturalHeight } = this.imageSource;
         return new Size(naturalWidth, naturalHeight);
     }

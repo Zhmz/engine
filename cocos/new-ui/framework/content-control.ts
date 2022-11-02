@@ -26,9 +26,8 @@
 import { Rect, Size, Vec2 } from "../../core";
 import { ContainerElement } from "../base/container-element";
 import { UIElement, Visibility } from "../base/ui-element";
-import { UISlot } from "../base/ui-behavior";
+import { UISlot } from "../base/ui-slot";
 import { ContentSlot, HorizontalAlignment, VerticalAlignment } from "./content-slot";
-import { assert } from "console";
 import { assertIsNonNullable } from "../../core/data/utils/asserts";
 
 export class ContentControl extends ContainerElement {
@@ -58,7 +57,7 @@ export class ContentControl extends ContainerElement {
         return ContentSlot;
     }
 
-    protected onMeasure () {
+    protected computeDesiredSize () {
         const desiredSize = new Size();
         const content = this.content;
         if (content) {
@@ -69,7 +68,7 @@ export class ContentControl extends ContainerElement {
         return desiredSize;
     }
 
-    protected onArrange (finalRect: Rect) {
+    protected arrangeContent (finalRect: Rect) {
         const content = this.content;
         if (content) {
             if (content.visibility !== Visibility.COLLAPSED) {
