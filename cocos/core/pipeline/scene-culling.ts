@@ -178,4 +178,18 @@ export function sceneCulling (pipeline: RenderPipeline, camera: Camera) {
             }
         }
     }
+
+    // Hack for Immediate Renderer
+    const iModels = camera.getIntermediateModels();
+    for (let i = 0; i < iModels.length; i++) {
+        const model = iModels[i];
+        if (model.enabled) { // maybe use less
+            // frustum culling
+            // if (model.worldBounds && !intersect.aabbFrustum(model.worldBounds, camera.frustum)) {
+            //     continue;
+            // }
+
+            renderObjects.push(getRenderObject(model, camera));
+        }
+    }
 }

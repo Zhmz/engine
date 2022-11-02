@@ -1,4 +1,4 @@
-
+  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -23,18 +23,41 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+import { RenderMode } from "../base/runtime-document-settings";
+import { IDrawingContext } from "../base/ui-drawing-context";
+import { UIElement } from "../base/ui-element";
+import { UISubSystem } from "../base/ui-subsystem";
 
-import { VisualProxy } from "../rendering/visual-proxy";
-import { AdvancedObject } from "./advanced-object";
-import { IDrawingContext } from "./ui-drawing-context";
+export class UIRenderSubsystem extends UISubSystem {
+    private _dirtyElementMap = new Set;
+    private _context = new IDrawingContext();
 
-export abstract class Visual extends AdvancedObject {
-    public _visualProxy: VisualProxy | null = null;
-
-    constructor () {
-        super();
-        this._visualProxy = new VisualProxy();
+    invalidate(element: UIElement) {
+        if (!this._dirtyElementMap.has(element)) {
+            this._dirtyElementMap.add(element)
+            // 部分更新用
+            // 能否在这里进行 transform 的更新
+        }
     }
 
-    protected onPaint (drawingContext: IDrawingContext) {}
+    update () {
+        const camera = this._document.settings.camera!;
+        camera.cleanIntermediateModels();
+
+        // Assembly data
+        this._context.paint();
+
+        // insert data
+        const renderModel = this._context.getContextModel();
+        switch (this._document.settings.renderMode) {
+            case RenderMode.CAMERA:
+                break;
+            case RenderMode.WORLD_SPACE:
+                // renderModel.attachToScene();
+                break;
+            default:
+                camera.addIntermediateModel(renderModel);
+                break;
+        }
+    }
 }

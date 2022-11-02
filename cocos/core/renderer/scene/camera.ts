@@ -34,6 +34,7 @@ import { RenderWindow } from '../core/render-window';
 import { preTransforms } from '../../math/mat4';
 import { warnID } from '../../platform/debug';
 import { GeometryRenderer } from '../../pipeline/geometry-renderer';
+import { Model } from './model';
 
 export enum CameraFOVAxis {
     VERTICAL,
@@ -582,6 +583,9 @@ export class Camera {
     private _cameraType: CameraType = CameraType.DEFAULT;
     private _trackingType: TrackingType = TrackingType.NO_TRACKING;
 
+    // for IntermediateModel
+    private _intermediateModels: Model[] = [];
+
     constructor (device: Device) {
         this._device = device;
         this._apertureValue = FSTOPS[this._aperture];
@@ -1040,5 +1044,20 @@ export class Camera {
     private updateExposure () {
         const ev100 = Math.log2((this._apertureValue * this._apertureValue) / this._shutterValue * 100.0 / this._isoValue);
         this.setExposure(ev100);
+    }
+
+    public addIntermediateModel (model:Model) {
+        if (!this._intermediateModels.includes(model)) {
+            this._intermediateModels.push(model);
+        }
+    }
+
+    public getIntermediateModels () {
+        return this._intermediateModels;
+    }
+
+    // 每帧清空 // 时机是否有问题 // 生命周期跟谁
+    public cleanIntermediateModels () {
+        this._intermediateModels.length = 0;
     }
 }

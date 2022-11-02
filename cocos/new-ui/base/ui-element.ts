@@ -28,6 +28,7 @@ import { Enum } from '../../core/value-types/enum';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec2 } from '../../core/math/vec2';
 import { Quat } from '../../core/math/quat';
+import { IDrawingContext, IRectPainterParameters } from './ui-drawing-context';
 import { assert } from '../../core/platform/debug';
 import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
@@ -453,6 +454,13 @@ export class UIElement extends Visual {
     }
     
     //#endregion layout
+
+    //#endregion render
+    protected onPaint (drawingContext: IDrawingContext) {
+        let painterParams = IRectPainterParameters.getDefault(this); // 应该要分类型
+        drawingContext.drawRect(painterParams);
+    }
+    //#endregion render
 
     //#region EventSystem
     public hitTest (ray: Ray): boolean {
