@@ -204,4 +204,25 @@ test('arrange', () => {
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
     expect(content.layout.size).toStrictEqual(new Size(40, 40));
     expect(content.layout.center).toStrictEqual(new Vec2(-10, -1));
+
+    //             ____
+    //       _____|____|____
+    //      |     |    |    |
+    //      |     |    |    |
+    //      |     |    |    |
+    //      |_____|____|____|
+    //            |____|
+
+    content.width = 40;
+    content.height = 100;
+    content.margin = new Thickness(10, 0, 5, -10);
+    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.CENTER;
+    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.CENTER;
+
+    parent.measure();
+    parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
+    expect(content.layout.size).toStrictEqual(new Size(40, 100));
+    expect(content.layout.center).toStrictEqual(new Vec2(2.5, -5));
+
+    
 });

@@ -379,7 +379,7 @@ export class UIElement extends Visual {
 
     public addBehavior<T extends UIBehavior> (type: UIBehaviorType<T>): T {
         if (this.getBehavior(type)) {
-            console.warn('Add Duplicate Behavior, the old one will be removed!');
+            console.warn('Add a duplicated behavior, the old one will be removed!');
             this.removeBehavior(type);
         }
         const newBehavior = UIBehavior.produce(type, this);

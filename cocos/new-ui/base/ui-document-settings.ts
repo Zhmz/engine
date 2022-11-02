@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,8 +23,14 @@
  THE SOFTWARE.
 */
 
-import { ContentControl } from "./content-control";
+import { UIDocument } from "./ui-document";
 
-export class Button extends ContentControl {
+export abstract class UIDocumentSettings {
+    protected _document: UIDocument;
 
+    constructor (document: UIDocument) {
+        this._document = document;
+    }
+
+    public apply () {};
 }

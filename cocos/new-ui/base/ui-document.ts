@@ -26,6 +26,8 @@
 
 import { Rect } from "../../core/math";
 import { UILayoutSubsystem } from "../subsystem/ui-layout-subsystem";
+import { UIRuntimeDocumentSettings } from "./runtime-document-settings";
+import { UIDocumentSettings } from "./ui-document-settings";
 import { InvalidateReason, UIElement } from "./ui-element";
 import { UIWindow } from "./ui-window";
 
@@ -39,6 +41,15 @@ export class UIDocument {
             this._viewport.set(val);
             this.invalidate(this.window, InvalidateReason.ARRANGE);
         }
+    }
+
+    get settings () {
+        return this._settings;
+    }
+
+    set settings (val: UIDocumentSettings) {
+        this._settings = val;
+        this._settings.apply();
     }
 
     get window () {
@@ -55,6 +66,7 @@ export class UIDocument {
         this._layoutSubsystem.update();
     }
 
+    private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
     private _viewport = new Rect();
     private _window = new UIWindow(this);
     private _layoutSubsystem = new UILayoutSubsystem(this);

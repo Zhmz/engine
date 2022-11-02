@@ -24,8 +24,8 @@
  THE SOFTWARE.
 */
 
-import { ContentControl } from "./content-control";
+import { UIDocumentSettings } from "./ui-document-settings";
 
-export class Button extends ContentControl {
+export class UIRuntimeDocumentSettings extends UIDocumentSettings {
 
 }
