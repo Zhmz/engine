@@ -27,9 +27,8 @@ import { Ray } from "../../core/geometry";
 import { InputEventType } from "../../input/types/event-enum";
 import { UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
-import { Event as NewUIEvent } from "../event-system/event-data/event";
-import { PointerDownEvent } from "../event-system/event-data/pointer-down-event";
-import { PointerUpEvent } from "../event-system/event-data/pointer-up-event";
+import { UIEvent } from "../base/ui-event";
+import { PointerUpEvent, PointerDownEvent } from "../event-system/event-data/pointer-event";
 
 
 export class EventSubSystem extends UISubSystem {
@@ -71,13 +70,13 @@ export class EventSubSystem extends UISubSystem {
             return;
         }
 
-        let newUIEvent: NewUIEvent | null = null;
+        let newUIEvent: UIEvent | null = null;
         switch (event.type) {
             case InputEventType.MOUSE_DOWN:
-                newUIEvent = new PointerDownEvent();
+                newUIEvent = new PointerDownEvent(element);
                 break;
             case InputEventType.MOUSE_UP:
-                newUIEvent = new PointerUpEvent();
+                newUIEvent = new PointerUpEvent(element);
                 break;
         }
         element.dispatchEvent(newUIEvent!);

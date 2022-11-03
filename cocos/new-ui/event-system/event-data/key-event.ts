@@ -23,17 +23,8 @@
  THE SOFTWARE.
 */
 
-//import { NewUIEventType } from "../../../input/types/event-enum";
-import { Event } from "./event";
+import { UIEvent } from "../../base/ui-event";
 
-export class PointerUpEvent extends Event {
-    //protected _eventType: NewUIEventType = NewUIEventType.MOUSE_UP;
+export class KeyDownEvent extends UIEvent {
     
 }
-
-
-
-
-
-
-

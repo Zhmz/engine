@@ -1,4 +1,3 @@
-import { toBindingIdentifierName } from "@babel/types";
 import { Rect, Size, Vec2 } from "../../cocos/core";
 import { Thickness } from "../../cocos/new-ui/base/thickness";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
@@ -189,6 +188,25 @@ test('arrange', () => {
     expect(content.layout.size).toStrictEqual(new Size(100, 100));
     expect(content.layout.center).toStrictEqual(new Vec2(-12, -12));
 
+    //    __________________
+    //   ||                ||
+    //   ||________________||
+    //   |                  |
+    //   |                  |
+    //   |__________________|
+    //   
+
+    content.width = 100;
+    content.height = 100;
+    content.margin = new Thickness(4, 2, 2, 5);
+    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.STRETCH;
+    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.TOP;
+
+    parent.measure();
+    parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
+    expect(content.layout.size).toStrictEqual(new Size(100, 100));
+    expect(content.layout.center).toStrictEqual(new Vec2(-12, -12));
+
     //       _______________
     //      | ____          |
     //      ||    |         |
@@ -254,12 +272,12 @@ test('auto layout', () => {
     const content = new ContentControl();
     const fixedSizeContent = new FixedContentElement();
     content.addChild(fixedSizeContent);
-    fixedSizeContent.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.LEFT;
-    fixedSizeContent.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.TOP;
+    (fixedSizeContent.slot as ContentSlot).horizontalAlignment = HorizontalAlignment.LEFT;
+    (fixedSizeContent.slot as ContentSlot).verticalAlignment = VerticalAlignment.TOP;
     fixedSizeContent.width = fixedSizeContent.height = 100;
     document.window.addChild(content);
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.STRETCH;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.STRETCH;
+    (content.slot as ContentSlot).horizontalAlignment = HorizontalAlignment.STRETCH;
+    (content.slot as ContentSlot).verticalAlignment = VerticalAlignment.STRETCH;
     content.margin = new Thickness(10, 10, 10, 10);
     document.update();
 

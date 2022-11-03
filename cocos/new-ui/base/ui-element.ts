@@ -28,7 +28,7 @@ import { Enum } from '../../core/value-types/enum';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec2 } from '../../core/math/vec2';
 import { Quat } from '../../core/math/quat';
-import { IDrawingContext, IRectPainterParameters } from './ui-drawing-context';
+import { IDrawingContext } from './ui-drawing-context';
 import { assert } from '../../core/platform/debug';
 import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
@@ -39,6 +39,7 @@ import { Ray } from '../../core/geometry';
 import { ContainerElement } from './container-element';
 import { Visual } from './visual';
 import { UISlot } from './ui-slot';
+import { EventType, IUIEventCallback, UIEvent } from './ui-event';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -75,6 +76,7 @@ export class UIElement extends Visual {
     protected _document: UIDocument | null = null;
     protected _parent: ContainerElement | null = null;
     protected _children: Array<UIElement> = [];
+    protected _eventListeners: Array<IUIEventCallback<UIEvent>> = [];
     protected _layout = new Rect();
     protected _previousArrangeRect = new Rect();
     protected _desiredSize = new Size();
@@ -381,7 +383,7 @@ export class UIElement extends Visual {
         this.invalidateWorldTransform();
     }
 
-    protected invalidatePainting () {
+    public invalidatePainting () {
 
     }
 
@@ -464,10 +466,34 @@ export class UIElement extends Visual {
     protected onPaint (drawingContext: IDrawingContext) {}
     //#endregion render
 
-    // #region EventSystem
+    // #region event
     public hitTest (ray: Ray): boolean {
         return false;
     }
-    // #endregion EventSystem
+
+    public addEventListener<TEvent extends UIEvent> (type: EventType<TEvent>, fn: (event: TEvent) => void, target?: any) {
+        this._eventListeners.push({ eventType: type, callback: fn, target });
+    }
+
+    public removeEventListener<TEvent extends UIEvent> (type: EventType<TEvent>, fn: (event: TEvent) => void, target?: any) {
+        const index = this._eventListeners.findIndex((val) => val.eventType === type && val.callback === fn && val.target === target);
+        if (index !== -1) {
+            this._eventListeners.splice(index, 1);
+        }
+    }
+
+    public hasEventListener<TEvent extends UIEvent> (type: EventType<TEvent>, fn: (event: TEvent) => void, target?: any) {
+        return this._eventListeners.findIndex((val) => val.eventType === type && val.callback === fn && val.target === target) !== -1;
+    }
+
+    public dispatchEvent (event: UIEvent) {
+        for (let i = 0; i < this._eventListeners.length; i++) {
+            const { eventType, target, callback } = this._eventListeners[i];
+            if (event.constructor === eventType) {
+                target ? callback.call(target, event) : callback(event);
+            }
+        }
+    }
+    // #endregion event
 
 }

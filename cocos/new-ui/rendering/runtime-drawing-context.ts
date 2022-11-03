@@ -65,12 +65,10 @@ export class RuntimeDrawingContext extends IDrawingContext {
                 let render = visualProxy[j];
                 // todo 合批判断 可以利用 dataHash 之类的
                 if (false) { // 打断合批
-                    this._createSubMesh(render);
-                    this._subModelIndex++;
                 } else { // 可以合批
                     this._currAtt = render.attribute;
-                    this._currVerticesData +=; //拼数组？// 还得检查能不能拼得下？
-                    this._currIndicesData +=;
+                    // this._currVerticesData +=; //拼数组？// 还得检查能不能拼得下？
+                    // this._currIndicesData +=;
                 }
             }
         }

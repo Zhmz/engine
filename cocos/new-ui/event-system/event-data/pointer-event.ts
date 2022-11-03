@@ -23,24 +23,31 @@
  THE SOFTWARE.
 */
 
-//import { NewUIEventType } from "../../../input/types/event-enum";
-import { UIElement } from "../../base/ui-element";
+import { UIEvent } from "../../base/ui-event";
 
-export abstract class Event {
-    //protected abstract _eventType:NewUIEventType;
-    protected _target:UIElement|null = null;
-
-    // get eventType() {
-    //     return this._eventType;
-    // }
+export class PointerUpEvent extends UIEvent {
+    
 }
 
+export class PointerDownEvent extends UIEvent {
 
+}
 
+export class PointerMoveEvent extends UIEvent {
 
+}
 
+export class PointerEnterEvent extends UIEvent {
 
+}
 
+export class PointerLeaveEvent extends UIEvent {
+
+}
+
+export class ScrollEvent extends UIEvent {
+
+}
 
 
 

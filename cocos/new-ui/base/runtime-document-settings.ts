@@ -24,9 +24,7 @@
  THE SOFTWARE.
 */
 
-import { assert, Root } from "../../core";
-import { legacyCC } from "../../core/global-exports";
-import { Camera } from "../../core/renderer/scene/camera";
+import { assert, CameraComponent, Root } from "../../core";
 import { UIDocumentSettings } from "./ui-document-settings";
 import { UISystem } from "./ui-system";
 
@@ -38,7 +36,7 @@ export enum RenderMode {
 
 export class UIRuntimeDocumentSettings extends UIDocumentSettings {
 
-    private _camera: Camera | null = null;
+    private _camera: CameraComponent | null = null;
 
     get renderMode () {
         return this._renderMode;
@@ -49,11 +47,15 @@ export class UIRuntimeDocumentSettings extends UIDocumentSettings {
     }
 
     get camera () {
-        return this._renderMode === RenderMode.OVERLAY ? UISystem.instance.hudCamera: this._camera;
+        return this._camera;
     }
 
     set camera (val) {
         this._camera = val;
+    }
+
+    get lowLevelRenderCamera () {
+        return this._renderMode === RenderMode.OVERLAY ? UISystem.instance.hudCamera: this._camera?.camera;
     }
 
     private _renderMode = RenderMode.OVERLAY;

@@ -23,13 +23,35 @@
  THE SOFTWARE.
 */
 
-//import { NewUIEventType } from "../../../input/types/event-enum";
-import { Event } from "./event";
+import { UIElement } from "./ui-element";
 
-export class PointerDownEvent extends Event {
-    //protected _eventType: NewUIEventType = NewUIEventType.MOUSE_DOWN;
-    
+export type EventType<T extends UIEvent> = new (...arg: any[]) => T;
+
+export interface IUIEventCallback<T extends UIEvent> {
+    target: any;
+    callback: (event: any) => void;
+    eventType: EventType<T>;
 }
+
+export class UIEvent {
+
+    protected _target: UIElement;
+
+    constructor (target: UIElement) {
+        this._target = target;
+    }
+
+    get target () {
+        return this._target;
+    }
+}
+
+
+
+
+
+
+
 
 
 

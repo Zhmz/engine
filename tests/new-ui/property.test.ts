@@ -4,10 +4,46 @@ import { AttachedObject } from "../../cocos/new-ui/base/attached-object";
 
 test('advanced-property', () => {
     class MyTestClass extends AdvancedObject{}
+    class MyTestClass2 extends AdvancedObject{}
+
+    expect(AdvancedProperty.allRegisteredProperties.length).toBe(0);
     const testProperty = AdvancedProperty.register('Test', Primitive.NUMBER, MyTestClass);
     expect(testProperty.name).toBe('Test');
     expect(testProperty.propertyType).toBe(Primitive.NUMBER);
     expect(testProperty.ownerType).toBe(MyTestClass);
+    expect(testProperty.defaultValue).toBe(AdvancedProperty.UNSET_VALUE);
+    expect(AdvancedProperty.allRegisteredProperties.length).toBe(1);
+    let registeredProperties = AdvancedProperty.getRegisteredPropertiesForOwnerType(MyTestClass);
+    expect(registeredProperties.length).toBe(1);
+    expect(registeredProperties[0]).toBe(testProperty);
+
+    const defaultVal = new MyTestClass();
+    const testProperty2 = AdvancedProperty.register('Test2', MyTestClass, MyTestClass, defaultVal);
+    expect(testProperty2.name).toBe('Test2');
+    expect(testProperty2.propertyType).toBe(MyTestClass);
+    expect(testProperty2.ownerType).toBe(MyTestClass);
+    expect(testProperty2.defaultValue).toBeTruthy();
+    expect(testProperty2.defaultValue).toBe(defaultVal);
+    expect(AdvancedProperty.allRegisteredProperties.length).toBe(2);
+    registeredProperties = AdvancedProperty.getRegisteredPropertiesForOwnerType(MyTestClass);
+    expect(registeredProperties.length).toBe(2);
+    expect(registeredProperties[0]).toBe(testProperty);
+    expect(registeredProperties[1]).toBe(testProperty2);
+    expect(testProperty2.id).not.toBe(testProperty.id);
+
+    const testProperty3 = AdvancedProperty.register('Test3', Primitive.BOOLEAN, MyTestClass2, true);
+    expect(testProperty3.name).toBe('Test3');
+    expect(testProperty3.propertyType).toBe(Primitive.BOOLEAN);
+    expect(testProperty3.ownerType).toBe(MyTestClass2);
+    expect(testProperty3.defaultValue).toStrictEqual(true);
+    expect(AdvancedProperty.allRegisteredProperties.length).toBe(3);
+    registeredProperties = AdvancedProperty.getRegisteredPropertiesForOwnerType(MyTestClass);
+    expect(registeredProperties.length).toBe(2);
+    expect(registeredProperties[0]).toBe(testProperty);
+    expect(registeredProperties[1]).toBe(testProperty2);
+    registeredProperties = AdvancedProperty.getRegisteredPropertiesForOwnerType(MyTestClass2);
+    expect(registeredProperties.length).toBe(1);
+    expect(registeredProperties[0]).toBe(testProperty3);
 });
 
 test('advanced-object', () => {
@@ -133,4 +169,26 @@ test('default-value', () => {
     expect(testObject.getValue(MyTestClass.TestEnumProperty)).toBe(AdvancedProperty.UNSET_VALUE);
     testObject.setValue(MyTestClass.TestEnumProperty, TestEnum.TEST_3);
     expect(testObject.getValue(MyTestClass.TestEnumProperty)).toBe(TestEnum.TEST_3);
+});
+
+test('clear-value', () => {
+    class MyTestClass extends AdvancedObject {
+        public static TestProperty = AdvancedProperty.register('Test', Primitive.NUMBER, MyTestClass, 10);
+        public static TestBoolProperty = AdvancedProperty.register('Test1', Primitive.BOOLEAN, MyTestClass, true);
+        public static TestStringProperty = AdvancedProperty.register('Test2', Primitive.STRING, MyTestClass, 'test');
+        public static TestObjectProperty = AdvancedProperty.register('Test3', Object, MyTestClass);
+    }
+
+    const testObject = new MyTestClass();
+    testObject.setValue(MyTestClass.TestProperty, 20);
+    expect(testObject.getValue(MyTestClass.TestProperty)).toBe(20);
+    testObject.clearValue(MyTestClass.TestProperty);
+    expect(testObject.getValue(MyTestClass.TestProperty)).toBe(10);
+    testObject.setValue(MyTestClass.TestProperty, 20);
+
+    testObject.setValue(MyTestClass.TestBoolProperty, false);
+    expect(testObject.getValue(MyTestClass.TestBoolProperty)).toStrictEqual(false);
+    testObject.clearValue(MyTestClass.TestBoolProperty);
+    expect(testObject.getValue(MyTestClass.TestProperty)).toBe(20);
+    expect(testObject.getValue(MyTestClass.TestBoolProperty)).toBe(true);
 });

@@ -7,6 +7,8 @@ import { Node } from '../../cocos/core/scene-graph';
 import { ContainerElement } from "../../cocos/new-ui/base/container-element";
 import { Panel } from "../../cocos/new-ui/framework/panel";
 import { UIBehavior } from "../../cocos/new-ui/base/ui-behavior";
+import { AdvancedProperty, Primitive } from "../../cocos/new-ui/base/advanced-property";
+import { UIEvent } from '../../cocos/new-ui/base/ui-event';
 
 class SingleChildElement extends ContainerElement {
     public allowMultipleChild () {
@@ -746,13 +748,103 @@ test('local-world transform', () => {
 
 test('behavior', () => {
     class MyTestBehavior extends UIBehavior {
+        public static TestProperty = AdvancedProperty.register('Test', Primitive.NUMBER, MyTestBehavior, 10);
+        public static TestBoolProperty = AdvancedProperty.register('Test1', Primitive.BOOLEAN, MyTestBehavior, true);
+
+        get test () {
+            return this.getValue(MyTestBehavior.TestProperty) as number;
+        }
+
+        set test (val) {
+            this.setValue(MyTestBehavior.TestProperty, val);
+        }
+
+        get testBool () {
+            return this.getValue(MyTestBehavior.TestBoolProperty) as boolean;
+        }
+
+        set testBool (val) {
+            this.setValue(MyTestBehavior.TestBoolProperty, val);
+        }
     };
 
     const element = new UIElement;
     const behavior = element.addBehavior(MyTestBehavior);
     expect(behavior).toBeTruthy();
+    behavior.test = 20;
     expect(behavior.element).toBe(element);
+    expect(element.getValue(MyTestBehavior.TestProperty)).toBe(20);
     expect(element.getBehavior(MyTestBehavior)).toBe(behavior);
     element.removeBehavior(MyTestBehavior);
+    expect(element.getValue(MyTestBehavior.TestProperty)).toBe(10);
     expect(element.getBehavior(MyTestBehavior)).toBeNull();
 });
+
+test('event', () => {
+    const element = new UIElement;
+    class MyEvent extends UIEvent {
+        public customString = '';
+
+        constructor (target: UIElement, str: string) {
+            super(target);
+            this.customString = str;
+        }
+    }
+
+    const fn = jest.fn(function (evt) {
+        
+    });
+
+    const fn1 = function (evt) {
+        expect(this).toBe(undefined);
+    }
+
+    const fn2 = jest.fn(function (evt) {
+        expect(this).toBe(element);
+    });
+
+    const event = new MyEvent(element, 'MyTest')
+
+    const fn3 = jest.fn(function (evt) {
+        expect(evt).toBe(event);
+        expect(evt.customString).toBe('MyTest');
+    })
+
+    element.addEventListener(MyEvent, fn);
+    element.addEventListener(MyEvent, fn1);
+    element.addEventListener(MyEvent, fn2, element);
+    element.addEventListener(MyEvent, fn3);
+
+    fn1(event);
+
+    expect(element.hasEventListener(MyEvent, fn)).toBe(true);
+    expect(element.hasEventListener(MyEvent, fn1)).toBe(true);
+    expect(element.hasEventListener(MyEvent, fn2)).toBe(false);
+    expect(element.hasEventListener(MyEvent, fn2, element)).toBe(true);
+    expect(element.hasEventListener(MyEvent, fn3, element)).toBe(false);
+    expect(element.hasEventListener(MyEvent, fn3)).toBe(true);
+
+    element.dispatchEvent(event);
+    expect(fn).toBeCalledTimes(1);
+    expect(fn2).toBeCalledTimes(1);
+    expect(fn3).toBeCalledTimes(1);
+
+    element.removeEventListener(MyEvent, fn2, element);
+    expect(element.hasEventListener(MyEvent, fn2, element)).toBe(false);
+    element.removeEventListener(MyEvent, fn1, element);
+    expect(element.hasEventListener(MyEvent, fn1)).toBe(true);
+    element.removeEventListener(MyEvent, fn1);
+    expect(element.hasEventListener(MyEvent, fn1)).toBe(false);
+    element.removeEventListener(MyEvent, fn3);
+    expect(element.hasEventListener(MyEvent, fn3)).toBe(false);
+
+    element.dispatchEvent(event);
+    element.dispatchEvent(event);
+    element.dispatchEvent(event);
+
+    expect(fn).toBeCalledTimes(4);
+    expect(fn2).toBeCalledTimes(1);
+    expect(fn3).toBeCalledTimes(1);
+
+});
+
