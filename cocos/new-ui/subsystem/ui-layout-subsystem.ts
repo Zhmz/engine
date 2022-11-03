@@ -28,18 +28,42 @@ import { UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
 
 export class UILayoutSubsystem extends UISubSystem {
-    private _dirtyArrangeElement = new Array<UIElement>();
+    private _buffer1 = new Array<UIElement>();
+    private _buffer2 = new Array<UIElement>();
+    private _doubleArray = [this._buffer1, this._buffer2];
+    private _loop = 0;
+
+    private _dirtyArrangeElements = this._buffer1;
 
     invalidate(element: UIElement) {
-        this._dirtyArrangeElement.push(element);
+        this._dirtyArrangeElements.push(element);
     }
 
     update () {
-        this.document.window.measure();
-        for (let i = 0; i < this._dirtyArrangeElement.length; i++) {
-            const uiElement = this._dirtyArrangeElement[i];
-            uiElement.arrange(uiElement.layout);
+        while (this.document.window.isMeasureDirty || this._dirtyArrangeElements.length > 0) {
+            const dirtyArrangeElements = this._dirtyArrangeElements;
+            this.sealDirtyElements();
+
+            while (this.document.window.isMeasureDirty) {
+                this.document.window.measure();
+            }
+
+            dirtyArrangeElements.sort(this.compareArrangeElement);
+            
+            for (let i = 0; i < dirtyArrangeElements.length; i++) {
+                const uiElement = dirtyArrangeElements[i];
+                uiElement.arrange(uiElement.previousArrangeRect);
+            }
+            dirtyArrangeElements.length = 0;
         }
-        this._dirtyArrangeElement.length = 0;
+    }
+
+    private sealDirtyElements () {
+        this._loop++
+        this._dirtyArrangeElements = this._doubleArray[this._loop % 2];
+    }
+
+    private compareArrangeElement (elementA: UIElement, elementB: UIElement) {
+        return elementA.hierarchyLevel - elementB.hierarchyLevel;
     }
 }

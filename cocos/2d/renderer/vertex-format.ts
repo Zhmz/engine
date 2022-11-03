@@ -47,6 +47,11 @@ export const vfmtPosColor = [
     new Attribute(AttributeName.ATTR_COLOR, Format.RGBA32F),
 ];
 
+export const vfmtPosColor4B = [
+    new Attribute(AttributeName.ATTR_POSITION, Format.RGB32F),
+    new Attribute(AttributeName.ATTR_COLOR, Format.RGBA8, true),
+];
+
 /**
  * @en Vertex format with the following layout
  * 1. Vector 3 position attribute (Float32)

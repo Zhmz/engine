@@ -1,3 +1,4 @@
+
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -22,16 +23,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+import { UIBehavior } from "./ui-behavior";
 
-import { AttachedObject } from "./attached-object";
-import { UIElement } from "./ui-element";
-
-export class UISlot extends AttachedObject {
-    get element (): UIElement {
-        return this._owner as UIElement;
-    }
-
-    constructor (element: UIElement) {
-        super(element);
-    }
+export class UISlot extends UIBehavior {
 }

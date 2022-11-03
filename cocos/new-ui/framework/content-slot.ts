@@ -52,7 +52,7 @@ export class ContentSlot extends UISlot {
     }
 
     set horizontalAlignment (val) {
-        this.element.invalidate(InvalidateReason.LAYOUT);
+        this.element.invalidateParentArrange();
         this.setValue(ContentSlot.HorizontalAlignmentProperty, val);
     }
 
@@ -61,7 +61,7 @@ export class ContentSlot extends UISlot {
     }
 
     set verticalAlignment (val) {
-        this.element.invalidate(InvalidateReason.LAYOUT);
+        this.element.invalidateParentArrange();
         this.setValue(ContentSlot.VerticalAlignmentProperty, val);
     }
 }

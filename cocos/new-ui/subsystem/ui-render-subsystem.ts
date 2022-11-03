@@ -1,4 +1,4 @@
-
+  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -23,48 +23,41 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+import { RenderMode } from "../base/runtime-document-settings";
+import { IDrawingContext } from "../base/ui-drawing-context";
+import { UIElement } from "../base/ui-element";
+import { UISubSystem } from "../base/ui-subsystem";
 
-import { Director, director, js, System } from "../../core";
-import { EventSystem } from "../event-system/event-system";
-import { UIDocument } from "./ui-document";
+export class UIRenderSubsystem extends UISubSystem {
+    private _dirtyElementMap = new Set;
+    private _context = new IDrawingContext();
 
-export class UISystem extends System {
-    static get instance () {
-        return UISystem._instance;
-    }
-    
-    get documents (): ReadonlyArray<UIDocument> {
-        return this._documents;
-    }
-
-    get eventSystem (): EventSystem {
-        return this._eventSystem;
-    }
-
-    private static _instance = new UISystem();
-    private _documents: UIDocument[] = [];
-    private _eventSystem:EventSystem = new EventSystem();
-
-    init () {
-        director.on(Director.EVENT_UI_UPDATE, this.tick, this);
-    }
-
-    addDocument (document: UIDocument) {
-        if (!this._documents.includes(document)) {
-            this._documents.push(document);
+    invalidate(element: UIElement) {
+        if (!this._dirtyElementMap.has(element)) {
+            this._dirtyElementMap.add(element)
+            // 部分更新用
+            // 能否在这里进行 transform 的更新
         }
     }
 
-    removeDocument (document: UIDocument) {
-        js.array.fastRemove(this._documents, document);
-    }
+    update () {
+        const camera = this._document.settings.camera!;
+        camera.cleanIntermediateModels();
 
-    tick () {
-        this._eventSystem.tick(this._documents);
-        for (let i = 0; i < this._documents.length; i++) {
-            this._documents[i].update();
+        // Assembly data
+        this._context.paint();
+
+        // insert data
+        const renderModel = this._context.getContextModel();
+        switch (this._document.settings.renderMode) {
+            case RenderMode.CAMERA:
+                break;
+            case RenderMode.WORLD_SPACE:
+                // renderModel.attachToScene();
+                break;
+            default:
+                camera.addIntermediateModel(renderModel);
+                break;
         }
     }
 }
-
-director.registerSystem('ui-system', UISystem.instance, 0);

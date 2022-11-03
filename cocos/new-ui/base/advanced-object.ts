@@ -24,6 +24,7 @@
  THE SOFTWARE.
 */
 
+import { fastRemoveAt } from '../../core/utils/array';
 import { AdvancedProperty } from './advanced-property';
 import { PropertyValueEntry } from './advanced-property-value';
 
@@ -50,5 +51,15 @@ export class AdvancedObject {
         }
         const propertyValueEntry = new PropertyValueEntry(property.id, value);
         propertyValueEntries.push(propertyValueEntry);
+    }
+
+    clearValue (property: AdvancedProperty) {
+        const propertyValueEntries = this._propertyValueEntries;
+        for (let i = 0, length = propertyValueEntries.length; i < length; i++) {
+            if (propertyValueEntries[i].propertyId === property.id) {
+                fastRemoveAt(propertyValueEntries, i);
+                return;
+            }
+        }
     }
 }

@@ -23,11 +23,12 @@
  THE SOFTWARE.
 */
 
-import { Rect, Size } from "../../core";
+import { Rect, Size, Vec2 } from "../../core";
 import { ContainerElement } from "../base/container-element";
 import { UIElement, Visibility } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
 import { ContentSlot, HorizontalAlignment, VerticalAlignment } from "./content-slot";
+import { assertIsNonNullable } from "../../core/data/utils/asserts";
 
 export class ContentControl extends ContainerElement {
 
@@ -56,7 +57,7 @@ export class ContentControl extends ContainerElement {
         return ContentSlot;
     }
 
-    protected onMeasure () {
+    protected computeDesiredSize () {
         const desiredSize = new Size();
         const content = this.content;
         if (content) {
@@ -67,12 +68,13 @@ export class ContentControl extends ContainerElement {
         return desiredSize;
     }
 
-    protected onArrange (finalRect: Rect) {
+    protected arrangeContent (finalRect: Rect) {
         const content = this.content;
         if (content) {
             if (content.visibility !== Visibility.COLLAPSED) {
                 const childRect = new Rect();
-                const contentSlot = content.slot as ContentSlot;
+                const contentSlot = content.getBehavior(ContentSlot);
+                assertIsNonNullable(contentSlot);
                 const { width: marginWidth, height: marginHeight } = content.margin;
                 if (contentSlot.horizontalAlignment === HorizontalAlignment.STRETCH) {
                     childRect.width = finalRect.width;
@@ -86,20 +88,24 @@ export class ContentControl extends ContainerElement {
                     childRect.height = content.desiredSize.height + marginHeight;
                 }
 
+                childRect.center = new Vec2(0, 0);
+
                 switch (contentSlot.horizontalAlignment) {
                     case HorizontalAlignment.LEFT:
-                        childRect.x = (childRect.width - finalRect.width) / 2;
+                        childRect.x = -finalRect.width / 2;
                         break;
                     case HorizontalAlignment.RIGHT:
-                        childRect.x = (finalRect.width - childRect.width) / 2;
+                        childRect.x = finalRect.width / 2 - childRect.width;
+                        break;
                 }
 
                 switch (contentSlot.verticalAlignment) {
                     case VerticalAlignment.TOP:
-                        childRect.y = (childRect.height - finalRect.height) / 2;
+                        childRect.y = finalRect.height / 2  - childRect.height;
                         break;
                     case VerticalAlignment.BOTTOM:
-                        childRect.y = (finalRect.height - childRect.height) / 2;
+                        childRect.y = -finalRect.height / 2;
+                        break;
                 }
                 content.arrange(childRect);
             }

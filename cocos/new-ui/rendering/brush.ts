@@ -38,7 +38,7 @@ enum BrushType {
 export class Brush {
     static default = Object.freeze(new Brush());
 
-    private _type: BrushType = BrushType.COLOR
+    private _type: BrushType = BrushType.COLOR;
     private _tintColor = Color.WHITE;
     private _width = 0;
     private _height = 0;

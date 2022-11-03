@@ -73,6 +73,10 @@ export class AdvancedProperty {
         return this._propertyRegistry;
     }
 
+    public static getRegisteredPropertiesForOwnerType<OT extends AdvancedObject | AttachedObject> (ownerType: Constructor<OT>) {
+        return this._propertyRegistry.filter((val) => val.ownerType === ownerType);
+    }
+
     public get name () { return this._name; }
     public get propertyType () { return this._propertyType; }
     public get ownerType () { return this._ownerType; }

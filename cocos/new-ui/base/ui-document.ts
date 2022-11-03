@@ -27,6 +27,9 @@
 import { Rect } from "../../core/math";
 import { EventSubSystem } from "../subsystem/event-sub-system";
 import { UILayoutSubsystem } from "../subsystem/ui-layout-subsystem";
+import { UIRenderSubsystem } from "../subsystem/ui-render-subsystem";
+import { UIRuntimeDocumentSettings } from "./runtime-document-settings";
+import { UIDocumentSettings } from "./ui-document-settings";
 import { InvalidateReason, UIElement } from "./ui-element";
 import { UIWindow } from "./ui-window";
 
@@ -42,6 +45,15 @@ export class UIDocument {
         }
     }
 
+    get settings () {
+        return this._settings;
+    }
+
+    set settings (val: UIDocumentSettings) {
+        this._settings = val;
+        this._settings.apply();
+    }
+
     get window () {
         return this._window;
     }
@@ -54,14 +66,21 @@ export class UIDocument {
         if (invalidateReason & InvalidateReason.ARRANGE) {
             this._layoutSubsystem.invalidate(element);
         }
+        if (invalidateReason & InvalidateReason.PAINT) {
+            this._renderSubsystem.invalidate(element);
+        }
     }
 
     update () {
         this._layoutSubsystem.update();
+        this._renderSubsystem.update();
     }
 
+    private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
+    private _node: Node; // New node? Need constructor // move to ui-system
     private _viewport = new Rect();
     private _window = new UIWindow(this);
     private _layoutSubsystem = new UILayoutSubsystem(this);
     private _eventSubSystem = new EventSubSystem(this);
+    private _renderSubsystem = new UIRenderSubsystem(this);
 } 

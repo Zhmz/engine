@@ -28,10 +28,11 @@ import { Enum } from '../../core/value-types/enum';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec2 } from '../../core/math/vec2';
 import { Quat } from '../../core/math/quat';
+import { IDrawingContext, IRectPainterParameters } from './ui-drawing-context';
 import { assert } from '../../core/platform/debug';
 import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
-import { UISlot } from './ui-slot';
+import { UIBehavior, UIBehaviorType } from './ui-behavior';
 import { UIDocument } from './ui-document';
 import { approx, Mat4, Pool, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
@@ -74,11 +75,12 @@ export class UIElement extends Visual {
     public static RenderTransformPivotProperty = AdvancedProperty.register('RenderTransformPivot', Vec2, UIElement, Object.freeze(new Vec2(0.5, 0.5)));
     public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement, Thickness.ZERO);
 
-    protected _slot: UISlot | null = null;
+    protected _behaviors: Array<UIBehavior> = [];
     protected _document: UIDocument | null = null;
     protected _parent: ContainerElement | null = null;
     protected _children: Array<UIElement> = [];
     protected _layout = new Rect();
+    protected _previousArrangeRect = new Rect();
     protected _desiredSize = new Size();
     protected _worldTransform = new Mat4();
     protected _localTransform = new Mat4();
@@ -89,9 +91,7 @@ export class UIElement extends Visual {
     protected _measureDirty = false;
     protected _arrangeDirty = false;
 
-    get slot() {
-        return this._slot;
-    }
+    protected _hierarchyLevel = 0;
 
     get parent () {
         return this._parent;
@@ -101,7 +101,15 @@ export class UIElement extends Visual {
         return this._document;
     }
 
+    get hierarchyLevel () {
+        return this._hierarchyLevel;
+    }
+
     //#region Layout
+
+    get previousArrangeRect () {
+        return this._previousArrangeRect;
+    }
 
     get layout () {
         return this._layout;
@@ -125,19 +133,13 @@ export class UIElement extends Visual {
         return this._desiredSize;
     }
 
-    set desiredSize (val) {
-        if (!this._desiredSize.equals(val)) {
-            this._desiredSize.set(val);
-            this.invalidateParentArrange();
-        }
-    }
-
     get margin () {
         return this.getValue(UIElement.MarginProperty) as Thickness;
     }
 
     set margin (val: Thickness) {
         this.invalidateParentMeasure();
+        this.invalidateParentArrange();
         this.setValue(UIElement.MarginProperty, val);
     }
 
@@ -166,7 +168,9 @@ export class UIElement extends Visual {
         return this.getValue(UIElement.VisibilityProperty) as Visibility;
     }
 
-    set visibility(val: Visibility) {
+
+    set visibility (val: Visibility) {
+        this.invalidateParentMeasure();
         this.setValue(UIElement.VisibilityProperty, val);
     }
 
@@ -242,7 +246,7 @@ export class UIElement extends Visual {
 
     get worldTransform(): Readonly<Mat4> {
         if (this._worldTransformDirty) {
-            Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.x, this.layout.y, 0));
+            Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.center.x, this.layout.center.y, 0));
             Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
             if (this.parent) {
                 Mat4.multiply(this._worldTransform, this.parent.worldTransform, this._worldTransform);
@@ -311,30 +315,27 @@ export class UIElement extends Visual {
             const index = this._parent._children.indexOf(this);
             assert(index !== -1);
             this._parent._children.splice(index, 1);
+            this._parent.onChildRemoved(this);
         }
+        this.invalidateParentMeasure();
         this._parent = parent;
         if (this._parent) {
             this._parent._children.push(this);
+            this._parent.onChildAdded(this);
         }
-        this.updateSlot();
+        this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
         this.updateDocument(this._parent ? this._parent._document : null);
-
+        this.invalidateParentMeasure();
         this.invalidateWorldTransform();
     }
 
     //#endregion hierarchy
-    private updateSlot () {
-        if (!this._parent) {
-            this._slot = null;
-            return;
-        }
-        const slotClass = this._parent.getSlotClass();
-        if (!this._slot && slotClass) {
-            this._slot = new slotClass(this);
-            return;
-        }
-        if (this._slot && slotClass && this._slot.constructor !== slotClass) {
-            this._slot = new slotClass(this);
+    private updateHierarchyLevel (level: number) {
+        if (this._hierarchyLevel !== level) {
+            this._hierarchyLevel = level;
+            for (let i = 0; i < this._children.length; i++) {
+                this._children[i].updateHierarchyLevel(level + 1);
+            }
         }
     }
 
@@ -347,8 +348,7 @@ export class UIElement extends Visual {
         }
     }
 
-
-    protected invalidateWorldTransform () {
+    public invalidateWorldTransform () {
         if (!this._worldTransformDirty) {
             this._worldTransformDirty = true;
             for (let i = 0; i < this._children.length; i++) {
@@ -357,20 +357,35 @@ export class UIElement extends Visual {
         }
     }
 
-    protected invalidateParentMeasure () {
-        if (this._parent && !this._parent._measureDirty) {
-            this._parent.invalidateParentMeasure();
+    public invalidateParentMeasure () {
+        if (this._parent) {
+            this._parent.invalidateMeasure();
         }
     }
 
-    protected invalidateParentArrange () {
-        if (this._parent && !this._parent._arrangeDirty) {
-            this._parent._arrangeDirty = true;
-            this._parent.invalidate(InvalidateReason.ARRANGE);
+    public invalidateParentArrange () {
+        if (this._parent) {
+            this._parent.invalidateArrange();
         }
     }
 
-    protected invalidateLocalTransform () {
+    public invalidateMeasure () {
+        if (!this._measureDirty) {
+            this._measureDirty = true;
+            if (this._parent) {
+                this._parent.invalidateMeasure();
+            }
+        }
+    }
+
+    public invalidateArrange () {
+        if (!this._arrangeDirty) {
+            this._arrangeDirty = true;
+            this.invalidate(InvalidateReason.ARRANGE);
+        }
+    }
+
+    public invalidateLocalTransform () {
         this._localTransformDirty = true;
         this.invalidateWorldTransform();
     }
@@ -385,41 +400,86 @@ export class UIElement extends Visual {
         }
     }
 
+    //#region Behavior
+    
+    public getBehavior <T extends UIBehavior> (type: UIBehaviorType<T>): T | null {
+        for (let i = 0; i < this._behaviors.length; i++) {
+            const behavior = this._behaviors[i];
+            if (behavior instanceof type) {
+                return behavior;
+            }
+        }
+        return null;
+    }
+
+
+    public addBehavior<T extends UIBehavior> (type: UIBehaviorType<T>): T {
+        if (this.getBehavior(type)) {
+            console.warn('Add a duplicated behavior, the old one will be removed!');
+            this.removeBehavior(type);
+        }
+        const newBehavior = UIBehavior.produce(type, this);
+        this._behaviors.push(newBehavior);
+        return newBehavior;
+    }
+
+    public removeBehavior<T extends UIBehavior> (type: UIBehaviorType<T>) {
+        for (let i = this._behaviors.length - 1; i >= 0; i--) {
+            const behavior = this._behaviors[i];
+            if (behavior instanceof type) {
+                this._behaviors.splice(i, 1);
+            }
+            const registeredProperties = AdvancedProperty.getRegisteredPropertiesForOwnerType(type);
+            for (let i = 0; i < registeredProperties.length; i++) {
+                this.clearValue(registeredProperties[i]);
+            }
+        }
+    }
+
+    //#endregion Behavior
+
     //#region layout
-    /**
-     * 
-     * @param availableSize 
-     */
-    protected onMeasure () {
+    protected computeDesiredSize () {
         return new Size(0, 0);
     }
 
-    protected onArrange(arrangeSize: Size) {
-
-    }
+    protected arrangeContent (arrangeSize: Size) {}
 
     // sealed, invoked by layout system
     public measure () {
         if (this._measureDirty) {
-            this.desiredSize = this.onMeasure();
+            const desiredSize = this.computeDesiredSize();
+            if (!this._desiredSize.equals(desiredSize)) {
+                this._desiredSize.set(desiredSize);
+                this.invalidateParentArrange();
+            }
             this._measureDirty = false;
         }
     }
 
     public arrange (finalRect: Rect) {
-        if (this._arrangeDirty || !finalRect.equals(this.layout)) {
-            const { width: marginWidth, height: marginHeight} = this.margin;
-            const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
-            this.onArrange(arrangeSize);
-            this.layout = new Rect(finalRect.x, finalRect.y, arrangeSize.width, arrangeSize.height);
+        const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight} = this.margin;
+        const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
+        if (this._arrangeDirty || !arrangeSize.equals(this.layout.size)) {
+            this.arrangeContent(arrangeSize);
             this._arrangeDirty = false;
         }
+        this._previousArrangeRect.set(finalRect);
+        this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
     }
 
     //#endregion layout
 
 
-    public hitTest(ray: Ray): boolean {
+    //#endregion render
+    protected onPaint (drawingContext: IDrawingContext) {
+        let painterParams = IRectPainterParameters.getDefault(this); // 应该要分类型
+        drawingContext.drawRect(painterParams);
+    }
+    //#endregion render
+
+    //#region EventSystem
+    public hitTest (ray: Ray): boolean {
         return true;
     }
 

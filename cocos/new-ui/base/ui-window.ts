@@ -26,6 +26,7 @@
 
 import { UIDocument } from "./ui-document";
 import { ContentControl } from "../framework/content-control";
+import { Rect, Vec2 } from "../../core";
 
 export class UIWindow extends ContentControl {
     constructor (document: UIDocument) {
@@ -33,10 +34,11 @@ export class UIWindow extends ContentControl {
         this._document = document;
     }
 
-    protected onMeasure () {
-        if (this.content) {
-            this.content.measure();
-        }
-        return this._desiredSize;
+    get isMeasureDirty () {
+        return this._measureDirty;
+    }
+
+    get previousArrangeRect () {
+        return this.document!.viewport;
     }
 }

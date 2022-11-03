@@ -34,16 +34,16 @@ export class Canvas extends Panel {
         return CanvasSlot;
     }
 
-    protected onMeasure () {
+    protected computeDesiredSize () {
         return Size.ZERO;
     }
 
-    protected onArrange () {
+    protected arrangeContent () {
         const childCount = this.childCount;
         if (childCount === 0) return;
         for (let i = 0; i < childCount; i++) {
             const child = this._children[i];
-            const canvasSlot = child.slot as CanvasSlot;
+            const canvasSlot = child.getBehavior(CanvasSlot);
         }
     }
 }

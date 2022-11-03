@@ -1,4 +1,4 @@
-import { Mat4, Quat, Rect, Scene, Vec2, Vec3 } from "../../cocos/core";
+import { Mat4, Quat, Rect, Scene, Size, Vec2, Vec3 } from "../../cocos/core";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { UISlot } from "../../cocos/new-ui/base/ui-slot";
@@ -6,6 +6,7 @@ import { ContentSlot } from "../../cocos/new-ui/framework/content-slot";
 import { Node } from '../../cocos/core/scene-graph';
 import { ContainerElement } from "../../cocos/new-ui/base/container-element";
 import { Panel } from "../../cocos/new-ui/framework/panel";
+import { UIBehavior } from "../../cocos/new-ui/base/ui-behavior";
 
 class SingleChildElement extends ContainerElement {
     public allowMultipleChild () {
@@ -41,7 +42,7 @@ test('slot', () => {
     }
 
     class TestElement2 extends ContainerElement {
-        public getSlotClass () {
+        protected getSlotClass () {
             return TestSlot;
         }
     }
@@ -49,22 +50,22 @@ test('slot', () => {
     const testElement = new TestElement();
     testElement.addChild(element1);
     expect(testElement.childCount).toBe(1);
-    expect(element1.slot).toBeTruthy();
-    expect(element1.slot!.constructor).toBe(ContentSlot);
+    expect(element1.getBehavior(UISlot)).toBeTruthy();
+    expect(element1.getBehavior(UISlot)!.constructor).toBe(ContentSlot);
 
     testElement.removeChild(element1);
-    expect(element1.slot).toBeNull();
+    expect(element1.getBehavior(UISlot)).toBeNull();
     testElement.addChild(element1);
-    expect(element1.slot).toBeTruthy();
-    expect(element1.slot!.constructor).toBe(ContentSlot);
+    expect(element1.getBehavior(UISlot)).toBeTruthy();
+    expect(element1.getBehavior(UISlot)!.constructor).toBe(ContentSlot);
 
     const testElement2 = new TestElement2();
     testElement2.addChild(element1);
-    expect(element1.slot).toBeTruthy();
-    expect(element1.slot!.constructor).toBe(TestSlot);
+    expect(element1.getBehavior(UISlot)).toBeTruthy();
+    expect(element1.getBehavior(UISlot)!.constructor).toBe(TestSlot);
 
     testElement2.removeChild(element1);
-    expect(element1.slot).toBeNull();
+    expect(element1.getBehavior(UISlot)).toBeNull();
 });
 
 test('document', () => {
@@ -123,12 +124,17 @@ test('hierarchy', () => {
     }
 
     const parent = new TestElement();
+    expect(parent.hierarchyLevel).toBe(0);
     expect(() => parent.insertChildAt(new TestElement, 0)).toThrowError();
     const child1 = new TestElement();
+    expect(child1.hierarchyLevel).toBe(0);
     const child2 = new TestElement();
+    expect(child2.hierarchyLevel).toBe(0);
     parent.addChild(child1);
     parent.addChild(child2);
 
+    expect(child1.hierarchyLevel).toBe(1);
+    expect(child2.hierarchyLevel).toBe(1);
     expect(parent.children.length).toBe(2);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child1.parent).toBe(parent);
@@ -139,10 +145,12 @@ test('hierarchy', () => {
     expect(() => parent.addChild(child1)).toThrowError();
 
     const child3 = new TestElement();
+    expect(child3.hierarchyLevel).toBe(0);
     parent.addChild(child3);
     expect(parent.children[0]).toBe(child1);
     expect(parent.children[1]).toBe(child2);
     expect(parent.children[2]).toBe(child3);
+    expect(child3.hierarchyLevel).toBe(1);
     expect(parent.children.length).toBe(3);
     expect(parent.childCount).toBe(parent.children.length);
 
@@ -152,21 +160,27 @@ test('hierarchy', () => {
     expect(parent.children.length).toBe(2);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child1.parent).toBeNull();
+    expect(child1.hierarchyLevel).toBe(0);
     expect(parent.children[0]).toBe(child2);
+    expect(child2.hierarchyLevel).toBe(1);
     expect(parent.children[1]).toBe(child3);
+    expect(child3.hierarchyLevel).toBe(1);
 
     expect(() => parent.removeChild(child1)).toThrowError();
     parent.removeChild(child2);
+    expect(child2.hierarchyLevel).toBe(0);
     expect(parent.children.length).toBe(1);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child2.parent).toBeNull();
     expect(parent.children[0]).toBe(child3);
+    expect(child3.hierarchyLevel).toBe(1);
 
     expect(() => parent.removeChildAt(1)).toThrowError();
     parent.removeChildAt(0);
     expect(parent.children.length).toBe(0);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child3.parent).toBeNull();
+    expect(child3.hierarchyLevel).toBe(0);
 
     parent.addChild(child1);
     parent.insertChildAt(child2, 0);
@@ -174,10 +188,13 @@ test('hierarchy', () => {
     expect(parent.childCount).toBe(parent.children.length);
     expect(parent.children[0]).toBe(child2);
     expect(parent.children[1]).toBe(child1);
+    expect(child1.hierarchyLevel).toBe(1);
+    expect(child2.hierarchyLevel).toBe(1);
     expect(child2.parent).toBe(parent);
     expect(child1.parent).toBe(parent);
     parent.insertChildAt(child3, 1);
     expect(parent.children.length).toBe(3);
+    expect(child3.hierarchyLevel).toBe(1);
     expect(parent.childCount).toBe(parent.children.length);
     expect(parent.children[0]).toBe(child2);
     expect(parent.children[1]).toBe(child3);
@@ -186,13 +203,64 @@ test('hierarchy', () => {
 
     const child4 = new TestElement();
     const child5 = new TestElement();
+    expect(child4.hierarchyLevel).toBe(0);
+    expect(child5.hierarchyLevel).toBe(0);
     child4.addChild(child5);
+    expect(child5.hierarchyLevel).toBe(1);
     child3.addChild(child4);
+    expect(child4.hierarchyLevel).toBe(2);
+    expect(child5.hierarchyLevel).toBe(3);
     expect(child4.children.length).toBe(1);
     expect(parent.childCount).toBe(parent.children.length);
     expect(child4.children[0]).toBe(child5);
     expect(child3.children.length).toBe(1);
     expect(child3.children[0]).toBe(child4);
+});
+
+test('hierarchy level', () => {
+    const rootElement = new SingleChildElement();
+    expect(rootElement.hierarchyLevel).toBe(0);
+    const document = new UIDocument();
+    document.window.addChild(rootElement);
+    expect(rootElement.hierarchyLevel).toBe(1);
+
+    const childLevel1 = new SingleChildElement();
+    const childLevel2 = new SingleChildElement();
+    const childLevel3 = new SingleChildElement();
+    const childLevel4 = new SingleChildElement();
+
+    childLevel1.addChild(childLevel2);
+    childLevel2.addChild(childLevel3);
+    childLevel3.addChild(childLevel4);
+
+    expect(childLevel1.hierarchyLevel).toBe(0);
+    expect(childLevel2.hierarchyLevel).toBe(1);
+    expect(childLevel3.hierarchyLevel).toBe(2);
+    expect(childLevel4.hierarchyLevel).toBe(3);
+
+    rootElement.addChild(childLevel1);
+
+    expect(childLevel1.hierarchyLevel).toBe(2);
+    expect(childLevel2.hierarchyLevel).toBe(3);
+    expect(childLevel3.hierarchyLevel).toBe(4);
+    expect(childLevel4.hierarchyLevel).toBe(5);
+
+    childLevel2.removeChild(childLevel3);
+    expect(childLevel3.hierarchyLevel).toBe(0);
+    expect(childLevel4.hierarchyLevel).toBe(1);
+
+    document.window.removeChild(rootElement);
+
+    expect(rootElement.hierarchyLevel).toBe(0);
+    expect(childLevel1.hierarchyLevel).toBe(1);
+    expect(childLevel2.hierarchyLevel).toBe(2);
+    expect(childLevel3.hierarchyLevel).toBe(0);
+    expect(childLevel4.hierarchyLevel).toBe(1);
+
+    childLevel2.addChild(childLevel3);
+    expect(childLevel3.hierarchyLevel).toBe(3);
+    expect(childLevel4.hierarchyLevel).toBe(4);
+
 });
 
 test('other', () => {
@@ -218,15 +286,15 @@ test('other', () => {
     expect(testElement.childCount).toBe(2);
     expect(childElement1.parent).toBe(testElement);
     expect(childElement2.parent).toBe(testElement);
-    expect(childElement1.slot).toBeTruthy();
-    expect(childElement2.slot).toBeTruthy();
+    expect(childElement1.getBehavior(UISlot)).toBeTruthy();
+    expect(childElement2.getBehavior(UISlot)).toBeTruthy();
 
     testElement.clearChildren();
     expect(testElement.childCount).toBe(0);
     expect(childElement1.parent).toBe(null);
     expect(childElement2.parent).toBe(null);
-    expect(childElement1.slot).toBeFalsy();
-    expect(childElement2.slot).toBeFalsy();
+    expect(childElement1.getBehavior(UISlot)).toBeFalsy();
+    expect(childElement2.getBehavior(UISlot)).toBeFalsy();
 
     testElement.addChild(childElement1);
     // change parent
@@ -358,12 +426,12 @@ test('layout-transform', () => {
     const element = new SingleChildElement();
     expect(element.worldTransform.m12).toBe(0);
     expect(element.worldTransform.m13).toBe(0);
-    element.layout = new Rect(20, 10, 100, 200);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(100, 200));
     document.window.addChild(element);
     expect(element.worldTransform.m12).toBe(20);
     expect(element.worldTransform.m13).toBe(10);
     expect(element.worldTransform.m14).toBe(0);
-    element.layout = new Rect(10, 20, 0, 0);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(10, 20), new Size(0, 0));
     expect(element.worldTransform.m12).toBe(10);
     expect(element.worldTransform.m13).toBe(20);
     expect(element.worldTransform.m14).toBe(0);
@@ -373,7 +441,7 @@ test('layout-transform', () => {
     expect(element2.worldTransform.m12).toBe(10);
     expect(element2.worldTransform.m13).toBe(20);
     expect(element2.worldTransform.m14).toBe(0);
-    element2.layout = new Rect(-10, -10, 200, 50);
+    element2.layout = Rect.fromCenterSize(new Rect(), new Vec2(-10, -10), new Size(200, 50));
     expect(element2.worldTransform.m12).toBe(0);
     expect(element2.worldTransform.m13).toBe(10);
     expect(element2.worldTransform.m14).toBe(0);
@@ -388,13 +456,13 @@ test('world-transform', () => {
     // only position and layout
     const document = new UIDocument();
     const element = new SingleChildElement();
-    element.layout = new Rect(20, 10, 100, 200);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(100, 200));
     element.position = new Vec3(10, 50, -5);
     document.window.addChild(element);
     expect(element.worldTransform.m12).toBe(30);
     expect(element.worldTransform.m13).toBe(60);
     expect(element.worldTransform.m14).toBe(-5);
-    element.layout = new Rect(10, 20, 0, 0);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(10, 20), new Size(0, 0));
     element.position = new Vec3(-10, -20, 0);
     expect(element.worldTransform.m12).toBe(0);
     expect(element.worldTransform.m13).toBe(0);
@@ -407,16 +475,16 @@ test('world-transform', () => {
     expect(element2.worldTransform.m14).toBe(0);
 
     element.position = new Vec3(5, 5, 5);
-    element.layout = new Rect(7, 5, 2, 2);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(7, 5), new Size(2, 2));
     element2.position = new Vec3(30, 20, 10);
-    element2.layout = new Rect(-10, -15, 0, 0);
+    element2.layout = Rect.fromCenterSize(new Rect(), new Vec2(-10, -15), new Size(0, 0));
     expect(element2.worldTransform.m12).toBe(32);
     expect(element2.worldTransform.m13).toBe(15);
     expect(element2.worldTransform.m14).toBe(15);
 
     // apply all transform
 
-    element.layout = new Rect(-10, -20, 200, 100);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(-10, -20), new Size(200, 100));
     element.position = new Vec3(5, 10, -5);
     element.rotation = Quat.fromEuler(new Quat, 45, 100, 75);
     element.scale = new Vec3(1.2, 1.5, 0.7);
@@ -433,7 +501,7 @@ test('world-transform', () => {
 
     expect(element.worldTransform.equals(transformNode.worldMatrix)).toBeTruthy();
 
-    element2.layout = new Rect(5, 25, 100, 50);
+    element2.layout = Rect.fromCenterSize(new Rect(), new Vec2(5, 25), new Size(100, 50));
     element2.position = new Vec3(5, 7, 8);
     element2.eulerAngles = new Vec3(75, 108,160);
     element2.scale = new Vec3(0.2, 0.1, 0.3);
@@ -449,7 +517,7 @@ test('world-transform', () => {
 
     expect(element2.worldTransform.equals(transformNode2.worldMatrix)).toBeTruthy();
 
-    element.layout = new Rect(10, -10, 100, 50);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(10, -10), new Size(100, 50));
     element.position = new Vec3(0.5, -0.7, 1);
     element.eulerAngles = new Vec3(0, 90, 65);
     element.scale = new Vec3(0.5, 0.1, 0.2);
@@ -466,7 +534,7 @@ test('world-transform', () => {
 test('world-transform with pivot', () => {
     const document = new UIDocument();
     const element = new SingleChildElement();
-    element.layout = new Rect(20, 10, 100, 200);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(100, 200));
     element.position = new Vec3(10, 50, -5);
     element.renderTransformPivot = new Vec2(0, 0);
     document.window.addChild(element);
@@ -475,7 +543,7 @@ test('world-transform with pivot', () => {
     expect(element.worldTransform.m12).toBe(30);
     expect(element.worldTransform.m13).toBe(60);
     expect(element.worldTransform.m14).toBe(-5);
-    element.layout = new Rect(20, 10, 0, 0);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(0, 0));
     expect(element.worldTransform.m12).toBe(30);
     expect(element.worldTransform.m13).toBe(60);
     expect(element.worldTransform.m14).toBe(-5);
@@ -483,14 +551,14 @@ test('world-transform with pivot', () => {
     expect(element.worldTransform.m12).toBe(30);
     expect(element.worldTransform.m13).toBe(60);
     expect(element.worldTransform.m14).toBe(-5);
-    element.layout = new Rect(10, 20, 0, 0);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(10, 20), new Size(0, 0));
     element.position = new Vec3(-10, -20, 0);
     element.renderTransformPivot = new Vec2(0.2, 0.2);
     expect(element.worldTransform.m12).toBe(0);
     expect(element.worldTransform.m13).toBe(0);
     expect(element.worldTransform.m14).toBe(0);
 
-    element.layout = new Rect(20, 10, 100, 200);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(20, 10), new Size(100, 200));
     element.position = new Vec3(10, 50, -5);
     element.eulerAngles = new Vec3(0, 0, -45);
     element.renderTransformPivot = new Vec2(0, 0);
@@ -519,7 +587,7 @@ test('world-transform with pivot', () => {
     expect(element.worldTransform.getScale(new Vec3).equals(new Vec3(1, 2.5, 1))).toBeTruthy();
 
     element.eulerAngles = new Vec3(0, 0, 45);
-    element2.layout = new Rect(5, -5, 100, 100);
+    element2.layout = Rect.fromCenterSize(new Rect(), new Vec2(5, -5), new Size(100, 100));
     element2.position = new Vec3(20, 30, 5);
     element2.eulerAngles = new Vec3(0, 0, 0);
     element2.scale = new Vec3(2, 0.2, 1.7);
@@ -535,43 +603,43 @@ test('shear', () => {
     const document = new UIDocument();
     const element = new MultipleChildElement();
     document.window.addChild(element);
-    element.layout = new Rect(0, 0, 100, 100);
+    element.layout = Rect.fromCenterSize(new Rect(), new Vec2(0, 0), new Size(100, 100));
     // left top
     const leftTopAnchorElement = new SingleChildElement();
     element.addChild(leftTopAnchorElement);
-    leftTopAnchorElement.layout = new Rect(-50, 50, 0, 0);
+    leftTopAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(-50, 50), new Size(0, 0));
     // left center
     const leftCenterAnchorElement = new SingleChildElement();
     element.addChild(leftCenterAnchorElement);
-    leftCenterAnchorElement.layout = new Rect(-50, 0, 0, 0);
+    leftCenterAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(-50, 0), new Size(0, 0));
     // left bottom
     const leftBottomAnchorElement = new SingleChildElement();
     element.addChild(leftBottomAnchorElement);
-    leftBottomAnchorElement.layout = new Rect(-50, -50, 0, 0);
+    leftBottomAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(-50, -50), new Size(0, 0));
     // center top
     const centerTopAnchorElement = new SingleChildElement();
     element.addChild(centerTopAnchorElement);
-    centerTopAnchorElement.layout = new Rect(0, 50, 0, 0);
+    centerTopAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(0, 50), new Size(0, 0));
     // center center
     const centerCenterAnchorElement = new SingleChildElement();
     element.addChild(centerCenterAnchorElement);
-    centerCenterAnchorElement.layout = new Rect(0, 0, 0, 0);
+    centerCenterAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(0, 0), new Size(0, 0));
     // center bottom
     const centerBottomAnchorElement = new SingleChildElement();
     element.addChild(centerBottomAnchorElement);
-    centerBottomAnchorElement.layout = new Rect(0, -50, 0, 0);
+    centerBottomAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(0, -50), new Size(0, 0));
     // right top
     const rightTopAnchorElement = new SingleChildElement();
     element.addChild(rightTopAnchorElement);
-    rightTopAnchorElement.layout = new Rect(50, 50, 0, 0);
+    rightTopAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(50, 50), new Size(0, 0));
     // center center
     const rightCenterAnchorElement = new SingleChildElement();
     element.addChild(rightCenterAnchorElement);
-    rightCenterAnchorElement.layout = new Rect(50, 0, 0, 0);
+    rightCenterAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(50, 0), new Size(0, 0));
     // right bottom
     const rightBottomAnchorElement = new SingleChildElement();
     element.addChild(rightBottomAnchorElement);
-    rightBottomAnchorElement.layout = new Rect(50, -50, 0, 0);
+    rightBottomAnchorElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(50, -50), new Size(0, 0));
     //    __________
     //   /    .    /
     //  /_________/      
@@ -643,7 +711,7 @@ test('local-world transform', () => {
     const document = new UIDocument();
     const uiElement = new SingleChildElement();
     document.window.addChild(uiElement);
-    uiElement.layout = new Rect(-20, 20, 100, 50);
+    uiElement.layout = Rect.fromCenterSize(new Rect(), new Vec2(-20, 20), new Size(100, 50));
     uiElement.renderTransformPivot = new Vec2(0, 0);
     uiElement.position = new Vec3(25, 74, 0);
     uiElement.rotation = Quat.fromEuler(new Quat(), 0, 0, 45);
@@ -656,7 +724,7 @@ test('local-world transform', () => {
 
     const uiElement2 = new SingleChildElement();
     uiElement.addChild(uiElement2);
-    uiElement2.layout = new Rect(64, -30, 50, 20);
+    uiElement2.layout = Rect.fromCenterSize(new Rect(), new Vec2(64, -30), new Size(50, 20));
     uiElement2.renderTransformPivot = new Vec2(1, 1);
     uiElement2.position = new Vec3(10, 5, 3);
     uiElement2.scale = new Vec3 (2, 1, 1);
@@ -674,4 +742,17 @@ test('local-world transform', () => {
     expect(worldPos3.x).toBeCloseTo(53.28784);
     expect(worldPos3.y).toBeCloseTo(181.42997);
 
+});
+
+test('behavior', () => {
+    class MyTestBehavior extends UIBehavior {
+    };
+
+    const element = new UIElement;
+    const behavior = element.addBehavior(MyTestBehavior);
+    expect(behavior).toBeTruthy();
+    expect(behavior.element).toBe(element);
+    expect(element.getBehavior(MyTestBehavior)).toBe(behavior);
+    element.removeBehavior(MyTestBehavior);
+    expect(element.getBehavior(MyTestBehavior)).toBeNull();
 });
