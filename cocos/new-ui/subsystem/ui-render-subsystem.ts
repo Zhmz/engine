@@ -52,9 +52,11 @@ export class UIRenderSubsystem extends UISubSystem {
 
     update () {
         const camera = this.settings.camera;
-        camera.cleanIntermediateModels();
+        camera?.cleanIntermediateModels();
 
-        // Assembly data
+        // Assembly data // 可以缓存
+        // 再需要的时候进行更新即可
+        // vb 变化，hierarchy change
         this._context.paint();
 
         // insert data
@@ -66,7 +68,7 @@ export class UIRenderSubsystem extends UISubSystem {
                 // renderModel.attachToScene();
                 break;
             default:
-                camera.addIntermediateModel(renderModel);
+                camera?.addIntermediateModel(renderModel);
                 break;
         }
     }

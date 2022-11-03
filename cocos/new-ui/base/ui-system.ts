@@ -55,6 +55,7 @@ export class UISystem extends System {
 
     init () {
         this._camera = director.root!.createCamera();
+        // init camera
         director.on(Director.EVENT_UI_UPDATE, this.tick, this);
     }
 
