@@ -50,22 +50,22 @@ test('slot', () => {
     const testElement = new TestElement();
     testElement.addChild(element1);
     expect(testElement.childCount).toBe(1);
-    expect(element1.getBehavior(UISlot)).toBeTruthy();
-    expect(element1.getBehavior(UISlot)!.constructor).toBe(ContentSlot);
+    expect(element1.slot).toBeTruthy();
+    expect(element1.slot!.constructor).toBe(ContentSlot);
 
     testElement.removeChild(element1);
-    expect(element1.getBehavior(UISlot)).toBeNull();
+    expect(element1.slot).toBeNull();
     testElement.addChild(element1);
-    expect(element1.getBehavior(UISlot)).toBeTruthy();
-    expect(element1.getBehavior(UISlot)!.constructor).toBe(ContentSlot);
+    expect(element1.slot).toBeTruthy();
+    expect(element1.slot!.constructor).toBe(ContentSlot);
 
     const testElement2 = new TestElement2();
     testElement2.addChild(element1);
-    expect(element1.getBehavior(UISlot)).toBeTruthy();
-    expect(element1.getBehavior(UISlot)!.constructor).toBe(TestSlot);
+    expect(element1.slot).toBeTruthy();
+    expect(element1.slot!.constructor).toBe(TestSlot);
 
     testElement2.removeChild(element1);
-    expect(element1.getBehavior(UISlot)).toBeNull();
+    expect(element1.slot).toBeNull();
 });
 
 test('document', () => {

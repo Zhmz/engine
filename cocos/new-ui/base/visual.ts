@@ -28,13 +28,12 @@ import { VisualProxy } from "../rendering/visual-proxy";
 import { AdvancedObject } from "./advanced-object";
 import { IDrawingContext } from "./ui-drawing-context";
 
-export abstract class Visual extends AdvancedObject {
-    public _visualProxy: VisualProxy | null = null;
+export class Visual extends AdvancedObject {
+    private _visualProxy = new VisualProxy();
 
-    constructor () {
-        super();
-        this._visualProxy = new VisualProxy();
+    get visualProxy () {
+        return this._visualProxy;
     }
-
+    
     protected onPaint (drawingContext: IDrawingContext) {}
 }

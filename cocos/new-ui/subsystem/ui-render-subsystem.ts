@@ -23,14 +23,24 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { RenderMode } from "../base/runtime-document-settings";
-import { IDrawingContext } from "../base/ui-drawing-context";
+import { RenderMode, UIRuntimeDocumentSettings } from "../base/runtime-document-settings";
+import { UIDocument } from "../base/ui-document";
 import { UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
+import { RuntimeDrawingContext } from "../rendering/runtime-drawing-context";
 
 export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set;
-    private _context = new IDrawingContext();
+    private _context: RuntimeDrawingContext;
+
+    get settings () {
+        return this._document.settings as UIRuntimeDocumentSettings;
+    }
+
+    constructor (document: UIDocument) {
+        super(document);
+        this._context = new RuntimeDrawingContext(document);
+    }
 
     invalidate(element: UIElement) {
         if (!this._dirtyElementMap.has(element)) {
@@ -41,7 +51,7 @@ export class UIRenderSubsystem extends UISubSystem {
     }
 
     update () {
-        const camera = this._document.settings.camera!;
+        const camera = this.settings.camera;
         camera.cleanIntermediateModels();
 
         // Assembly data
@@ -49,7 +59,7 @@ export class UIRenderSubsystem extends UISubSystem {
 
         // insert data
         const renderModel = this._context.getContextModel();
-        switch (this._document.settings.renderMode) {
+        switch (this.settings.renderMode) {
             case RenderMode.CAMERA:
                 break;
             case RenderMode.WORLD_SPACE:

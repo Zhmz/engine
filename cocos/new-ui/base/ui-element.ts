@@ -38,6 +38,7 @@ import { approx, Mat4, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
 import { ContainerElement } from './container-element';
 import { Visual } from './visual';
+import { UISlot } from './ui-slot';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -84,6 +85,10 @@ export class UIElement extends Visual {
     protected _measureDirty = false;
     protected _arrangeDirty = false;
     protected _hierarchyLevel = 0;
+
+    get slot () {
+        return this.getBehavior(UISlot);
+    }
 
     get parent () {
         return this._parent;
@@ -456,16 +461,13 @@ export class UIElement extends Visual {
     //#endregion layout
 
     //#endregion render
-    protected onPaint (drawingContext: IDrawingContext) {
-        let painterParams = IRectPainterParameters.getDefault(this); // 应该要分类型
-        drawingContext.drawRect(painterParams);
-    }
+    protected onPaint (drawingContext: IDrawingContext) {}
     //#endregion render
 
-    //#region EventSystem
+    // #region EventSystem
     public hitTest (ray: Ray): boolean {
-        return true;
+        return false;
     }
-    //#endregion EventSystem
+    // #endregion EventSystem
 
 }

@@ -25,10 +25,18 @@
 */
 
 import { Director, director, js, System } from "../../core";
+import { Camera } from "../../core/renderer/scene/camera";
 import { EventSystem } from "../event-system/event-system";
+import { RenderMode, UIRuntimeDocumentSettings } from "./runtime-document-settings";
 import { UIDocument } from "./ui-document";
 
 export class UISystem extends System {
+    private _camera: Camera;
+
+    public get hudCamera () {
+        return this._camera;
+    }
+
     static get instance () {
         return UISystem._instance;
     }
@@ -43,9 +51,10 @@ export class UISystem extends System {
 
     private static _instance = new UISystem();
     private _documents: UIDocument[] = [];
-    private _eventSystem:EventSystem = new EventSystem();
+    private _eventSystem = new EventSystem();
 
     init () {
+        this._camera = director.root!.createCamera();
         director.on(Director.EVENT_UI_UPDATE, this.tick, this);
     }
 
@@ -60,7 +69,13 @@ export class UISystem extends System {
     }
 
     tick () {
-        this._eventSystem.tick(this._documents);
+        const hasAnyHudUI = this._documents.find((document) => (document.settings as UIRuntimeDocumentSettings).renderMode === RenderMode.OVERLAY);
+        if (hasAnyHudUI && !this._camera.scene && director.getScene()) {
+            director.getScene()!.renderScene?.addCamera(this._camera);
+        } else if (!hasAnyHudUI && this._camera.scene) {
+            this._camera.scene.removeCamera(this._camera);
+        }
+        this._eventSystem.tick();
         for (let i = 0; i < this._documents.length; i++) {
             this._documents[i].update();
         }

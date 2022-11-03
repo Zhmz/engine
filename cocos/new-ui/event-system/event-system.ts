@@ -28,6 +28,7 @@ import { Event, EventMouse } from '../../input/types';
 import { InputEventType } from '../../input/types/event-enum';
 import { UIDocument } from '../base/ui-document';
 import { UIElement } from '../base/ui-element';
+import { UISystem } from '../base/ui-system';
 import { UIWindow } from '../base/ui-window';
 import { Event as NewUIEvent } from './event-data/event';
 import { PointerDownEvent } from './event-data/pointer-down-event';
@@ -38,16 +39,6 @@ import { RaycastResult } from './raycast-result';
 
 export class EventSystem {
     private _inputModuleList: BaseInputModule[] = [];
-    private _window: UIWindow | null = null;
-
-    get window(): UIWindow | null {
-        return this._window;
-    }
-
-    set window(val: UIWindow | null) {
-        this._window = val;
-    }
-
     constructor() {
 
     }
@@ -59,9 +50,10 @@ export class EventSystem {
 
     }
 
-    public tick(documents: UIDocument[]) {
+    public tick() {
 
         const eventMouseList = pointerInputModule.eventMouseList;
+        const documents = UISystem.instance.documents;
 
         for(let i = 0 ;i<eventMouseList.length;i++){
             const eventMouse  = eventMouseList[i];
@@ -82,46 +74,6 @@ export class EventSystem {
     protected emitEvent(event:Event) {
 
     }
-
-    // protected getHitUIElement(ray: Ray): UIElement | null {
-    //     const children: ReadonlyArray<UIElement> = this._window!.children;
-    //     for (let i = 0; i < children.length; i++) {
-    //         const child = children[i];
-    //         const hit = child.hitTest(ray);
-    //         if (hit) {
-    //             return child;
-    //         }
-    //     }
-    //     return null;
-    // }
-
-    // public dispatchTouchEvent(event: Event, ray: Ray) {
-    //     const element = this.getHitUIElement(ray);
-    //     if (!element) {
-    //         return;
-    //     }
-
-    //     // handle various touch events
-    // }
-
-
-    // public dispatchMouseEvent(event: Event, ray: Ray) {
-    //     const element = this.getHitUIElement(ray);
-    //     if (!element) {
-    //         return;
-    //     }
-
-    //     let newUIEvent: NewUIEvent | null = null;
-    //     switch (event.type) {
-    //         case InputEventType.MOUSE_DOWN:
-    //             newUIEvent = new PointerDownEvent();
-    //             break;
-    //         case InputEventType.MOUSE_UP:
-    //             newUIEvent = new PointerUpEvent();
-    //             break;
-    //     }
-    //     element.dispatchEvent(newUIEvent!);
-    // }
 
     //raycast comparer
     private static raycastComparer(left: RaycastResult, right: RaycastResult) {

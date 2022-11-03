@@ -73,7 +73,7 @@ export class ContentControl extends ContainerElement {
         if (content) {
             if (content.visibility !== Visibility.COLLAPSED) {
                 const childRect = new Rect();
-                const contentSlot = content.getBehavior(ContentSlot);
+                const contentSlot = content.slot as ContentSlot;
                 assertIsNonNullable(contentSlot);
                 const { width: marginWidth, height: marginHeight } = content.margin;
                 if (contentSlot.horizontalAlignment === HorizontalAlignment.STRETCH) {
