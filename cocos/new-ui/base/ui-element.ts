@@ -34,12 +34,8 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UIBehavior, UIBehaviorType } from './ui-behavior';
 import { UIDocument } from './ui-document';
-import { approx, Mat4, Pool, Rect, Size } from '../../core';
+import { approx, Mat4, Rect, Size } from '../../core';
 import { Ray } from '../../core/geometry';
-import { CallbackInfo, CallbackList} from '../../core/event/callbacks-invoker';
-import { Event } from '../event-system/event-data/event';
-import { PointerDownEvent } from '../event-system/event-data/pointer-down-event';
-import { PointerUpEvent } from '../event-system/event-data/pointer-up-event';
 import { ContainerElement } from './container-element';
 import { Visual } from './visual';
 
@@ -62,7 +58,6 @@ export enum InvalidateReason {
     TRANSFORM = 1 << 4,
     PAINT = 1 << 5
 }
-
 export class UIElement extends Visual {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement, 1);
@@ -86,11 +81,8 @@ export class UIElement extends Visual {
     protected _localTransform = new Mat4();
     protected _worldTransformDirty = false;
     protected _localTransformDirty = false;
-    //#region Layout
-
     protected _measureDirty = false;
     protected _arrangeDirty = false;
-
     protected _hierarchyLevel = 0;
 
     get parent () {
@@ -125,7 +117,6 @@ export class UIElement extends Visual {
         }
     }
 
-
     get desiredSize (): Readonly<Size> {
         if (this.visibility === Visibility.COLLAPSED) {
             return Size.ZERO;
@@ -143,10 +134,9 @@ export class UIElement extends Visual {
         this.setValue(UIElement.MarginProperty, val);
     }
 
-    get flowDirection() {
+    get flowDirection () {
         return this.getValue(UIElement.FlowDirectionProperty) as FlowDirection;
     }
-
 
     set flowDirection (flowDirection: FlowDirection) {
         this.invalidateParentArrange();
@@ -156,29 +146,28 @@ export class UIElement extends Visual {
 
     //#region Display
 
-    get opacity() {
+    get opacity () {
         return this.getValue(UIElement.OpacityProperty) as number;
     }
 
-    set opacity(val: number) {
+    set opacity (val: number) {
         this.setValue(UIElement.OpacityProperty, val);
     }
 
-    get visibility() {
+    get visibility () {
         return this.getValue(UIElement.VisibilityProperty) as Visibility;
     }
-
 
     set visibility (val: Visibility) {
         this.invalidateParentMeasure();
         this.setValue(UIElement.VisibilityProperty, val);
     }
 
-    get clipToBounds() {
+    get clipToBounds () {
         return this.getValue(UIElement.ClipToBoundsProperty) as boolean;
     }
 
-    set clipToBounds(val: boolean) {
+    set clipToBounds (val: boolean) {
         this.setValue(UIElement.ClipToBoundsProperty, val);
     }
 
@@ -186,26 +175,25 @@ export class UIElement extends Visual {
 
     //#region RenderTransform
 
-    get position() {
+    get position () {
         return this.getValue(UIElement.PositionProperty) as Vec3;
     }
-
 
     set position (val: Vec3) {
         this.invalidateLocalTransform();
         this.setValue(UIElement.PositionProperty, val.clone());
     }
 
-    get eulerAngles() {
+    get eulerAngles () {
         return Quat.toEuler(new Vec3(), this.rotation) as Vec3;
     }
 
-    set eulerAngles(val: Vec3) {
+    set eulerAngles (val: Vec3) {
         const quat = Quat.fromEuler(new Quat(), val.x, val.y, val.z);
         this.rotation = quat;
     }
 
-    get rotation() {
+    get rotation () {
         return this.getValue(UIElement.RotationProperty) as Quat;
     }
 
@@ -214,37 +202,35 @@ export class UIElement extends Visual {
         this.setValue(UIElement.RotationProperty, val.clone());
     }
 
-    get shear() {
+    get shear () {
         return this.getValue(UIElement.ShearProperty) as Vec2;
     }
-
 
     set shear (val: Vec2) {
         this.invalidateLocalTransform();
         this.setValue(UIElement.ShearProperty, val);
     }
 
-    get scale() {
+    get scale () {
         return this.getValue(UIElement.ScaleProperty) as Vec3;
     }
-
 
     set scale (val: Vec3) {
         this.invalidateLocalTransform();
         this.setValue(UIElement.ScaleProperty, val.clone());
     }
 
-    get renderTransformPivot() {
+    get renderTransformPivot () {
         return this.getValue(UIElement.RenderTransformPivotProperty) as Vec2;
     }
 
-    set renderTransformPivot(val: Vec2) {
+    set renderTransformPivot (val: Vec2) {
         this.invalidateWorldTransform();
         this.setValue(UIElement.RenderTransformPivotProperty, val.clone());
     }
 
 
-    get worldTransform(): Readonly<Mat4> {
+    get worldTransform (): Readonly<Mat4> {
         if (this._worldTransformDirty) {
             Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.center.x, this.layout.center.y, 0));
             Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
@@ -256,7 +242,7 @@ export class UIElement extends Visual {
         return this._worldTransform;
     }
 
-    private get localTransform() {
+    private get localTransform () {
         if (this._localTransformDirty) {
             const { x: shearX, y: shearY } = this.shear;
             if (approx(shearX, 0) && approx(shearY, 0)) {
@@ -276,8 +262,8 @@ export class UIElement extends Visual {
         return this._localTransform;
     }
 
-    private get renderTransform() {
-        const { x: xOffsetPercentage, y: yOffsetPercentage } = this.renderTransformPivot;
+    private get renderTransform () {
+        const { x : xOffsetPercentage, y : yOffsetPercentage } = this.renderTransformPivot;
         if (!approx(xOffsetPercentage, 0.5) || !approx(yOffsetPercentage, 0.5)) {
             const matrix = new Mat4();
             const xOffset = this.layout.width * (xOffsetPercentage - 0.5);
@@ -291,17 +277,17 @@ export class UIElement extends Visual {
         return this.localTransform;
     }
 
-
     public worldToLocal (out: Vec3, worldPoint: Vec3) {
         const matrix = Mat4.invert(new Mat4(), this.worldTransform);
         return Vec3.transformMat4(out, worldPoint, matrix);
     }
 
-    public localToWorld(out: Vec3, localPoint: Vec3) {
+    public localToWorld (out: Vec3, localPoint: Vec3) {
         return Vec3.transformMat4(out, localPoint, this.worldTransform);
     }
 
     //#endregion RenderTransform
+
     public removeFromParent () {
         this.setParent(null);
     }
@@ -339,7 +325,7 @@ export class UIElement extends Visual {
         }
     }
 
-    private updateDocument(document: UIDocument | null) {
+    private updateDocument (document: UIDocument | null) {
         if (this._document !== document) {
             this._document = document;
             for (let i = 0; i < this._children.length; i++) {
@@ -412,7 +398,6 @@ export class UIElement extends Visual {
         return null;
     }
 
-
     public addBehavior<T extends UIBehavior> (type: UIBehaviorType<T>): T {
         if (this.getBehavior(type)) {
             console.warn('Add a duplicated behavior, the old one will be removed!');
@@ -467,9 +452,8 @@ export class UIElement extends Visual {
         this._previousArrangeRect.set(finalRect);
         this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
     }
-
+    
     //#endregion layout
-
 
     //#endregion render
     protected onPaint (drawingContext: IDrawingContext) {
@@ -482,8 +466,6 @@ export class UIElement extends Visual {
     public hitTest (ray: Ray): boolean {
         return true;
     }
+    //#endregion EventSystem
 
-    public hitTestByScreenPos(screenPos: Vec2): boolean {
-        return true;
-    }
 }
