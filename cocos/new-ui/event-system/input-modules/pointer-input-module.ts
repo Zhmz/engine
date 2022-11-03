@@ -23,75 +23,105 @@
  THE SOFTWARE.
 */
 
-import { js, Vec2 } from '../../../core';
-import { boolean } from '../../../core/data/decorators';
-import { DispatcherEventType, NodeEventProcessor } from '../../../core/scene-graph/node-event-processor';
-import { input } from '../../../input';
-import { EventMouse, EventTouch } from '../../../input/types';
+import { MouseInputSource } from '../../../../pal/input/web';
+import { Vec2 } from '../../../core';
+import { Ray } from '../../../core/geometry';
 import { InputEventType } from '../../../input/types/event-enum';
-import { UIElement } from '../../base/ui-element';
 import { BaseInputModule, InputModulePriority } from './base-input-module';
+import { Event, EventMouse, EventTouch } from '../../../input/types';
+import { UISystem } from '../../base/ui-system';
+
+const pos: Vec2 = new Vec2();
+
+const mouseEvents = [
+    InputEventType.MOUSE_DOWN,
+    InputEventType.MOUSE_MOVE,
+    InputEventType.MOUSE_UP,
+    InputEventType.MOUSE_WHEEL,
+];
+const touchEvents = [
+    InputEventType.TOUCH_START,
+    InputEventType.TOUCH_MOVE,
+    InputEventType.TOUCH_END,
+    InputEventType.TOUCH_CANCEL,
+];
 
 export class PointerInputModule extends BaseInputModule {
     public priority: InputModulePriority = InputModulePriority.UI;
 
+    // #region event
+    private _mouseInput = new MouseInputSource();
+    private _ray: Ray | null = null;
+
+    private _eventTouchList: EventTouch[] = [];
+    private _eventMouseList: EventMouse[] = [];
+
+    private _dispatchImmediately: boolean = true;
+
+    get mouseInput(): MouseInputSource {
+        return this._mouseInput;
+    }
+
+    get ray(): Ray | null {
+        return this._ray;
+    }
+    set ray(val: Ray | null) {
+        this._ray = val;
+    }
+
+    get eventTouchList() {
+        return this._eventTouchList;
+    }
+
+    get eventMouseList() {
+        return this._eventMouseList;
+    }
+
     constructor() {
         super();
-
+        this._registerEvent();
     }
 
-    public registerNodeEventProcessor() {
-        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addNodeEventProcessor, this);
-        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removeNodeEventProcessor, this);
+    private _registerEvent() {
+        // TODO: touch
+
+
+        this._mouseInput.on(InputEventType.MOUSE_UP, (event) => {
+            this._dispatchOrPushEvent(event, this._eventMouseList);
+        });
+        this._mouseInput.on(InputEventType.MOUSE_MOVE, (event) => {
+            this._dispatchOrPushEvent(event, this._eventMouseList);
+        });
+        this._mouseInput.on(InputEventType.MOUSE_DOWN, (event) => {
+            this._dispatchOrPushEvent(event, this._eventMouseList);
+        });
+        this._mouseInput.on(InputEventType.MOUSE_WHEEL, (event) => {
+            this._dispatchOrPushEvent(event, this._eventMouseList);
+        });
     }
 
-
-    public dispatchEventMouse(eventMouse: EventMouse): boolean {
-        let dispatchToNextEventDispatcher = true;
-        // const pos = Vec2.ZERO;
-        // eventMouse.getLocation(pos);
-        const succeed = true;//uiElement.hitTest(ray);//consider how to get the uiElement param
-        
-        //TODO: prevent event broadcasting
-        if (succeed) {
-            this._nodeEventProcessor!.dispatchEvent(eventMouse);
-            dispatchToNextEventDispatcher = false;
+    protected _dispatchOrPushEvent(event: Event, eventList: Event[]) {
+        // dispatch
+        if (this._dispatchImmediately) {
+            //this._dispatchEvent(event, this._ray!);
+        } else {
+            eventList.push(event);
         }
-        return dispatchToNextEventDispatcher;
     }
 
-    // simulate click
-    public dispatchEventTouch(eventTouch: EventTouch): boolean {
-        let dispatchToNextEventDispatcher = true;
-        const pointerEventProcessor = this._nodeEventProcessor!;
-        const touch = eventTouch.touch!;
-        if (pointerEventProcessor.isEnabled && pointerEventProcessor.shouldHandleEventTouch) {
-            if (eventTouch.type === InputEventType.TOUCH_START) {
-                // @ts-expect-error access private method
-                if (pointerEventProcessor._handleEventTouch(eventTouch)) {
-                    pointerEventProcessor.claimedTouchIdList.push(touch.getID());
-                    dispatchToNextEventDispatcher = false;
-                    if (eventTouch.preventSwallow) {
-                        eventTouch.preventSwallow = false;  // reset swallow state
-                    }
-                }
-            } else if (pointerEventProcessor.claimedTouchIdList.length > 0) {
-                const index = pointerEventProcessor.claimedTouchIdList.indexOf(touch.getID());
-                if (index !== -1) {
-                    // @ts-expect-error access private method
-                    pointerEventProcessor._handleEventTouch(eventTouch);
-                    if (eventTouch.type === InputEventType.TOUCH_END || eventTouch.type === InputEventType.TOUCH_CANCEL) {
-                        js.array.removeAt(pointerEventProcessor.claimedTouchIdList, index);
-                    }
-                    dispatchToNextEventDispatcher = false;
-                    if (eventTouch.preventSwallow) {
-                        eventTouch.preventSwallow = false;  // reset swallow state
-                    }
-                }
-            }
-        }
+    // protected _dispatchEvent(event: Event, ray: Ray) {
+    //     const eventSystem = UISystem.instance.eventSystem;
+    //     const eventType = event.type as InputEventType;
+    //     if (touchEvents.includes(eventType)) {
+    //         eventSystem.dispatchTouchEvent(event, ray);
+    //     } else if (mouseEvents.includes(eventType)) {
+    //         eventSystem.dispatchMouseEvent(event, ray);
+    //     }
+    // }
 
-        return dispatchToNextEventDispatcher;
+    protected clearEvents() {
+        this._eventMouseList.length = 0;
+        this._eventTouchList.length = 0;
     }
 }
 

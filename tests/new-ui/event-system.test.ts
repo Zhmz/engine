@@ -2,21 +2,24 @@ import { Vec2 } from "../../cocos/core/math";
 import { EventMouse } from "../../cocos/input/types";
 import { UIButton } from "../../cocos/new-ui/component/ui-button";
 import { EventTarget } from '../../cocos/core/event';
-import { eventSystem } from "../../cocos/new-ui/event-system/event-system";
-import { Node } from "../../cocos/core";
-import { pointerInputModule } from "../../cocos/new-ui/event-system/input-modules/pointer-input-module";
+import { PointerInputModule } from "../../cocos/new-ui/event-system/input-modules/pointer-input-module";
+import { UIElement } from "../../cocos/new-ui/base/ui-element";
+import { Button } from "../../cocos/new-ui/framework/button";
+import { UIWindow } from "../../cocos/new-ui/base/ui-window";
+import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 
 test('simple-button-mouse-enter', () => {
-    pointerInputModule.registerNodeEventProcessor();
+    const pointerInputModule = new PointerInputModule();
+    //pointerInputModule.registerNodeEventProcessor();
 
-    const uiButton = new UIButton();
-    const node = new Node();
-    uiButton.node = node;
-    // for change timing forcedly in unit test, it is not permitted in real runtime.
-    uiButton.onEnable();
+    const button = new Button();
+    const document = new UIDocument();
+    const window = document.window;
+    document.window.addChild(button);
+    //eventSystem.window = window;
 
     // @ts-expect-error access private method
-    const eventTarget: EventTarget = eventSystem.mouseInput._eventTarget;
+    const eventTarget: EventTarget = pointerInputModule.mouseInput._eventTarget;
 
     const eventMouseUpStr = 'mouse-up';
     const eventMouseUp = new EventMouse(eventMouseUpStr, false, Vec2.ZERO);
@@ -25,9 +28,9 @@ test('simple-button-mouse-enter', () => {
     eventMouseUp.movementX = 0;
     eventMouseUp.movementY = 0;
     eventTarget.emit(eventMouseUpStr, eventMouseUp);
-    expect(UIButton.MOUSE_UP_COUNTER).toBe(1);
+    expect(Button.MOUSE_UP_COUNTER).toBe(1);
     eventTarget.emit(eventMouseUpStr, eventMouseUp);
-    expect(UIButton.MOUSE_UP_COUNTER).toBe(2);
+    expect(Button.MOUSE_UP_COUNTER).toBe(2);
 
     const eventMouseDownStr = 'mouse-down';
     const eventMouseDown = new EventMouse(eventMouseDownStr, false, Vec2.ZERO);
@@ -36,9 +39,9 @@ test('simple-button-mouse-enter', () => {
     eventMouseDown.movementX = 0;
     eventMouseDown.movementY = 0;
     eventTarget.emit(eventMouseDownStr, eventMouseDown);
-    expect(UIButton.MOUSE_DOWN_COUNTER).toBe(1);
+    expect(Button.MOUSE_DOWN_COUNTER).toBe(1);
     eventTarget.emit(eventMouseDownStr, eventMouseDown);
-    expect(UIButton.MOUSE_DOWN_COUNTER).toBe(2);
+    expect(Button.MOUSE_DOWN_COUNTER).toBe(2);
 
     // debug in UIButton and observe whether OnMouseUp or OnMouseDown executes
 

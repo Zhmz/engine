@@ -26,7 +26,7 @@
 import { DispatcherEventType, NodeEventProcessor } from '../../../core/scene-graph/node-event-processor';
 import { Input } from '../../../input';
 import { Event, EventMouse, EventTouch } from '../../../input/types';
-import { eventSystem, EventSystem } from '../event-system';
+import { EventSystem } from '../event-system';
 import { RaycastResult } from '../raycast-result';
 
 export enum InputModulePriority {
@@ -50,48 +50,11 @@ const touchEvents = [
 export abstract class BaseInputModule {
     public abstract priority:InputModulePriority;
 
-    //private declare _baseEventData:BaseEventData;
-
-    // consider event block later
-    //protected _nodeEventProcessorList:NodeEventProcessor[] = [];
-    protected declare _nodeEventProcessor:NodeEventProcessor|null;
-
     protected cacheRaycastResults:RaycastResult[] = [];
 
     // input
 
     constructor () {
-        eventSystem.registerInputModule(this);
-
-        // NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addNodeEventProcessor, this);
-        // NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removeNodeEventProcessor, this);
-        // //TODO： mark dirty
-    }
-
-    public dispatchEvent (event:Event) :boolean {
-        const eventType = event.type as Input.EventType;
-        if (touchEvents.includes(eventType)) {
-            return this.dispatchEventTouch(event as EventTouch);
-        } else if (mouseEvents.includes(eventType)) {
-            return  this.dispatchEventMouse(event as EventMouse);
-        }
-        return true;
-    }
-
-    public abstract dispatchEventMouse (eventMouse:EventMouse):boolean;
-    public abstract  dispatchEventTouch (eventTouch:EventTouch):boolean;
-
-    protected addNodeEventProcessor (processor:NodeEventProcessor) {
-        //TODO: use list to manage NodeEventProcessor
-        if (!this._nodeEventProcessor) {
-            this._nodeEventProcessor = processor;
-        }
-    }
-
-    protected removeNodeEventProcessor (processor:NodeEventProcessor) {
-        //TODO: use list to manage NodeEventProcessor
-        if (this._nodeEventProcessor === processor) {
-            this._nodeEventProcessor = null;
-        }
+        //eventSystem.registerInputModule(this);
     }
 }
