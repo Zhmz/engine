@@ -23,11 +23,11 @@
  THE SOFTWARE.
 */
 
-import { NewUIEventType } from "../../../input/types/event-enum";
+//import { NewUIEventType } from "../../../input/types/event-enum";
 import { Event } from "./event";
 
 export class PointerDownEvent extends Event {
-    protected _eventType: NewUIEventType = NewUIEventType.MOUSE_DOWN;
+    //protected _eventType: NewUIEventType = NewUIEventType.MOUSE_DOWN;
     
 }
 

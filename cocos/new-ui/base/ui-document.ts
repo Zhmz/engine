@@ -25,6 +25,7 @@
 */
 
 import { Rect } from "../../core/math";
+import { EventSubSystem } from "../subsystem/event-sub-system";
 import { UILayoutSubsystem } from "../subsystem/ui-layout-subsystem";
 import { InvalidateReason, UIElement } from "./ui-element";
 import { UIWindow } from "./ui-window";
@@ -45,6 +46,10 @@ export class UIDocument {
         return this._window;
     }
 
+    get eventSubSystem() {
+        return this._eventSubSystem;
+    }
+
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
         if (invalidateReason & InvalidateReason.ARRANGE) {
             this._layoutSubsystem.invalidate(element);
@@ -58,4 +63,5 @@ export class UIDocument {
     private _viewport = new Rect();
     private _window = new UIWindow(this);
     private _layoutSubsystem = new UILayoutSubsystem(this);
+    private _eventSubSystem = new EventSubSystem(this);
 } 

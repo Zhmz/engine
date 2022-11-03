@@ -23,16 +23,16 @@
  THE SOFTWARE.
 */
 
-import { NewUIEventType } from "../../../input/types/event-enum";
+//import { NewUIEventType } from "../../../input/types/event-enum";
 import { UIElement } from "../../base/ui-element";
 
 export abstract class Event {
-    protected abstract _eventType:NewUIEventType;
+    //protected abstract _eventType:NewUIEventType;
     protected _target:UIElement|null = null;
 
-    get eventType() {
-        return this._eventType;
-    }
+    // get eventType() {
+    //     return this._eventType;
+    // }
 }
 
 

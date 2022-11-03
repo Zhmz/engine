@@ -26,44 +26,19 @@
 import { Ray } from '../../core/geometry';
 import { Event, EventMouse } from '../../input/types';
 import { InputEventType } from '../../input/types/event-enum';
+import { UIDocument } from '../base/ui-document';
 import { UIElement } from '../base/ui-element';
 import { UIWindow } from '../base/ui-window';
 import { Event as NewUIEvent } from './event-data/event';
 import { PointerDownEvent } from './event-data/pointer-down-event';
 import { PointerUpEvent } from './event-data/pointer-up-event';
 import { BaseInputModule } from './input-modules/base-input-module';
+import { pointerInputModule } from './input-modules/pointer-input-module';
 import { RaycastResult } from './raycast-result';
-
-const mouseEvents = [
-    InputEventType.MOUSE_DOWN,
-    InputEventType.MOUSE_MOVE,
-    InputEventType.MOUSE_UP,
-    InputEventType.MOUSE_WHEEL,
-];
-const touchEvents = [
-    InputEventType.TOUCH_START,
-    InputEventType.TOUCH_MOVE,
-    InputEventType.TOUCH_END,
-    InputEventType.TOUCH_CANCEL,
-];
 
 export class EventSystem {
     private _inputModuleList: BaseInputModule[] = [];
-    private _currInputModule: BaseInputModule | null = null;
-
     private _window: UIWindow | null = null;
-
-
-    private _eventMouseList: EventMouse[] = [];
-
-    // #endregion
-
-    // current event-applied UIElement
-    private _currSelectedUIElement: UIElement | null = null;
-
-    // the threshold of dragging
-    private _dragPixelThreshold = 10;
-
 
     get window(): UIWindow | null {
         return this._window;
@@ -73,33 +48,7 @@ export class EventSystem {
         this._window = val;
     }
 
-    get currInputModule(): BaseInputModule | null {
-        return this._currInputModule;
-    }
-    set currInputModule(val: BaseInputModule | null) {
-        this._currInputModule = val;
-    }
-
-    get currSelectedUIElement(): UIElement | null {
-        return this._currSelectedUIElement;
-    }
-    set currSelectedUIElement(val: UIElement | null) {
-        this._currSelectedUIElement = val;
-    }
-
-    get dragPixelThreshold(): number {
-        return this._dragPixelThreshold;
-    }
-    set dragPixelThreshold(val: number) {
-        this._dragPixelThreshold = val;
-    }
-
     constructor() {
-
-    }
-
-    // update input modules
-    public updateModules() {
 
     }
 
@@ -110,44 +59,69 @@ export class EventSystem {
 
     }
 
+    public tick(documents: UIDocument[]) {
 
-    public dispatchEvent(event: Event, ray: Ray) {
-        const eventType = event.type as InputEventType;
-        const children: ReadonlyArray<UIElement> = this._window!.children;
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
-            const hit = child.hitTest(ray);
-            if (hit) {
-                if (touchEvents.includes(eventType)) {
-                    this.dispatchTouchEvent(child, event, ray);
-                } else if (mouseEvents.includes(eventType)) {
-                    this.dispatchMouseEvent(child, event, ray);
-                }
-                //child.dispatchEvent(event);
-            }
+        const eventMouseList = pointerInputModule.eventMouseList;
+
+        for(let i = 0 ;i<eventMouseList.length;i++){
+            const eventMouse  = eventMouseList[i];
+
+        }
+
+
+        for (let i = 0; i < documents.length; i++) {
+            const curDocument = documents[i];
+
+
+
+
+            //const children: ReadonlyArray<UIElement> = curDocument.window.children;
         }
     }
 
-    protected dispatchTouchEvent(element: UIElement, event: Event, ray: Ray) {
+    protected emitEvent(event:Event) {
 
     }
 
+    // protected getHitUIElement(ray: Ray): UIElement | null {
+    //     const children: ReadonlyArray<UIElement> = this._window!.children;
+    //     for (let i = 0; i < children.length; i++) {
+    //         const child = children[i];
+    //         const hit = child.hitTest(ray);
+    //         if (hit) {
+    //             return child;
+    //         }
+    //     }
+    //     return null;
+    // }
 
-    protected dispatchMouseEvent(element: UIElement, event: Event, ray: Ray) {
-        let newUIEvent: NewUIEvent|null = null;
-        switch (event.type) {
-            case InputEventType.MOUSE_DOWN:
-                newUIEvent = new PointerDownEvent();
-                break;
-            case InputEventType.MOUSE_UP:
-                newUIEvent = new PointerUpEvent();
-                break;
-        }
-        element.dispatchEvent(newUIEvent!);
-    }
+    // public dispatchTouchEvent(event: Event, ray: Ray) {
+    //     const element = this.getHitUIElement(ray);
+    //     if (!element) {
+    //         return;
+    //     }
+
+    //     // handle various touch events
+    // }
 
 
+    // public dispatchMouseEvent(event: Event, ray: Ray) {
+    //     const element = this.getHitUIElement(ray);
+    //     if (!element) {
+    //         return;
+    //     }
 
+    //     let newUIEvent: NewUIEvent | null = null;
+    //     switch (event.type) {
+    //         case InputEventType.MOUSE_DOWN:
+    //             newUIEvent = new PointerDownEvent();
+    //             break;
+    //         case InputEventType.MOUSE_UP:
+    //             newUIEvent = new PointerUpEvent();
+    //             break;
+    //     }
+    //     element.dispatchEvent(newUIEvent!);
+    // }
 
     //raycast comparer
     private static raycastComparer(left: RaycastResult, right: RaycastResult) {
@@ -159,5 +133,3 @@ export class EventSystem {
         this._inputModuleList.sort((a, b) => b.priority - a.priority);
     }
 }
-
-export const eventSystem = new EventSystem();

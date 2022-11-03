@@ -26,7 +26,7 @@
 import { DispatcherEventType, NodeEventProcessor } from '../../../core/scene-graph/node-event-processor';
 import { Input } from '../../../input';
 import { Event, EventMouse, EventTouch } from '../../../input/types';
-import { eventSystem, EventSystem } from '../event-system';
+import { EventSystem } from '../event-system';
 import { RaycastResult } from '../raycast-result';
 
 export enum InputModulePriority {
@@ -50,32 +50,11 @@ const touchEvents = [
 export abstract class BaseInputModule {
     public abstract priority:InputModulePriority;
 
-    //private declare _baseEventData:BaseEventData;
-
-    // consider event block later
-    //protected _nodeEventProcessorList:NodeEventProcessor[] = [];
-    //protected declare _nodeEventProcessor:NodeEventProcessor|null;
-
     protected cacheRaycastResults:RaycastResult[] = [];
 
     // input
 
     constructor () {
-        eventSystem.registerInputModule(this);
+        //eventSystem.registerInputModule(this);
     }
-
-    // public dispatchEvent (event:Event) :boolean {
-    //     const eventType = event.type as Input.EventType;
-    //     if (touchEvents.includes(eventType)) {
-    //         return this.dispatchEventTouch(event as EventTouch);
-    //     } else if (mouseEvents.includes(eventType)) {
-    //         return  this.dispatchEventMouse(event as EventMouse);
-    //     }
-    //     return true;
-    // }
-
-    // public abstract dispatchEventMouse (eventMouse:EventMouse):boolean;
-    // public abstract dispatchEventTouch (eventTouch:EventTouch):boolean;
-
-
 }

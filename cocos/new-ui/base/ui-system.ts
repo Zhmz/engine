@@ -1,5 +1,6 @@
 
 import { Director, director, js, System } from "../../core";
+import { EventSystem } from "../event-system/event-system";
 import { UIDocument } from "./ui-document";
 
 export class UISystem extends System {
@@ -11,8 +12,13 @@ export class UISystem extends System {
         return this._documents;
     }
 
+    get eventSystem (): EventSystem {
+        return this._eventSystem;
+    }
+
     private static _instance = new UISystem();
     private _documents: UIDocument[] = [];
+    private _eventSystem:EventSystem = new EventSystem();
 
     init () {
         director.on(Director.EVENT_UI_UPDATE, this.tick, this);
@@ -29,6 +35,7 @@ export class UISystem extends System {
     }
 
     tick () {
+        this._eventSystem.tick(this._documents);
         for (let i = 0; i < this._documents.length; i++) {
             this._documents[i].update();
         }

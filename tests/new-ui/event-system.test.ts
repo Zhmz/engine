@@ -2,7 +2,6 @@ import { Vec2 } from "../../cocos/core/math";
 import { EventMouse } from "../../cocos/input/types";
 import { UIButton } from "../../cocos/new-ui/component/ui-button";
 import { EventTarget } from '../../cocos/core/event';
-import { eventSystem } from "../../cocos/new-ui/event-system/event-system";
 import { PointerInputModule } from "../../cocos/new-ui/event-system/input-modules/pointer-input-module";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { Button } from "../../cocos/new-ui/framework/button";
@@ -17,7 +16,7 @@ test('simple-button-mouse-enter', () => {
     const document = new UIDocument();
     const window = document.window;
     document.window.addChild(button);
-    eventSystem.window = window;
+    //eventSystem.window = window;
 
     // @ts-expect-error access private method
     const eventTarget: EventTarget = pointerInputModule.mouseInput._eventTarget;

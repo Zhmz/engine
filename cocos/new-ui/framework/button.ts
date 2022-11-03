@@ -24,7 +24,7 @@
 */
 
 import { ContentControl } from "./content-control";
-import { NewUIEventType } from "../../input/types/event-enum";
+//import { NewUIEventType } from "../../input/types/event-enum";
 import { UIElement } from "../base/ui-element";
 import { UISlot } from "../base/ui-slot";
 import { PointerDownEvent } from "../event-system/event-data/pointer-down-event";
@@ -38,6 +38,7 @@ export class Button extends ContentControl {
 
     constructor() {
         super();
+        this._registerEvent();
         Button.MOUSE_DOWN_COUNTER = 0;
         Button.MOUSE_UP_COUNTER = 0;
     }
@@ -53,8 +54,8 @@ export class Button extends ContentControl {
         // this.on(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
         // this.on(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
 
-        this.registerEventListener(PointerUpEvent, this._onMouseUp, this);
-        this.registerEventListener(PointerDownEvent, this._onMouseDown, this);
+        this.addEventListener(PointerUpEvent, this._onMouseUp, this);
+        this.addEventListener(PointerDownEvent, this._onMouseDown, this);
     }
 
     protected _unregisterEvent() {
@@ -68,8 +69,8 @@ export class Button extends ContentControl {
         // this.off(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
         // this.off(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
 
-        this.unregisterEventListener(PointerUpEvent, this._onMouseUp, this);
-        this.unregisterEventListener(PointerDownEvent, this._onMouseDown, this);
+        this.removeEventListener(PointerUpEvent, this._onMouseUp, this);
+        this.removeEventListener(PointerDownEvent, this._onMouseDown, this);
     }
 
 

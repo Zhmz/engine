@@ -32,10 +32,6 @@ export abstract class UIComponent extends Component {
     get uiElement() {
         return this._uiElement;
     }
-    set uiElement(val: UIElement) {
-        this._uiElement = val;
-    }
-
 
     buildUITree(context) {
         context.parent.addChild(this._uiElement);
