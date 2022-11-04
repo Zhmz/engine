@@ -35,7 +35,7 @@ export interface IRectPainterParameters { // world trs 不在此结构中，另�
 export interface IBrushPainterParameters { // not finish
     rect: Rect;
     color: Color;
-    brush: Brush;
+    brush: Readonly<Brush>;
 }
 
 export interface ITextPainterParameters { // not finish

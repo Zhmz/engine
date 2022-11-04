@@ -25,7 +25,7 @@
 */
 import { RenderMode, UIRuntimeDocumentSettings } from "../base/runtime-document-settings";
 import { UIDocument } from "../base/ui-document";
-import { UIElement } from "../base/ui-element";
+import { InvalidateReason, UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
 import { RuntimeDrawingContext } from "../rendering/runtime-drawing-context";
 
@@ -42,12 +42,16 @@ export class UIRenderSubsystem extends UISubSystem {
         this._context = new RuntimeDrawingContext(document);
     }
 
-    invalidate(element: UIElement) {
+    invalidate(element: UIElement, invalidateReason: InvalidateReason) {
         if (!this._dirtyElementMap.has(element)) {
             this._dirtyElementMap.add(element)
             // 部分更新用
             // 能否在这里进行 transform 的更新
         }
+    }
+
+    removeInvalidation(element: UIElement, invalidateReason: InvalidateReason) {
+        
     }
 
     update () {

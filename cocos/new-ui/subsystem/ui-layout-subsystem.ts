@@ -24,46 +24,75 @@
  THE SOFTWARE.
 */
 
-import { UIElement } from "../base/ui-element";
+import { ErrorID, UIError } from "../base/error";
+import { InvalidateReason, UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
 
 export class UILayoutSubsystem extends UISubSystem {
-    private _buffer1 = new Array<UIElement>();
-    private _buffer2 = new Array<UIElement>();
-    private _doubleArray = [this._buffer1, this._buffer2];
-    private _loop = 0;
+    private _measureDirtyElements = new Set<UIElement>();
+    private _arrangeDirtyElements = new Set<UIElement>();
 
-    private _dirtyArrangeElements = this._buffer1;
-
-    invalidate(element: UIElement) {
-        this._dirtyArrangeElements.push(element);
-    }
-
-    update () {
-        while (this.document.window.isMeasureDirty || this._dirtyArrangeElements.length > 0) {
-            const dirtyArrangeElements = this._dirtyArrangeElements;
-            this.sealDirtyElements();
-
-            while (this.document.window.isMeasureDirty) {
-                this.document.window.measure();
-            }
-
-            dirtyArrangeElements.sort(this.compareArrangeElement);
-            
-            for (let i = 0; i < dirtyArrangeElements.length; i++) {
-                const uiElement = dirtyArrangeElements[i];
-                uiElement.arrange(uiElement.previousArrangeRect);
-            }
-            dirtyArrangeElements.length = 0;
+    invalidate (element: UIElement, invalidateReason: InvalidateReason) {
+        if (invalidateReason & InvalidateReason.ARRANGE) {
+            this._arrangeDirtyElements.add(element);
+        }
+        if (invalidateReason & InvalidateReason.MEASURE) {
+            this._measureDirtyElements.add(element);
         }
     }
 
-    private sealDirtyElements () {
-        this._loop++
-        this._dirtyArrangeElements = this._doubleArray[this._loop % 2];
+    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
+        if (invalidateReason & InvalidateReason.ARRANGE) {
+            this._arrangeDirtyElements.delete(element);
+        }
+        
+        if (invalidateReason & InvalidateReason.MEASURE) {
+            this._measureDirtyElements.delete(element);
+        }
     }
 
-    private compareArrangeElement (elementA: UIElement, elementB: UIElement) {
-        return elementA.hierarchyLevel - elementB.hierarchyLevel;
+    update () {
+        let iteration = 0;
+        console.time('Layout');
+        while (this._arrangeDirtyElements.size > 0 || this._measureDirtyElements.size > 0) {
+            while (this._measureDirtyElements.size > 0) {
+                const dirtyElement = this.getBottomMostElement(this._measureDirtyElements);
+                dirtyElement.measure();
+            }
+
+            while (this._arrangeDirtyElements.size > 0) {
+                const dirtyElement = this.getTopMostElement(this._arrangeDirtyElements);
+                dirtyElement.arrange(dirtyElement.previousArrangeRect);
+            }
+            iteration++;
+            if (iteration === 5) {
+                throw new UIError(ErrorID.MAX_LAYOUT_ITERATION_COUNT);
+            }
+        }
+        console.timeEnd('Layout');
+    }
+
+    private getBottomMostElement (elements: Set<UIElement>) {
+        let level = -1;
+        let bottomElement: UIElement | null = null;
+        for (let element of elements) {
+            if (element.hierarchyLevel > level) {
+                bottomElement = element;
+                level = element.hierarchyLevel;
+            }
+        }
+        return bottomElement as UIElement;
+    }
+
+    private getTopMostElement (elements: Set<UIElement>) {
+        let level = Number.MAX_VALUE;
+        let topElement: UIElement | null = null;
+        for (let element of elements) {
+            if (element.hierarchyLevel < level) {
+                topElement = element;
+                level = element.hierarchyLevel;
+            }
+        }
+        return topElement as UIElement;
     }
 }

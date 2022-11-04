@@ -23,7 +23,6 @@
  THE SOFTWARE.
 */
 
-import { NewUIEventType } from "../../input/types/event-enum";
 import { UIComponent } from "../base/ui-component";
 import { UIElement } from "../base/ui-element";
 

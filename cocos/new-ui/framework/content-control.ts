@@ -53,7 +53,7 @@ export class ContentControl extends ContainerElement {
         return false;
     }
 
-    public getSlotClass (): typeof UISlot {
+    protected getSlotClass (): typeof UISlot {
         return ContentSlot;
     }
 

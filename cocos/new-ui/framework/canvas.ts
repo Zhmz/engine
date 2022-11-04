@@ -30,7 +30,7 @@ import { CanvasSlot } from "./canvas-slot";
 import { Panel } from "./panel";
 
 export class Canvas extends Panel {
-    public getSlotClass (): typeof UISlot {
+    protected getSlotClass () {
         return CanvasSlot;
     }
 
