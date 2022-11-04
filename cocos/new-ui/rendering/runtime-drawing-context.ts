@@ -125,7 +125,6 @@ export class RuntimeDrawingContext extends IDrawingContext {
         }
     }
 
-    // 应该传入多个对象，进行顶点合并了
     private _createSubMesh () {
 
         const bufferInfo = this._bufferPool.requireBuffer();
