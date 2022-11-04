@@ -77,7 +77,6 @@ export class UIDocument {
     }
 
     private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
-    private _node: Node; // New node? Need constructor // move to ui-system
     private _viewport = new Rect();
     private _window = new UIWindow(this);
     private _layoutSubsystem = new UILayoutSubsystem(this);

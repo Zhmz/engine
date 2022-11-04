@@ -51,7 +51,7 @@ export class UIRenderSubsystem extends UISubSystem {
     }
 
     update () {
-        const camera = this.settings.camera;
+        const camera = this.settings.lowLevelRenderCamera;
         camera?.cleanIntermediateModels();
 
         // Assembly data // 可以缓存
