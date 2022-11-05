@@ -24,7 +24,7 @@
  THE SOFTWARE.
 */
 
-import { assert, CameraComponent, Root } from "../../core";
+import { CameraComponent, Rect, Size, Vec2 } from "../../core";
 import { UIDocumentSettings } from "./ui-document-settings";
 import { UISystem } from "./ui-system";
 
@@ -37,6 +37,7 @@ export enum RenderMode {
 export class UIRuntimeDocumentSettings extends UIDocumentSettings {
 
     private _camera: CameraComponent | null = null;
+    private _planeDistance = 1000;
 
     get renderMode () {
         return this._renderMode;
@@ -54,8 +55,26 @@ export class UIRuntimeDocumentSettings extends UIDocumentSettings {
         this._camera = val;
     }
 
+    get planeDistance () {
+        return this._planeDistance;
+    }
+
+    set planeDistance (val) {
+        this._planeDistance = val;
+    }
+
     get lowLevelRenderCamera () {
         return this._renderMode === RenderMode.OVERLAY ? UISystem.instance.hudCamera: this._camera?.camera;
+    }
+
+    public update () {
+        switch (this._renderMode) {
+            case RenderMode.OVERLAY:
+                const hudCamera = UISystem.instance.hudCamera;
+                this._document.viewport = Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(hudCamera.width, hudCamera.height));
+                this._document.worldTransform = hudCamera.node.worldMatrix;
+                break;
+        }
     }
 
     private _renderMode = RenderMode.OVERLAY;

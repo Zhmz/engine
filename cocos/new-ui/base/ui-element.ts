@@ -248,11 +248,7 @@ export class UIElement extends Visual {
 
     get worldTransform (): Readonly<Mat4> {
         if (this._worldTransformDirty) {
-            Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.center.x, this.layout.center.y, 0));
-            Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
-            if (this.parent) {
-                Mat4.multiply(this._worldTransform, this.parent.worldTransform, this._worldTransform);
-            }
+            this.updateWorldTransform();
             this._worldTransformDirty = false;
         }
         return this._worldTransform;
@@ -291,6 +287,14 @@ export class UIElement extends Visual {
             return matrix;
         }
         return this.localTransform;
+    }
+
+    protected updateWorldTransform () {
+        Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.center.x, this.layout.center.y, 0));
+        Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
+        if (this.parent) {
+            Mat4.multiply(this._worldTransform, this.parent.worldTransform, this._worldTransform);
+        }
     }
 
     public worldToLocal (out: Vec3, worldPoint: Vec3) {

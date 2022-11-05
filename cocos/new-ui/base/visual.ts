@@ -34,6 +34,6 @@ export class Visual extends AdvancedObject {
     get visualProxy () {
         return this._visualProxy;
     }
-    
+
     protected onPaint (drawingContext: IDrawingContext) {}
 }

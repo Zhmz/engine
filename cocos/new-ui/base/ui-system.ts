@@ -25,10 +25,12 @@
 */
 
 import { Director, director, js, System } from "../../core";
-import { Camera } from "../../core/renderer/scene/camera";
+import { Camera, CameraProjection } from "../../core/renderer/scene/camera";
 import { EventSystem } from "../event-system/event-system";
 import { RenderMode, UIRuntimeDocumentSettings } from "./runtime-document-settings";
 import { UIDocument } from "./ui-document";
+import { Node } from '../../core';
+import { ClearFlagBit } from "../../core/gfx";
 
 export class UISystem extends System {
     private _camera: Camera;
@@ -56,6 +58,16 @@ export class UISystem extends System {
 
     init () {
         this._camera = director.root!.createCamera();
+        this._camera.initialize({
+            name: "UI Hud Camera",
+            node: new Node(),
+            projection: CameraProjection.ORTHO,
+            priority: 1073741824
+        });
+        this._camera.clearFlag = ClearFlagBit.DEPTH_STENCIL;
+        this._camera.visibility = 0;
+        this._camera.nearClip = -1000;
+        this._camera.farClip = 1000;
         // init camera
         director.on(Director.EVENT_UI_UPDATE, this.tick, this);
     }
@@ -71,6 +83,10 @@ export class UISystem extends System {
     }
 
     tick () {
+        // Always make ui space size equals to screen size
+        if (this._camera.height * 0.5 !== this._camera.orthoHeight) {
+            this._camera.orthoHeight = this._camera.height * 0.5;
+        }
         const hasAnyHudUI = this._documents.find((document) => (document.settings as UIRuntimeDocumentSettings).renderMode === RenderMode.OVERLAY);
         if (hasAnyHudUI && !this._camera.scene && director.getScene()) {
             director.getScene()!.renderScene?.addCamera(this._camera);

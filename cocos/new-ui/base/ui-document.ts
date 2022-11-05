@@ -24,7 +24,7 @@
  THE SOFTWARE.
 */
 
-import { Rect } from "../../core/math";
+import { Mat4, Rect } from "../../core/math";
 import { EventSubSystem } from "../subsystem/event-sub-system";
 import { UILayoutSubsystem } from "../subsystem/ui-layout-subsystem";
 import { UIRenderSubsystem } from "../subsystem/ui-render-subsystem";
@@ -41,7 +41,18 @@ export class UIDocument {
     set viewport (val) {
         if (!this._viewport.equals(val)) {
             this._viewport.set(val);
-            this.invalidate(this.window, InvalidateReason.ARRANGE);
+            this.window.invalidateArrange();
+        }
+    }
+
+    get worldTransform (): Readonly<Mat4> {
+        return this._worldMatrix;
+    }
+
+    set worldTransform (val) {
+        if (!this._worldMatrix.equals(val)) {
+            this._worldMatrix.set(val);
+            this.window.invalidateWorldTransform();
         }
     }
 
@@ -51,7 +62,6 @@ export class UIDocument {
 
     set settings (val: UIDocumentSettings) {
         this._settings = val;
-        this._settings.apply();
     }
 
     get window () {
@@ -78,11 +88,13 @@ export class UIDocument {
     }
 
     update () {
+        this._settings.update();
         this._layoutSubsystem.update();
         this._renderSubsystem.update();
     }
 
     private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
+    private _worldMatrix = new Mat4();
     private _viewport = new Rect();
     private _window = new UIWindow(this);
     private _layoutSubsystem = new UILayoutSubsystem(this);

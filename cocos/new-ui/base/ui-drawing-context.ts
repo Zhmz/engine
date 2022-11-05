@@ -25,7 +25,7 @@
 
 import { Color, Rect } from "../../core";
 import { Brush } from "../rendering/brush";
-import { UIElement } from "./ui-element";
+import { Visual } from "./visual";
 
 export interface IRectPainterParameters { // world trs 不在此结构中，另外参数传入
     rect: Rect;
@@ -47,7 +47,7 @@ export interface ITextPainterParameters { // not finish
 }
 
 export abstract class IDrawingContext {
-    abstract get currentElement (): UIElement;
+    abstract get currentVisual (): Visual;
     abstract drawRect(painterParams: IRectPainterParameters);
     abstract drawBrush(painterParams: IBrushPainterParameters);
     abstract drawText(painterParams: ITextPainterParameters);

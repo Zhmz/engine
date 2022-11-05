@@ -26,8 +26,8 @@
 
 import { UIDocument } from "./ui-document";
 import { ContentControl } from "../framework/content-control";
-import { Rect, Vec2 } from "../../core";
-
+import { Mat4 } from "../../core/math/mat4";
+import { ErrorID, UIError } from "./error";
 export class UIWindow extends ContentControl {
     constructor (document: UIDocument) {
         super();
@@ -40,5 +40,14 @@ export class UIWindow extends ContentControl {
 
     get previousArrangeRect () {
         return this.document!.viewport;
+    }
+
+    setParent () {
+        throw new UIError(ErrorID.INVALID_WINDOW_PARENT);
+    }
+
+    protected updateWorldTransform () {
+        super.updateWorldTransform();
+        Mat4.multiply(this._worldTransform, this.document!.worldTransform, this._worldTransform);
     }
 }

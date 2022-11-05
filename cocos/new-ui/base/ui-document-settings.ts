@@ -32,5 +32,5 @@ export abstract class UIDocumentSettings {
         this._document = document;
     }
 
-    public apply () {};
+    public update () {};
 }

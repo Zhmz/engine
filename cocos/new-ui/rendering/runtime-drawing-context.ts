@@ -10,6 +10,7 @@ import { scene } from '../../core/renderer';
 import { Material, RenderingSubMesh } from '../../core';
 import { IBrushPainterParameters, IDrawingContext, IRectPainterParameters, ITextPainterParameters } from "../base/ui-drawing-context";
 import { UIDocument } from "../base/ui-document";
+import { Visual } from "../base/visual";
 
 // 在上层进行了paint命令之后，进行方法的提供和 visualProxy 的数据填充
 export class RuntimeDrawingContext extends IDrawingContext {
@@ -20,7 +21,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
     private _contextModel :Model;
     private _subModelIndex = 0;
 
-    private _currentElement: UIElement;
+    private _currentVisual: Visual;
     // batch used
     private _currVerticesData;
     private _currIndicesData;
@@ -34,13 +35,13 @@ export class RuntimeDrawingContext extends IDrawingContext {
 
     protected _floatsPerVertex: number;
 
-    get currentElement () {
-        return this._currentElement;
+    get currentVisual () {
+        return this._currentVisual;
     }
 
     constructor (document: UIDocument) {
         super();
-        this._currentElement = document.window;
+        this._currentVisual = document.window;
         this._createModel(); // only model,not have subModel
         this._bufferPool = new BufferPool(vfmtPosColor4B);
         this._floatsPerVertex = getAttributeStride(vfmtPosColor4B) >> 2;
@@ -50,7 +51,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
     }
 
     public drawRect(painterParams: IRectPainterParameters) {
-        let visualProxy = this.currentElement.visualProxy;
+        let visualProxy = this._currentVisual.visualProxy;
         // init renderData
         visualProxy.initVisualRender(4, 6, painterParams.color, painterParams.rect);
         if (!this._visualProxyQueue.includes(visualProxy)) {

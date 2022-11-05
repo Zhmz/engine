@@ -31,7 +31,6 @@ import { Texture, Sampler } from "../../core/gfx";
 import { Color, Rect } from "../../core/math";
 
 export class VisualProxy {
-
     // 由于想在上一层进行绘制，此处公开
     public _visualRenderArr: VisualRenderProxy[] = []; // 可以是索引
 
