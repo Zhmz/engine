@@ -36,4 +36,8 @@ export class Visual extends AdvancedObject {
     }
 
     protected onPaint (drawingContext: IDrawingContext) {}
+
+    public paint (drawingContext: IDrawingContext) {
+        this.onPaint(drawingContext);
+    }
 }

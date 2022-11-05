@@ -85,6 +85,7 @@ export class UIElement extends Visual {
     protected _localTransform = new Mat4();
     protected _worldTransformDirty = false;
     protected _localTransformDirty = false;
+    protected _paintingDirty = false;
     protected _measureDirty = false;
     protected _arrangeDirty = false;
     protected _hierarchyLevel = 0;
@@ -321,12 +322,14 @@ export class UIElement extends Visual {
             const index = this._parent._children.indexOf(this);
             assert(index !== -1);
             this._parent._children.splice(index, 1);
+            this._parent.visualProxy.removeChildAt(index);
             this._parent.onChildRemoved(this);
         }
         this.invalidateParentLayout();
         this._parent = parent;
         if (this._parent) {
             this._parent._children.push(this);
+            this._parent.visualProxy.addChild(this.visualProxy);
             this._parent.onChildAdded(this);
         }
         this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
@@ -413,7 +416,10 @@ export class UIElement extends Visual {
     }
 
     public invalidatePainting () {
-
+        if (!this._paintingDirty) {
+            this._paintingDirty = true;
+            this.invalidate(InvalidateReason.PAINT);
+        }
     }
 
     public invalidate (invalidateReason: InvalidateReason) {

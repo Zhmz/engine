@@ -38,22 +38,8 @@ export class UIDocument {
         return this._viewport;
     }
 
-    set viewport (val) {
-        if (!this._viewport.equals(val)) {
-            this._viewport.set(val);
-            this.window.invalidateArrange();
-        }
-    }
-
-    get worldTransform (): Readonly<Mat4> {
-        return this._worldMatrix;
-    }
-
-    set worldTransform (val) {
-        if (!this._worldMatrix.equals(val)) {
-            this._worldMatrix.set(val);
-            this.window.invalidateWorldTransform();
-        }
+    get origin (): Readonly<Mat4> {
+        return this._origin;
     }
 
     get settings () {
@@ -97,8 +83,28 @@ export class UIDocument {
         this._renderSubsystem.update();
     }
 
+    /**
+     * @engineInternal
+     */
+    setViewport (val: Readonly<Rect>) {
+        if (!this._viewport.equals(val)) {
+            this._viewport.set(val);
+            this.window.invalidateArrange();
+        }
+    }
+
+    /**
+     * @engineInternal
+     */
+    setOrigin (val: Readonly<Mat4>) {
+        if (!this._origin.equals(val)) {
+            this._origin.set(val);
+            this.window.invalidateWorldTransform();
+        }
+    }
+
     private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
-    private _worldMatrix = new Mat4();
+    private _origin = new Mat4();
     private _viewport = new Rect();
     private _window = new UIWindow(this);
     private _layoutSubsystem = new UILayoutSubsystem(this);

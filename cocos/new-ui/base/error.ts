@@ -30,6 +30,7 @@ export enum ErrorID {
     SLOT_UNMATCHED,
     MULTIPLE_CHILD,
     MAX_LAYOUT_ITERATION_COUNT,
+    INVALID_WINDOW_PARENT,
 }
 
 export class UIError extends Error {

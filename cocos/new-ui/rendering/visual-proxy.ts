@@ -28,9 +28,39 @@ import { getAttributeStride, vfmtPosColor4B, vfmtPosUvColor } from "../../2d/ren
 import { Material, Texture2D } from "../../core/assets";
 import { builtinResMgr } from "../../core/builtin/builtin-res-mgr";
 import { Texture, Sampler } from "../../core/gfx";
-import { Color, Rect } from "../../core/math";
+import { Color, Mat4, Rect } from "../../core/math";
 
 export class VisualProxy {
+    private _parent: VisualProxy | null = null;
+    private _children: VisualProxy[] = [];
+    private _worldMatrix: Mat4 = new Mat4();
+
+    public get parent () {
+        return this._parent;
+    }
+
+    public get children () {
+        return this._children;
+    }
+
+    public get worldMatrix () {
+        return this._worldMatrix;
+    }
+
+    public set worldMatrix (val) {
+        this._worldMatrix.set(val);
+    }
+
+    public addChild (child: VisualProxy) {
+        this._children.push(child);
+        child._parent = this;
+    }
+
+    public removeChildAt (index: number) {
+        this._children[index]._parent = null;
+        this._children.splice(index, 1);
+    }
+
     // 由于想在上一层进行绘制，此处公开
     public _visualRenderArr: VisualRenderProxy[] = []; // 可以是索引
 
@@ -46,11 +76,6 @@ export class VisualProxy {
         this._visualRenderArr.push(vis);
         // 除了矩阵没乘，就都ok了
     }
-    
-    // public updateVisualRender (index, ...) {
-
-    // }
-
 }
 
 enum MaterialType {

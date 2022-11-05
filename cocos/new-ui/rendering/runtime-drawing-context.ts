@@ -11,13 +11,12 @@ import { IDrawingContext } from "../base/ui-drawing-context";
 import { UIDocument } from "../base/ui-document";
 import { Visual } from "../base/visual";
 import { Brush } from "./brush";
-import { fillMeshVertices3D } from "../../2d/assembler/utils";
 
 // 在上层进行了paint命令之后，进行方法的提供和 visualProxy 的数据填充
 export class RuntimeDrawingContext extends IDrawingContext {
     public static IB_SCALE = 4; // ib size scale based on vertex count
 
-    private _visualProxyQueue: VisualProxy[] = []; // 用这个来渲染？// 应该不用双层？
+    private _rootProxy: VisualProxy; // 用这个来渲染？// 应该不用双层？
     private _bufferPool : BufferPool; // todo
     private _contextModel :Model;
     private _subModelIndex = 0;
@@ -40,8 +39,13 @@ export class RuntimeDrawingContext extends IDrawingContext {
         return this._currentVisual;
     }
 
+    set currentVisual (val: Visual) {
+        this._currentVisual = val;
+    }
+
     constructor (document: UIDocument) {
         super();
+        this._rootProxy = document.window.visualProxy;
         this._currentVisual = document.window;
         this._createModel(); // only model,not have subModel
         this._bufferPool = new BufferPool(vfmtPosColor4B);
@@ -55,14 +59,12 @@ export class RuntimeDrawingContext extends IDrawingContext {
         let visualProxy = this._currentVisual.visualProxy;
         // init renderData
         visualProxy.initVisualRender(4, 6, color, rect);
-        if (!this._visualProxyQueue.includes(visualProxy)) {
-            this._visualProxyQueue.push(visualProxy); // 双层结构？可能不太好 意义不大
-        }
     }
 
     public drawBrush(rect: Rect, color: Color, brush: Readonly<Brush>) {
 
     }
+
     public drawText(rect: Rect, color: Color, text: string, font: string, fontSize: number) {
 
     }
@@ -72,22 +74,26 @@ export class RuntimeDrawingContext extends IDrawingContext {
     public paint () {
         this._subModelIndex = 0; // or reset function
         this._contextModel.enabled = false;
-        let len = this._visualProxyQueue.length;
-        for (let i = 0; i < len; i++) {
-            let visualProxy = this._visualProxyQueue[i]._visualRenderArr;
-            let len = visualProxy.length;
-            for (let j = 0; j < len; j++) {
-                let render = visualProxy[j];
-                // todo 合批判断 可以利用 dataHash 之类的
-                // todo 需要处理 texture 和 simpler
-                // todo 需要更新 dataHash
-                if (this._currHash !== render.dataHash || this._currMaterial !== render.getMaterial() || this._measureVB(render)) { // 打断合批 // 除了合批条件外还有测量
-                    this._fillModel(render);
-                }
-                this._mergeBatch(render);
-            }
-        }
+        this.buildRenderDataRecursively(this._rootProxy);
         this._fillModel();
+    }
+
+    private buildRenderDataRecursively (proxy: VisualProxy) {
+        let visualProxy = proxy._visualRenderArr;
+        let len = visualProxy.length;
+        for (let j = 0; j < len; j++) {
+            let render = visualProxy[j];
+            // todo 合批判断 可以利用 dataHash 之类的
+            // todo 需要处理 texture 和 simpler
+            // todo 需要更新 dataHash
+            if (this._currHash !== render.dataHash || this._currMaterial !== render.getMaterial() || this._measureVB(render)) { // 打断合批 // 除了合批条件外还有测量
+                this._fillModel(render);
+            }
+            this._mergeBatch(render);
+        }
+        for (let i = 0; i < proxy.children.length; i++) {
+            this.buildRenderDataRecursively(proxy.children[i]);
+        }
     }
 
     public getContextModel () {

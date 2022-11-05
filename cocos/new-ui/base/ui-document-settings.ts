@@ -23,9 +23,11 @@
  THE SOFTWARE.
 */
 
+import { Mat4, Rect } from "../../core/math";
 import { UIDocument } from "./ui-document";
 
 export abstract class UIDocumentSettings {
+    
     protected _document: UIDocument;
 
     constructor (document: UIDocument) {

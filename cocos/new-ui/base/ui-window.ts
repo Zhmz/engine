@@ -48,6 +48,6 @@ export class UIWindow extends ContentControl {
 
     protected updateWorldTransform () {
         super.updateWorldTransform();
-        Mat4.multiply(this._worldTransform, this.document!.worldTransform, this._worldTransform);
+        Mat4.multiply(this._worldTransform, this.document!.origin, this._worldTransform);
     }
 }

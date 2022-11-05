@@ -24,7 +24,7 @@
  THE SOFTWARE.
 */
 
-import { CameraComponent, Rect, Size, Vec2 } from "../../core";
+import { CameraComponent, Mat4, Rect, Size, Vec2 } from "../../core";
 import { UIDocumentSettings } from "./ui-document-settings";
 import { UISystem } from "./ui-system";
 
@@ -55,6 +55,22 @@ export class UIRuntimeDocumentSettings extends UIDocumentSettings {
         this._camera = val;
     }
 
+    get width () {
+        return this._width;
+    }
+
+    set width (val) {
+        this._width = val;
+    }
+
+    get height () {
+        return this._height;
+    }
+
+    set height (val) {
+        this._height = val;
+    }
+
     get planeDistance () {
         return this._planeDistance;
     }
@@ -64,18 +80,32 @@ export class UIRuntimeDocumentSettings extends UIDocumentSettings {
     }
 
     get lowLevelRenderCamera () {
-        return this._renderMode === RenderMode.OVERLAY ? UISystem.instance.hudCamera: this._camera?.camera;
+        switch (this._renderMode) {
+            case RenderMode.OVERLAY:
+                return UISystem.instance.hudCamera;
+            case RenderMode.CAMERA:
+                return this._camera?.camera;
+            case RenderMode.WORLD_SPACE:
+                return null;
+        }
     }
 
     public update () {
         switch (this._renderMode) {
             case RenderMode.OVERLAY:
                 const hudCamera = UISystem.instance.hudCamera;
-                this._document.viewport = Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(hudCamera.width, hudCamera.height));
-                this._document.worldTransform = hudCamera.node.worldMatrix;
+                this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(hudCamera.width, hudCamera.height)));
+                this._document.setOrigin(hudCamera.node.worldMatrix);
                 break;
+            case RenderMode.CAMERA:
+                const camera = this._camera?.camera;
+            case RenderMode.WORLD_SPACE:
+                this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(this._width, this._height)));
+                this._document.setOrigin(Mat4.IDENTITY);
         }
     }
 
+    private _width = 0;
+    private _height = 0;
     private _renderMode = RenderMode.OVERLAY;
 }

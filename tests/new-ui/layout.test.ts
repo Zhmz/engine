@@ -1,6 +1,9 @@
+import { RunningScriptOptions } from "vm";
 import { Rect, Size, Vec2 } from "../../cocos/core";
+import { RenderMode, UIRuntimeDocumentSettings } from "../../cocos/new-ui/base/runtime-document-settings";
 import { Thickness } from "../../cocos/new-ui/base/thickness";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
+import { UIDocumentSettings } from "../../cocos/new-ui/base/ui-document-settings";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { ContentControl } from "../../cocos/new-ui/framework/content-control";
 import { ContentSlot, HorizontalAlignment, VerticalAlignment } from "../../cocos/new-ui/framework/content-slot";
@@ -314,7 +317,9 @@ test('content-slot-arrange', () => {
 
 test('auto layout', () => {
     const document = new UIDocument();
-    document.viewport = new Rect(0, 0, 960, 640);
+    (document.settings as UIRuntimeDocumentSettings).renderMode = RenderMode.WORLD_SPACE;
+    (document.settings as UIRuntimeDocumentSettings).width = 960;
+    (document.settings as UIRuntimeDocumentSettings).height = 640;
     const content = new ContentControl();
     const fixedSizeContent = new FixedContentElement();
     content.addChild(fixedSizeContent);

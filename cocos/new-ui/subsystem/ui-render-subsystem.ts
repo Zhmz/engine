@@ -30,7 +30,7 @@ import { UISubSystem } from "../base/ui-subsystem";
 import { RuntimeDrawingContext } from "../rendering/runtime-drawing-context";
 
 export class UIRenderSubsystem extends UISubSystem {
-    private _dirtyElementMap = new Set;
+    private _dirtyElementMap = new Set<UIElement>;
     private _context: RuntimeDrawingContext;
 
     get context () {
@@ -59,6 +59,11 @@ export class UIRenderSubsystem extends UISubSystem {
     }
 
     update () {
+        for (let element of this._dirtyElementMap) {
+            this._context.currentVisual = element;
+            element.paint(this._context);
+        }
+        
         const camera = this.settings.lowLevelRenderCamera;
         camera?.cleanIntermediateModels();
 
