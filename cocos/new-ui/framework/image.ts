@@ -57,6 +57,6 @@ export class Image extends UIElement {
     }
 
     protected onPaint (drawingContext: IDrawingContext) {
-        drawingContext.drawBrush({ rect: this.layout, brush: this.source, color: this. });
+        drawingContext.drawBrush({ rect: this.layout, brush: this.source, color: this.tintColor });// color hack
     }
 }
