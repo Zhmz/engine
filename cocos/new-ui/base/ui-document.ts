@@ -62,6 +62,10 @@ export class UIDocument {
         return this._eventSubSystem;
     }
 
+    get renderSubSystem() {
+        return this._renderSubsystem;
+    }
+
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
         if (invalidateReason & InvalidateReason.LAYOUT) {
             this._layoutSubsystem.invalidate(element, invalidateReason);

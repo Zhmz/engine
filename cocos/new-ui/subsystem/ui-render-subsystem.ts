@@ -33,6 +33,10 @@ export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set;
     private _context: RuntimeDrawingContext;
 
+    get context () {
+        return this._context;
+    }
+
     get settings () {
         return this._document.settings as UIRuntimeDocumentSettings;
     }

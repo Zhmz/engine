@@ -27,30 +27,11 @@ import { Color, Rect } from "../../core";
 import { Brush } from "../rendering/brush";
 import { UIElement } from "./ui-element";
 
-export interface IRectPainterParameters { // world trs 不在此结构中，另外参数传入
-    rect: Rect;
-    color: Color;
-}
-
-export interface IBrushPainterParameters { // not finish
-    rect: Rect;
-    color: Color;
-    brush: Readonly<Brush>;
-}
-
-export interface ITextPainterParameters { // not finish
-    rect: Rect;
-    color: Color;
-    text: string;
-    font: string;
-    fontSize: number;
-}
-
 export abstract class IDrawingContext {
     abstract get currentElement (): UIElement;
-    abstract drawRect(painterParams: IRectPainterParameters);
-    abstract drawBrush(painterParams: IBrushPainterParameters);
-    abstract drawText(painterParams: ITextPainterParameters);
+    abstract drawRect(rect: Rect, color: Color);
+    abstract drawBrush(rect: Rect, color: Color, brush: Readonly<Brush>);
+    abstract drawText(rect: Rect, color: Color, text: string, font: string, fontSize: number);
 }
 
 
