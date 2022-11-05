@@ -84,13 +84,13 @@ export class EventSubSystem extends UISubSystem {
 
         let uiEvent: UIEvent | null = null;
         switch (mouseButtonEvent.pressState) {
-            case FramePressState.pressed:
+            case FramePressState.PRESSED:
                 uiEvent = new PointerDownEvent(element);
                 break;
-            case FramePressState.released:
+            case FramePressState.RELEASED:
                 uiEvent = new PointerUpEvent(element);
                 break;
-            case FramePressState.pressedAndReleased:
+            case FramePressState.PRESSED_AND_RELEASED:
                 uiEvent = new PointerClickEvent(element);
                 break;
         }

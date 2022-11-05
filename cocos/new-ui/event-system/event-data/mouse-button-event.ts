@@ -27,22 +27,22 @@ import { Ray } from "../../../core/geometry";
 import { Event } from "../../../input/types";
 
 export enum FramePressState {
-    pressed,
-    released,
-    pressedAndReleased,
-    notChanged,
+    PRESSED,
+    RELEASED,
+    PRESSED_AND_RELEASED,
+    NOT_CHANGED,
 }
 
 export enum InputMouseButton {
-    left,
-    right,
-    middle,
+    LEFT,
+    RIGHT,
+    MIDDLE,
 }
 
 export class MouseButtonEvent {
 
-    protected _mouseButton: InputMouseButton = InputMouseButton.left;
-    protected _pressState: FramePressState = FramePressState.notChanged;
+    protected _mouseButton: InputMouseButton = InputMouseButton.LEFT;
+    protected _pressState: FramePressState = FramePressState.NOT_CHANGED;
     //protected _uiEvent: UIEvent | null = null;
     protected _event: Event | null = null;
     protected _ray: Ray | null = null;
@@ -88,11 +88,11 @@ export class MouseButtonEvent {
     }
 
     public pressedThisFrame() {
-        return this._pressState === FramePressState.pressed || this._pressState === FramePressState.pressedAndReleased;
+        return this._pressState === FramePressState.PRESSED || this._pressState === FramePressState.PRESSED_AND_RELEASED;
     }
 
     public releasedThisFrame() {
-        return this._pressState === FramePressState.released || this._pressState === FramePressState.pressedAndReleased;
+        return this._pressState === FramePressState.RELEASED || this._pressState === FramePressState.PRESSED_AND_RELEASED;
     }
 }
 

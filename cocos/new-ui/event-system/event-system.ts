@@ -97,23 +97,23 @@ export class EventSystem {
         let curMouseButtonEvent: MouseButtonEvent | null = null;
 
         if (button === EventMouse.BUTTON_LEFT) {
-            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.left);
+            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.LEFT);
         } else if (button === EventMouse.BUTTON_RIGHT) {
-            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.right);
+            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.RIGHT);
         } else if (button === EventMouse.BUTTON_MIDDLE) {
-            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.middle);
+            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.MIDDLE);
         }
         let pressState: FramePressState;
         if (eventMouse.type === InputEventType.MOUSE_DOWN) {
-            pressState = FramePressState.pressed;
+            pressState = FramePressState.PRESSED;
         } else if (eventMouse.type === InputEventType.MOUSE_UP) {
-            if (curMouseButtonEvent!.pressState === FramePressState.pressed) {
-                pressState = FramePressState.pressedAndReleased;
+            if (curMouseButtonEvent!.pressState === FramePressState.PRESSED) {
+                pressState = FramePressState.PRESSED_AND_RELEASED;
             } else {
-                pressState = FramePressState.released;
+                pressState = FramePressState.RELEASED;
             }
         } else {
-            pressState = FramePressState.notChanged;
+            pressState = FramePressState.NOT_CHANGED;
         }
 
         this._mouseState.setButtonEventData(curMouseButtonEvent!.mouseButton, pressState, event, ray);
