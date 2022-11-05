@@ -92,10 +92,12 @@ export class VisualRenderProxy {
     // protected _iData: Uint16Array | null = null; // 也可以之后再分配主要是用于合批的
     protected _dataHash = 0; // 合批用
     protected _stride = 0; 
+    protected _floatStride = 0;
     protected _vertexFormat = vfmtPosColor4B;
 
     constructor (vertexFormat = vfmtPosColor4B) {
         this._stride = getAttributeStride(vertexFormat);
+        this._floatStride = this._stride >> 2;
         this._vertexFormat = vertexFormat;
     }
 
@@ -150,9 +152,15 @@ export class VisualRenderProxy {
     public setVBCount (vbCount) {
         this._vbCount = vbCount;
     }
+    public getVBCount() {
+        return this._vbCount;
+    }
 
     public setIBCount (ibCount) {
         this._ibCount = ibCount;
+    }
+    public getIBCount () {
+        return this._ibCount;
     }
 
     public setDataHash (dataHash: number) {
@@ -176,10 +184,10 @@ export class VisualRenderProxy {
 
     public initRectMesh (color:Color, rect: Rect) {
         // only need fill local mesh
-        this._vb = new Float32Array(this._vbCount * this._stride); // 5?
+        this._vb = new Float32Array(this._vbCount * this._floatStride); // 5?
         this._ib = new Uint16Array(this._ibCount);
 
-        let stride = this._stride;
+        let stride = this._floatStride;
         let l = - rect.width * 0.5; // anchor 是否在此处处理
         let r = rect.width * 0.5;
         let b = - rect.height * 0.5; // anchor 是否在此处处理

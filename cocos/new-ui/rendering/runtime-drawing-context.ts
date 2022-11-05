@@ -3,14 +3,15 @@
 import { getAttributeStride, vfmtPosColor4B } from "../../2d/renderer/vertex-format";
 import { Attribute, Buffer, BufferInfo, BufferUsageBit, Device, deviceManager, MemoryUsageBit, PrimitiveMode, Sampler, Texture } from "../../core/gfx";
 import { VisualProxy, VisualRenderProxy } from '../rendering/visual-proxy';
-import { UIElement } from '../base/ui-element';
 import { Model } from '../../core/renderer/scene';
 import { legacyCC } from '../../core/global-exports';
 import { scene } from '../../core/renderer';
-import { Material, RenderingSubMesh } from '../../core';
-import { IBrushPainterParameters, IDrawingContext, IRectPainterParameters, ITextPainterParameters } from "../base/ui-drawing-context";
+import { Color, Material, Rect, RenderingSubMesh } from '../../core';
+import { IDrawingContext } from "../base/ui-drawing-context";
 import { UIDocument } from "../base/ui-document";
 import { Visual } from "../base/visual";
+import { Brush } from "./brush";
+import { fillMeshVertices3D } from "../../2d/assembler/utils";
 
 // 在上层进行了paint命令之后，进行方法的提供和 visualProxy 的数据填充
 export class RuntimeDrawingContext extends IDrawingContext {
@@ -50,19 +51,19 @@ export class RuntimeDrawingContext extends IDrawingContext {
         
     }
 
-    public drawRect(painterParams: IRectPainterParameters) {
+    public drawRect(rect: Rect, color: Color) {
         let visualProxy = this._currentVisual.visualProxy;
         // init renderData
-        visualProxy.initVisualRender(4, 6, painterParams.color, painterParams.rect);
+        visualProxy.initVisualRender(4, 6, color, rect);
         if (!this._visualProxyQueue.includes(visualProxy)) {
             this._visualProxyQueue.push(visualProxy); // 双层结构？可能不太好 意义不大
         }
     }
 
-    public drawBrush(painterParams: IBrushPainterParameters) {
+    public drawBrush(rect: Rect, color: Color, brush: Readonly<Brush>) {
 
     }
-    public drawText(painterParams: ITextPainterParameters) {
+    public drawText(rect: Rect, color: Color, text: string, font: string, fontSize: number) {
 
     }
 
@@ -81,24 +82,34 @@ export class RuntimeDrawingContext extends IDrawingContext {
                 // todo 需要处理 texture 和 simpler
                 // todo 需要更新 dataHash
                 if (this._currHash !== render.dataHash || this._currMaterial !== render.getMaterial() || this._measureVB(render)) { // 打断合批 // 除了合批条件外还有测量
-                    this._createSubMesh();
-                    this._subModelIndex++;
-                    this._resetState();
-                    this._currMaterial = render.getMaterial()!;
-                    this._currHash = render.dataHash;
+                    this._fillModel(render);
                 }
                 this._mergeBatch(render);
             }
         }
+        this._fillModel();
     }
 
     public getContextModel () {
         return this._contextModel; 
     }
 
+    private _fillModel (render?: VisualRenderProxy) {
+        this._createSubMesh();
+        this._subModelIndex++;
+        this._resetState();
+        if (render) {
+            this._currMaterial = render.getMaterial()!;
+            this._currHash = render.dataHash;
+        } else {
+            this._currMaterial = this._emptyMaterial;
+            this._currHash = 0;
+        }
+    }
+
     private _mergeBatch (render: VisualRenderProxy) {
         // 通过了合批检查，直接合顶点到一个 buffer 中去
-        if (render.getVB().length === 0) return;
+        if (render.getVBCount() === 0) return;
         let vb = render.getVB();
         let vbSize = vb.length;
         this._currVerticesData.set(vb, this._currVBCount);
@@ -128,13 +139,16 @@ export class RuntimeDrawingContext extends IDrawingContext {
 
     private _createSubMesh () {
 
+        // 需要跳出//类似于以前的 ia 不可用的状态
+        if (this._currMaterial == this._emptyMaterial) return;
+
         const bufferInfo = this._bufferPool.requireBuffer();
         const vertexBuffers = bufferInfo.vertexBuffers;
         const indexBuffer = bufferInfo.indexBuffer;
         const attr = bufferInfo.attributes;
 
         // 甚至可以直接用 vertex 数组即可
-        const verticesData = new Float32Array(this._currVerticesData.buffer, 0, this._currVBCount >> 2);
+        const verticesData = new Float32Array(this._currVerticesData.buffer, 0, this._currVBCount);
         const indicesData = new Uint16Array(this._currIndicesData.buffer, 0, this._currIBCount);
         
         vertexBuffers[0].update(verticesData); // 原生上要给个范围，不然会崩？

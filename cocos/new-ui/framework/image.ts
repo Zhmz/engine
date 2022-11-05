@@ -57,6 +57,6 @@ export class Image extends UIElement {
     }
 
     protected onPaint (drawingContext: IDrawingContext) {
-        drawingContext.drawBrush({ rect: Rect.fromCenterSize(new Rect(), Vec2.ZERO, this.layout.size), brush: this.source, color: this.tintColor });
+        drawingContext.drawBrush(Rect.fromCenterSize(new Rect(), Vec2.ZERO, this.layout.size), this.tintColor, this.source);
     }
 }
