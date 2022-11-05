@@ -24,7 +24,7 @@
  THE SOFTWARE.
 */
 
-import { Color, Size } from "../../core";
+import { Color, Rect, Size, Vec2 } from "../../core";
 import { AdvancedProperty } from "../base/advanced-property";
 import { IDrawingContext } from "../base/ui-drawing-context";
 import { UIElement } from "../base/ui-element";
@@ -57,6 +57,6 @@ export class Image extends UIElement {
     }
 
     protected onPaint (drawingContext: IDrawingContext) {
-        drawingContext.drawBrush({ rect: this.layout, brush: this.source, color: this.tintColor });
+        drawingContext.drawBrush({ rect: Rect.fromCenterSize(new Rect(), Vec2.ZERO, this.layout.size), brush: this.source, color: this.tintColor });
     }
 }
