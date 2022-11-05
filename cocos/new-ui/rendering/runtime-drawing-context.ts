@@ -102,7 +102,6 @@ export class RuntimeDrawingContext extends IDrawingContext {
 
     private _fillModel (render?: VisualRenderProxy) {
         this._createSubMesh();
-        this._subModelIndex++;
         this._resetState();
         if (render) {
             this._currMaterial = render.getMaterial()!;
@@ -119,12 +118,17 @@ export class RuntimeDrawingContext extends IDrawingContext {
         let vb = render.getVB();
         let vbSize = vb.length;
         this._currVerticesData.set(vb, this._currVBCount);
-        this._currVBCount += vbSize;
+        
 
         let ib = render.getIB();
         let ibSize = ib.length;
-        this._currIndicesData.set(ib, this._currIBCount);
+        const ibTemp = new Uint16Array(ibSize);
+        for (let i = 0; i < ibSize; i++) {
+            ibTemp[i] = ib[i] +  this._currVBCount / 4; // hack 顶点数量
+        }
+        this._currIndicesData.set(ibTemp, this._currIBCount);// ib 需要偏移，有问题
         this._currIBCount += ibSize;
+        this._currVBCount += vbSize;
     }
 
     private _resetState () {
@@ -166,6 +170,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
 
         this._contextModel.initSubModel(this._subModelIndex, submesh, this._currMaterial);// heavy & slow todo
         this._contextModel.enabled = true;
+        this._subModelIndex++;
     }
 }
 
@@ -215,7 +220,7 @@ class BufferPool {
         const vertexBuffer = gfxDevice.createBuffer(new BufferInfo(
             BufferUsageBit.VERTEX | BufferUsageBit.TRANSFER_DST,
             MemoryUsageBit.DEVICE,
-            4 * stride,
+            8 * stride, // 不能自动扩大？？？
             stride,
         ));
         const vertexBuffers = [vertexBuffer];
@@ -223,7 +228,7 @@ class BufferPool {
         const indexBuffer = gfxDevice.createBuffer(new BufferInfo(
             BufferUsageBit.INDEX | BufferUsageBit.TRANSFER_DST,
             MemoryUsageBit.DEVICE,
-            6 * Uint16Array.BYTES_PER_ELEMENT,
+            12 * Uint16Array.BYTES_PER_ELEMENT, // 不能自动扩大？？？
             Uint16Array.BYTES_PER_ELEMENT,
         ));
 
