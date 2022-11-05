@@ -23,9 +23,37 @@
  THE SOFTWARE.
 */
 
-import { UIComponent } from "../base/ui-component";
-import { UIElement } from "../base/ui-element";
+import { Ray } from "../../../core/geometry";
+import { Event } from "../../../input/types";
+import { FramePressState, InputMouseButton, MouseButtonEvent } from "./mouse-button-event";
 
-export class UIButton extends UIComponent {
-    protected declare _uiElement: UIElement;
+
+export class MouseState {
+    private _trackedMouseEvents: Array<MouseButtonEvent> = [];
+
+    public getButtonEventData(mouseButton: InputMouseButton) {
+        let tracked: MouseButtonEvent | null = null;
+        for (let i = 0; i < this._trackedMouseEvents.length; i++) {
+            if (this._trackedMouseEvents[i].mouseButton === mouseButton) {
+                tracked = this._trackedMouseEvents[i];
+                break;
+            }
+        }
+
+        if (!tracked) {
+            tracked = new MouseButtonEvent(mouseButton);
+            this._trackedMouseEvents.push(tracked);
+        }
+        return tracked;
+    }
+
+    public setButtonEventData(mouseButton: InputMouseButton, pressState: FramePressState, event: Event, ray: Ray) {
+        const toModify = this.getButtonEventData(mouseButton);
+        toModify.pressState = pressState;
+        toModify.event = event;
+        toModify.ray = ray;
+    }
 }
+
+
+

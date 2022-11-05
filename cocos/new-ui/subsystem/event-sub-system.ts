@@ -28,7 +28,8 @@ import { InputEventType } from "../../input/types/event-enum";
 import { UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
 import { UIEvent } from "../base/ui-event";
-import { PointerUpEvent, PointerDownEvent } from "../event-system/event-data/pointer-event";
+import { PointerUpEvent, PointerDownEvent, PointerClickEvent } from "../event-system/event-data/pointer-event";
+import { FramePressState, MouseButtonEvent } from "../event-system/event-data/mouse-button-event";
 
 
 export class EventSubSystem extends UISubSystem {
@@ -41,7 +42,7 @@ export class EventSubSystem extends UISubSystem {
 
     update() {
     }
-    
+
     protected getHitUIElement(ray: Ray): UIElement | null {
         const children: ReadonlyArray<UIElement> = this.window.children;
         for (let i = 0; i < children.length; i++) {
@@ -54,32 +55,41 @@ export class EventSubSystem extends UISubSystem {
         return null;
     }
 
-    public dispatchTouchEvent(event: Event, ray: Ray) {
+    // public dispatchTouchEvent(event: Event, ray: Ray) {
+    //     const element = this.getHitUIElement(ray);
+    //     if (!element) {
+    //         return;
+    //     }
+
+    //     // handle various touch events
+    // }
+
+
+    public dispatchMouseEvent(mouseButtonEvent: MouseButtonEvent): boolean {
+        if (!mouseButtonEvent) {
+            return false;
+        }
+
+        const ray = mouseButtonEvent.ray!;
         const element = this.getHitUIElement(ray);
         if (!element) {
-            return;
+            return false;
         }
 
-        // handle various touch events
-    }
-
-
-    public dispatchMouseEvent(event: Event, ray: Ray) {
-        const element = this.getHitUIElement(ray);
-        if (!element) {
-            return;
-        }
-
-        let newUIEvent: UIEvent | null = null;
-        switch (event.type) {
-            case InputEventType.MOUSE_DOWN:
-                newUIEvent = new PointerDownEvent(element);
+        let uiEvent: UIEvent | null = null;
+        switch (mouseButtonEvent.pressState) {
+            case FramePressState.pressed:
+                uiEvent = new PointerDownEvent(element);
                 break;
-            case InputEventType.MOUSE_UP:
-                newUIEvent = new PointerUpEvent(element);
+            case FramePressState.released:
+                uiEvent = new PointerUpEvent(element);
+                break;
+            case FramePressState.pressedAndReleased:
+                uiEvent = new PointerClickEvent(element);
                 break;
         }
-        element.dispatchEvent(newUIEvent!);
+        element.dispatchEvent(uiEvent!);
+        return true;
     }
 
 }

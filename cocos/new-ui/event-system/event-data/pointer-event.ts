@@ -33,6 +33,10 @@ export class PointerDownEvent extends UIEvent {
 
 }
 
+export class PointerClickEvent extends UIEvent {
+    
+}
+
 export class PointerMoveEvent extends UIEvent {
 
 }

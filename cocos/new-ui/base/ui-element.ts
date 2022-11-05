@@ -468,7 +468,8 @@ export class UIElement extends Visual {
 
     // #region event
     public hitTest (ray: Ray): boolean {
-        return false;
+        // temporarily return true
+        return true;
     }
 
     public addEventListener<TEvent extends UIEvent> (type: EventType<TEvent>, fn: (event: TEvent) => void, target?: any) {
