@@ -34,7 +34,6 @@ import { ClearFlagBit } from "../../core/gfx";
 
 export class UISystem extends System {
     private _camera: Camera;
-    private _node: Node; // New node? Need constructor
 
     public get hudCamera () {
         return this._camera;
