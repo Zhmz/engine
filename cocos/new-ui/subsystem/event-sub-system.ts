@@ -25,7 +25,7 @@
 
 import { Ray } from "../../core/geometry";
 import { InputEventType } from "../../input/types/event-enum";
-import { UIElement } from "../base/ui-element";
+import { InvalidateReason, UIElement } from "../base/ui-element";
 import { UISubSystem } from "../base/ui-subsystem";
 import { UIEvent } from "../base/ui-event";
 import { PointerUpEvent, PointerDownEvent, PointerClickEvent } from "../event-system/event-data/pointer-event";
@@ -37,10 +37,16 @@ export class EventSubSystem extends UISubSystem {
         return this._document.window;
     }
 
-    invalidate(element: UIElement, dirtyFlags: number) {
+    invalidate (element: UIElement, invalidateReason: InvalidateReason) {
+
+    }
+
+    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
+        
     }
 
     update() {
+
     }
 
     protected getHitUIElement(ray: Ray): UIElement | null {

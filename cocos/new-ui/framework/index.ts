@@ -1,6 +1,5 @@
-  
 /*
- Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
+ Copyright (c) 2022 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos.com
 
@@ -24,48 +23,14 @@
  THE SOFTWARE.
 */
 
-import { Color } from "../../core";
+export { Border } from "./border";
+export { Button } from "./button";
+export { Canvas } from "./canvas";
+export { CanvasSlot } from "./canvas-slot";
+export { ContentControl } from "./content-control";
+export { ContentSlot } from "./content-slot";
+export { Image } from "./image";
+export { Label } from "./label";
+export { Panel } from "./panel";
 
-enum BrushType {
-    COLOR,
-    TEXTURE,
-    RENDER_TEXTURE,
-    SPRITE_FRAME,
-    MATERIAL,
-    VECTOR_IMAGE,
-}
-
-export class Brush {
-    static WHITE = Object.freeze(new Brush());
-
-    private _type: BrushType = BrushType.COLOR;
-    private _tintColor = Color.WHITE;
-    private _width = 0;
-    private _height = 0;
-
-    get type () {
-        return this._type;
-    }
-
-    get width () {
-        return this._width;
-    }
-
-    set height (val) {
-        this._height = val;
-    }
-
-    get height () {
-        return this._height;
-    }
-
-    get tintColor (): Readonly<Color> {
-        return this._tintColor;
-    }
-
-    set tintColor (color: Color) {
-        if (this._tintColor.equals(color)) {
-            this._tintColor.set(color);
-        }
-    }
-}
+// May have same name error // todo

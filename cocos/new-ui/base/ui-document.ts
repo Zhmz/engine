@@ -63,11 +63,17 @@ export class UIDocument {
     }
 
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
-        if (invalidateReason & InvalidateReason.ARRANGE) {
-            this._layoutSubsystem.invalidate(element);
+        if (invalidateReason & InvalidateReason.LAYOUT) {
+            this._layoutSubsystem.invalidate(element, invalidateReason);
         }
         if (invalidateReason & InvalidateReason.PAINT) {
-            this._renderSubsystem.invalidate(element);
+            this._renderSubsystem.invalidate(element, invalidateReason);
+        }
+    }
+
+    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
+        if (invalidateReason & InvalidateReason.LAYOUT) {
+            this._layoutSubsystem.removeInvalidation(element, invalidateReason);
         }
     }
 
@@ -77,7 +83,6 @@ export class UIDocument {
     }
 
     private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
-    private _node: Node; // New node? Need constructor // move to ui-system
     private _viewport = new Rect();
     private _window = new UIWindow(this);
     private _layoutSubsystem = new UILayoutSubsystem(this);

@@ -1,15 +1,15 @@
 /*
- Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
+ Copyright (c) 2022 Xiamen Yaji Software Co., Ltd.
 
- http://www.cocos.com
+ https://www.cocos.com/
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated engine source code (the "Software"), a limited,
-  worldwide, royalty-free, non-assignable, revocable and non-exclusive license
+ worldwide, royalty-free, non-assignable, revocable and non-exclusive license
  to use Cocos Creator solely to develop games on your target platforms. You shall
-  not use Cocos Creator software for developing other software or tools that's
-  used for developing games. You are not granted to publish, distribute,
-  sublicense, and/or sell copies of Cocos Creator.
+ not use Cocos Creator software for developing other software or tools that's
+ used for developing games. You are not granted to publish, distribute,
+ sublicense, and/or sell copies of Cocos Creator.
 
  The software or tools in this License Agreement are licensed, not sold.
  Xiamen Yaji Software Co., Ltd. reserves all rights not expressly granted to you.
@@ -21,26 +21,10 @@
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
-*/
+ */
 
-export enum ErrorID {
-    UNKNOWN,
-    OUT_OF_RANGE,
-    INVALID_INPUT,
-    SLOT_UNMATCHED,
-    MULTIPLE_CHILD,
-    MAX_LAYOUT_ITERATION_COUNT,
-}
-
-export class UIError extends Error {
-    public get id () {
-        return this._id;
-    }
-    
-    constructor (id: ErrorID, message?: string) {
-        super(message);
-        this._id = id;
-    }
-
-    private _id = ErrorID.UNKNOWN
-}
+export * from './base';
+export * from './component';
+// export * from './event-system';
+// export * from './framework';
+export * from './rendering';

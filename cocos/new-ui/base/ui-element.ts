@@ -58,7 +58,8 @@ export enum InvalidateReason {
     ARRANGE = 1 << 2,
     STYLE = 1 << 3,
     TRANSFORM = 1 << 4,
-    PAINT = 1 << 5
+    PAINT = 1 << 5,
+    LAYOUT = InvalidateReason.MEASURE | InvalidateReason.ARRANGE,
 }
 export class UIElement extends Visual {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
@@ -104,6 +105,14 @@ export class UIElement extends Visual {
         return this._hierarchyLevel;
     }
 
+    get isMeasureDirty () {
+        return this._measureDirty;
+    }
+
+    get isArrangeDirty () {
+        return this._arrangeDirty;
+    }
+
     //#region Layout
 
     get previousArrangeRect () {
@@ -137,7 +146,7 @@ export class UIElement extends Visual {
 
     set margin (val: Thickness) {
         this.invalidateParentMeasure();
-        this.invalidateParentArrange();
+        this.invalidateArrange();
         this.setValue(UIElement.MarginProperty, val);
     }
 
@@ -310,7 +319,7 @@ export class UIElement extends Visual {
             this._parent._children.splice(index, 1);
             this._parent.onChildRemoved(this);
         }
-        this.invalidateParentMeasure();
+        this.invalidateParentLayout();
         this._parent = parent;
         if (this._parent) {
             this._parent._children.push(this);
@@ -318,7 +327,7 @@ export class UIElement extends Visual {
         }
         this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
         this.updateDocument(this._parent ? this._parent._document : null);
-        this.invalidateParentMeasure();
+        this.invalidateParentLayout();
         this.invalidateWorldTransform();
     }
 
@@ -334,7 +343,18 @@ export class UIElement extends Visual {
 
     private updateDocument (document: UIDocument | null) {
         if (this._document !== document) {
+            let invalidateReason = 0;
+            if (this.isMeasureDirty) {
+                invalidateReason |= InvalidateReason.MEASURE;
+            }
+
+            if (this.isArrangeDirty) {
+                invalidateReason |= InvalidateReason.ARRANGE;
+            }
+
+            this.removeInvalidation(invalidateReason);
             this._document = document;
+            this.invalidate(invalidateReason);
             for (let i = 0; i < this._children.length; i++) {
                 this._children[i].updateDocument(document);
             }
@@ -362,12 +382,17 @@ export class UIElement extends Visual {
         }
     }
 
+    public invalidateParentLayout () {
+        if (this._parent) {
+            this._parent.invalidateMeasure();
+            this._parent.invalidateArrange();
+        }
+    }
+
     public invalidateMeasure () {
         if (!this._measureDirty) {
             this._measureDirty = true;
-            if (this._parent) {
-                this._parent.invalidateMeasure();
-            }
+            this.invalidate(InvalidateReason.MEASURE);
         }
     }
 
@@ -390,6 +415,12 @@ export class UIElement extends Visual {
     public invalidate (invalidateReason: InvalidateReason) {
         if (this._document) {
             this._document.invalidate(this, invalidateReason);
+        }
+    }
+
+    public removeInvalidation (invalidateReason: InvalidateReason) {
+        if (this._document) {
+            this._document.removeInvalidation(this, invalidateReason);
         }
     }
 
@@ -443,30 +474,28 @@ export class UIElement extends Visual {
             const desiredSize = this.computeDesiredSize();
             if (!this._desiredSize.equals(desiredSize)) {
                 this._desiredSize.set(desiredSize);
+                this.invalidateParentMeasure();
                 this.invalidateParentArrange();
             }
             this._measureDirty = false;
         }
+        this.removeInvalidation(InvalidateReason.MEASURE);
     }
 
     public arrange (finalRect: Rect) {
-        const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight} = this.margin;
-        const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
-        if (this._arrangeDirty || !arrangeSize.equals(this.layout.size)) {
+        if (this._arrangeDirty || !finalRect.equals(this.previousArrangeRect)) {
+            const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight} = this.margin;
+            const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
             this.arrangeContent(arrangeSize);
             this._arrangeDirty = false;
+            this._previousArrangeRect.set(finalRect);
+            this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
         }
-        this._previousArrangeRect.set(finalRect);
-        this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
+        this.removeInvalidation(InvalidateReason.ARRANGE);
     }
-    
     //#endregion layout
 
-    //#endregion render
-    protected onPaint (drawingContext: IDrawingContext) {}
-    //#endregion render
-
-    // #region event
+    //#region event
     public hitTest (ray: Ray): boolean {
         // temporarily return true
         return true;

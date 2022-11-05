@@ -24,33 +24,39 @@
  THE SOFTWARE.
 */
 
-import { Size } from "../../core";
+import { Color, Size } from "../../core";
 import { AdvancedProperty } from "../base/advanced-property";
+import { IDrawingContext } from "../base/ui-drawing-context";
 import { UIElement } from "../base/ui-element";
-import { UISlot } from "../base/ui-slot";
 import { Brush } from "../rendering/brush";
 
 export class Image extends UIElement {
-    public static ImageSourceProperty = AdvancedProperty.register('ImageSource', Brush, Image, Brush.default);
+    public static SourceProperty = AdvancedProperty.register('Source', Brush, Image, Brush.WHITE);
+    public static TintColorProperty = AdvancedProperty.register('TintColor', Color, Image, Color.WHITE);
 
-    get imageSource (): Readonly<Brush> {
-        return this.getValue(Image.ImageSourceProperty);
+    get source (): Readonly<Brush> {
+        return this.getValue(Image.SourceProperty);
     }
 
-    set imageSource (val: Readonly<Brush>) {
-        this.setValue(Image.ImageSourceProperty, val);
+    set source (val: Readonly<Brush>) {
+        this.invalidatePainting();
+        this.setValue(Image.SourceProperty, val);
+    }
+
+    get tintColor (): Readonly<Color> {
+        return this.getValue(Image.TintColorProperty);
+    }
+
+    set tintColor (val) {
+        this.setValue(Image.TintColorProperty, val);
     }
     
-    protected allowMultipleChild () {
-        return false;
-    }
-
-    protected getSlotClass (): typeof UISlot | null{
-        return null;
-    }
-
     computeDesiredSize () {
-        const { width: naturalWidth, height: naturalHeight } = this.imageSource;
+        const { width: naturalWidth, height: naturalHeight } = this.source;
         return new Size(naturalWidth, naturalHeight);
+    }
+
+    protected onPaint (drawingContext: IDrawingContext) {
+        drawingContext.drawBrush({ rect: this.layout, brush: this.source, color: this.tintColor });// color hack
     }
 }
