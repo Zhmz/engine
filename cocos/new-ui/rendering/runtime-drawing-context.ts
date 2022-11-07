@@ -2,15 +2,22 @@
 
 import { getAttributeStride, vfmtPosColor4B } from "../../2d/renderer/vertex-format";
 import { Attribute, Buffer, BufferInfo, BufferUsageBit, Device, deviceManager, MemoryUsageBit, PrimitiveMode, Sampler, Texture } from "../../core/gfx";
-import { VisualProxy, VisualRenderProxy } from '../rendering/visual-proxy';
+import { VisualProxy } from '../rendering/visual-proxy';
 import { Model } from '../../core/renderer/scene';
 import { legacyCC } from '../../core/global-exports';
 import { scene } from '../../core/renderer';
-import { Color, Material, Rect, RenderingSubMesh } from '../../core';
+import { builtinResMgr, Color, Material, Rect, RenderingSubMesh } from '../../core';
 import { IDrawingContext } from "../base/ui-drawing-context";
 import { UIDocument } from "../base/ui-document";
 import { Visual } from "../base/visual";
 import { Brush } from "./brush";
+import { UIDrawCommand } from "./ui-draw-command";
+
+
+enum MaterialType {
+    ADD_COLOR = 0,
+    ADD_COLOR_AND_TEXTURE = 1,
+}
 
 // 在上层进行了paint命令之后，进行方法的提供和 visualProxy 的数据填充
 export class RuntimeDrawingContext extends IDrawingContext {
@@ -32,6 +39,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
     private _currTexture: Texture | null = null;
     private _currSampler: Sampler | null = null;
     private _currHash = 0;
+    private _vertexFormat = vfmtPosColor4B;
 
     protected _floatsPerVertex: number;
 
@@ -55,10 +63,70 @@ export class RuntimeDrawingContext extends IDrawingContext {
         
     }
 
+    public getDefaultMaterialByType(type: MaterialType) {
+        let mat: Material;
+        switch (type) {
+        case MaterialType.ADD_COLOR:
+            mat = builtinResMgr.get(`ui-base-material`);
+            break;
+        default:
+            mat = builtinResMgr.get(`ui-sprite-material`);
+            break;
+        }
+        return mat;
+    }
+
     public drawRect(rect: Rect, color: Color) {
-        let visualProxy = this._currentVisual.visualProxy;
-        // init renderData
-        visualProxy.initVisualRender(4, 6, color, rect);
+        const stride = this._floatsPerVertex;
+        // only need fill local mesh
+        const vb = new Float32Array(4 * stride); // 5?
+        const ib = new Uint16Array(6);
+
+        const left = -rect.width * 0.5;
+        const right = rect.width * 0.5;
+        const bottom = -rect.height * 0.5;
+        const top = rect.height * 0.5;
+
+        // left bottom corner
+        let vertexOffset = 0;
+        vb[vertexOffset] = left;
+        vb[1 + vertexOffset] = bottom;
+        vb[2 + vertexOffset] = 0;
+        vb[3 + vertexOffset] = color._val;
+
+        vertexOffset += stride;
+
+        // right bottom corner
+        vb[vertexOffset] = right;
+        vb[1 + vertexOffset] = bottom;
+        vb[2 + vertexOffset] = 0;
+        vb[3 + vertexOffset] = color._val;
+
+        vertexOffset += stride;
+
+        // left top corner
+        vb[vertexOffset] = left;
+        vb[1 + vertexOffset] = top;
+        vb[2 + vertexOffset] = 0;
+        vb[3 + vertexOffset] = color._val;
+
+        vertexOffset += stride;
+
+        // right top corner
+        vb[vertexOffset] = right;
+        vb[1 + vertexOffset] = top;
+        vb[2 + vertexOffset] = 0;
+        vb[3 + vertexOffset] = color._val;
+
+        ib[0] = 0;
+        ib[1] = 1;
+        ib[2] = 2;
+        ib[3] = 1;
+        ib[4] = 3;
+        ib[5] = 2;
+
+        const command = new UIDrawCommand(this._vertexFormat, 4, 6, vb, ib, this.getDefaultMaterialByType(MaterialType.ADD_COLOR));
+        this._currentVisual.visualProxy.addDrawCommands(command);
     }
 
     public drawBrush(rect: Rect, color: Color, brush: Readonly<Brush>) {
