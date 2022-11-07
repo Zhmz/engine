@@ -30,15 +30,21 @@ import { UIDocument } from '../base/ui-document';
 import { UIElement } from '../base/ui-element';
 import { UISystem } from '../base/ui-system';
 import { UIWindow } from '../base/ui-window';
-import { Event as NewUIEvent } from '../base/ui-event';
-import { PointerDownEvent } from './event-data/pointer-down-event';
-import { PointerUpEvent } from './event-data/pointer-event';
+import { UIEvent as NewUIEvent } from '../base/ui-event';
+import { PointerDownEvent, PointerUpEvent } from './event-data/pointer-event';
 import { BaseInputModule } from './input-modules/base-input-module';
 import { pointerInputModule } from './input-modules/pointer-input-module';
 import { RaycastResult } from './raycast-result';
+import { MouseState } from './event-data/mouse-state';
+import { FramePressState, InputMouseButton, MouseButtonEvent } from './event-data/mouse-button-event';
+import { EventSubSystem } from '../subsystem/event-sub-system';
 
 export class EventSystem {
     private _inputModuleList: BaseInputModule[] = [];
+
+    private _mouseState: MouseState = new MouseState();
+
+
     constructor() {
 
     }
@@ -51,27 +57,19 @@ export class EventSystem {
     }
 
     public tick() {
-
         const eventMouseList = pointerInputModule.eventMouseList;
-        const documents = UISystem.instance.documents;
+        const ray = pointerInputModule.ray!;
 
-        for(let i = 0 ;i<eventMouseList.length;i++){
-            const eventMouse  = eventMouseList[i];
-
+        for (let i = 0; i < eventMouseList.length; i++) {
+            const eventMouse = eventMouseList[i];
+            this.handleMouseEvent(eventMouse, ray);
         }
 
 
-        for (let i = 0; i < documents.length; i++) {
-            const curDocument = documents[i];
 
-
-
-
-            //const children: ReadonlyArray<UIElement> = curDocument.window.children;
-        }
     }
 
-    protected emitEvent(event:Event) {
+    protected emitEvent(event: Event) {
 
     }
 
@@ -84,4 +82,60 @@ export class EventSystem {
         this._inputModuleList.push(inputModule);
         this._inputModuleList.sort((a, b) => b.priority - a.priority);
     }
+
+    public handleTouchEvent(event: Event, ray: Ray) {
+
+    }
+
+    public dispatchTouchEvent() {
+
+    }
+
+    public handleMouseEvent(event: Event, ray: Ray) {
+        const eventMouse = event as EventMouse;
+        const button = eventMouse.getButton();
+        let curMouseButtonEvent: MouseButtonEvent | null = null;
+
+        if (button === EventMouse.BUTTON_LEFT) {
+            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.LEFT);
+        } else if (button === EventMouse.BUTTON_RIGHT) {
+            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.RIGHT);
+        } else if (button === EventMouse.BUTTON_MIDDLE) {
+            curMouseButtonEvent = this._mouseState.getButtonEventData(InputMouseButton.MIDDLE);
+        }
+        let pressState: FramePressState;
+        if (eventMouse.type === InputEventType.MOUSE_DOWN) {
+            pressState = FramePressState.PRESSED;
+        } else if (eventMouse.type === InputEventType.MOUSE_UP) {
+            if (curMouseButtonEvent!.pressState === FramePressState.PRESSED) {
+                pressState = FramePressState.PRESSED_AND_RELEASED;
+            } else {
+                pressState = FramePressState.RELEASED;
+            }
+        } else {
+            pressState = FramePressState.NOT_CHANGED;
+        }
+
+        this._mouseState.setButtonEventData(curMouseButtonEvent!.mouseButton, pressState, event, ray);
+
+        //dispatch
+        this.dispatchMouseEvent(curMouseButtonEvent!);
+    }
+
+    public dispatchMouseEvent(mouseButtonEvent: MouseButtonEvent) {
+        if(!mouseButtonEvent) {
+            return;
+        }
+        //dispatch to the relevant document
+        const documents = UISystem.instance.documents;
+        for (let i = 0; i < documents.length; i++) {
+            const curDocument = documents[i];
+            const eventSubSystem: EventSubSystem = curDocument.eventSubSystem;
+            const success = eventSubSystem.dispatchMouseEvent(mouseButtonEvent);
+            if (success) {
+                return;
+            }
+        }
+    }
+
 }

@@ -30,6 +30,7 @@ import { InputEventType } from '../../../input/types/event-enum';
 import { BaseInputModule, InputModulePriority } from './base-input-module';
 import { Event, EventMouse, EventTouch } from '../../../input/types';
 import { UISystem } from '../../base/ui-system';
+import { MouseState } from '../event-data/mouse-state';
 
 const pos: Vec2 = new Vec2();
 
@@ -80,6 +81,7 @@ export class PointerInputModule extends BaseInputModule {
     constructor() {
         super();
         this._registerEvent();
+        this._ray = new Ray();
     }
 
     private _registerEvent() {
@@ -103,21 +105,21 @@ export class PointerInputModule extends BaseInputModule {
     protected _dispatchOrPushEvent(event: Event, eventList: Event[]) {
         // dispatch
         if (this._dispatchImmediately) {
-            //this._dispatchEvent(event, this._ray!);
+            this._dispatchEvent(event, this._ray!);
         } else {
             eventList.push(event);
         }
     }
 
-    // protected _dispatchEvent(event: Event, ray: Ray) {
-    //     const eventSystem = UISystem.instance.eventSystem;
-    //     const eventType = event.type as InputEventType;
-    //     if (touchEvents.includes(eventType)) {
-    //         eventSystem.dispatchTouchEvent(event, ray);
-    //     } else if (mouseEvents.includes(eventType)) {
-    //         eventSystem.dispatchMouseEvent(event, ray);
-    //     }
-    // }
+    protected _dispatchEvent(event: Event, ray: Ray) {
+        const eventSystem = UISystem.instance.eventSystem;
+        const eventType = event.type as InputEventType;
+        if (touchEvents.includes(eventType)) {
+            eventSystem.handleTouchEvent(event, ray);
+        } else if (mouseEvents.includes(eventType)) {
+            eventSystem.handleMouseEvent(event, ray);
+        }
+    }
 
     protected clearEvents() {
         this._eventMouseList.length = 0;
