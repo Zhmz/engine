@@ -209,7 +209,7 @@ export class VisualRenderProxy {
 
     public initRectMesh (color:Color, rect: Rect) {
         // only need fill local mesh
-        this._vb = new Float32Array(this._vbCount * this._floatStride); // 5?
+        this._vb = new Float32Array(this._vbCount * this._floatStride);
         this._ib = new Uint16Array(this._ibCount);
 
         let stride = this._floatStride;
@@ -224,12 +224,12 @@ export class VisualRenderProxy {
 
         this._vb[this._vertexOffset + 0 + stride * 1] = r;
         this._vb[this._vertexOffset + 1 + stride * 1] = b;
-        this._vb[this._vertexOffset + 2 + stride * 3] = 0;
+        this._vb[this._vertexOffset + 2 + stride * 1] = 0;
         this._vb[this._vertexOffset + 3 + stride * 1] = color._val;
 
         this._vb[this._vertexOffset + 0 + stride * 2] = l;
         this._vb[this._vertexOffset + 1 + stride * 2] = t;
-        this._vb[this._vertexOffset + 2 + stride * 3] = 0;
+        this._vb[this._vertexOffset + 2 + stride * 2] = 0;
         this._vb[this._vertexOffset + 3 + stride * 2] = color._val;
 
         this._vb[this._vertexOffset + 0 + stride * 3] = r;
@@ -237,7 +237,7 @@ export class VisualRenderProxy {
         this._vb[this._vertexOffset + 2 + stride * 3] = 0;
         this._vb[this._vertexOffset + 3 + stride * 3] = color._val;
 
-        this._vertexOffset += this._vbCount;
+        this._vertexOffset += this._vbCount;// error,use less
 
         this._ib[this._indexOffset + 0] = 0;
         this._ib[this._indexOffset + 1] = 1;
