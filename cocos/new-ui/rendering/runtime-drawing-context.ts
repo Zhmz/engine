@@ -34,6 +34,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
     private _currIndicesData;
     private _currVBCount = 0;
     private _currIBCount = 0;
+    private _currVertexOffset = 0;
     private _emptyMaterial = new Material();
     private _currMaterial: Material = this._emptyMaterial;
     private _currTexture: Texture | null = null;
@@ -184,25 +185,28 @@ export class RuntimeDrawingContext extends IDrawingContext {
 
     private _mergeBatch (render: VisualRenderProxy) {
         // 通过了合批检查，直接合顶点到一个 buffer 中去
-        if (render.getVBCount() === 0) return;
+        let vbOffset = render.getVBCount();
+        if (vbOffset === 0) return;
+
         let vb = render.getVB();
         let vbSize = vb.length;
         this._currVerticesData.set(vb, this._currVBCount);
         
-
         let ib = render.getIB();
         let ibSize = ib.length;
         const ibTemp = new Uint16Array(ibSize);
         for (let i = 0; i < ibSize; i++) {
-            ibTemp[i] = ib[i] +  this._currVBCount / 4; // hack 顶点数量
+            ibTemp[i] = ib[i] +  this._currVertexOffset;
         }
-        this._currIndicesData.set(ibTemp, this._currIBCount);// ib 需要偏移，有问题
+        this._currIndicesData.set(ibTemp, this._currIBCount);
+
         this._currIBCount += ibSize;
         this._currVBCount += vbSize;
+        this._currVertexOffset += vbOffset;
     }
 
     private _resetState () {
-        this._currVBCount = this._currIBCount = 0;
+        this._currVBCount = this._currIBCount = this._currVertexOffset = 0;
         this._currVerticesData.fill(0);
         this._currIndicesData.fill(0);
     }
@@ -231,7 +235,15 @@ export class RuntimeDrawingContext extends IDrawingContext {
         const verticesData = new Float32Array(this._currVerticesData.buffer, 0, this._currVBCount);
         const indicesData = new Uint16Array(this._currIndicesData.buffer, 0, this._currIBCount);
         
-        vertexBuffers[0].update(verticesData); // 原生上要给个范围，不然会崩？
+        const vertexBuffer = vertexBuffers[0];
+        const byteCount = this._currVBCount << 2;
+        if (byteCount > vertexBuffer.size) {
+            vertexBuffer.resize(byteCount);
+        }
+        vertexBuffer.update(verticesData);
+        if (this._currIBCount * 2 > indexBuffer.size) {
+            indexBuffer.resize(this._currIBCount * 2);
+        }
         indexBuffer.update(indicesData);
 
         // mesh 重建
@@ -290,7 +302,7 @@ class BufferPool {
         const vertexBuffer = gfxDevice.createBuffer(new BufferInfo(
             BufferUsageBit.VERTEX | BufferUsageBit.TRANSFER_DST,
             MemoryUsageBit.DEVICE,
-            8 * stride, // 不能自动扩大？？？
+            4 * stride,
             stride,
         ));
         const vertexBuffers = [vertexBuffer];
@@ -298,7 +310,7 @@ class BufferPool {
         const indexBuffer = gfxDevice.createBuffer(new BufferInfo(
             BufferUsageBit.INDEX | BufferUsageBit.TRANSFER_DST,
             MemoryUsageBit.DEVICE,
-            12 * Uint16Array.BYTES_PER_ELEMENT, // 不能自动扩大？？？
+            6 * Uint16Array.BYTES_PER_ELEMENT,
             Uint16Array.BYTES_PER_ELEMENT,
         ));
 
