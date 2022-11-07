@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -26,6 +25,7 @@
 
 import { AdvancedObject } from './advanced-object';
 import { AttachedObject } from './attached-object';
+
 type Constructor<T = any> = new (...args) => T;
 
 export enum Primitive {
@@ -38,18 +38,18 @@ export class AdvancedProperty {
     static UNSET_VALUE = undefined;
 
     private _name: string;
-    // Object is used for Enum 
+    // Object is used for Enum
     private _propertyType: Constructor | Record<string, number | string> | Primitive;
     private _ownerType: Constructor<AdvancedObject | AttachedObject>;
     private _defaultValue: any;
     private _id: number;
     private constructor (
         id: number,
-        name: string, 
-        type: Constructor | Record<string, number | string> | Primitive, 
-        ownerType: Constructor<AdvancedObject | AttachedObject>, 
-        defaultValue: any) {
-
+        name: string,
+        type: Constructor | Record<string, number | string> | Primitive,
+        ownerType: Constructor<AdvancedObject | AttachedObject>,
+        defaultValue: any,
+    ) {
         this._id = id;
         this._name = name;
         this._propertyType = type;
@@ -58,12 +58,12 @@ export class AdvancedProperty {
     }
 
     private static _propertyRegistry = new Array<AdvancedProperty>();
-    public static register<OT extends AdvancedObject | AttachedObject>(
-        name: string, 
-        type: Constructor | Record<string, number | string> | Primitive, 
+    public static register<OT extends AdvancedObject | AttachedObject> (
+        name: string,
+        type: Constructor | Record<string, number | string> | Primitive,
         ownerType: Constructor<OT>,
-        defaultValue: any = AdvancedProperty.UNSET_VALUE) {
-
+        defaultValue: any = AdvancedProperty.UNSET_VALUE,
+    ) {
         const ap = new AdvancedProperty(this._propertyRegistry.length, name, type, ownerType, defaultValue);
         this._propertyRegistry.push(ap);
         return ap;
@@ -80,6 +80,7 @@ export class AdvancedProperty {
     public get name () { return this._name; }
     public get propertyType () { return this._propertyType; }
     public get ownerType () { return this._ownerType; }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     public get defaultValue () { return this._defaultValue; }
-    public get id () { return this._id; } 
+    public get id () { return this._id; }
 }

@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -37,10 +36,10 @@ export class AdvancedObject {
                 return propertyValueEntries[i].value;
             }
         }
-        
+
         return property.defaultValue;
     }
-    
+
     setValue (property: AdvancedProperty, value: any) {
         const propertyValueEntries = this._propertyValueEntries;
         for (let i = 0, length = propertyValueEntries.length; i < length; i++) {

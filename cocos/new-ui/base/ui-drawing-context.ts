@@ -23,15 +23,13 @@
  THE SOFTWARE.
 */
 
-import { Color, Rect } from "../../core";
-import { Brush } from "../rendering/brush";
-import { Visual } from "./visual";
+import { Color, Rect } from '../../core';
+import { Brush } from '../rendering/brush';
+import { UIElement } from './ui-element';
 
 export abstract class IDrawingContext {
-    abstract get currentVisual (): Visual;
+    abstract get currentElement (): UIElement;
     abstract drawRect(rect: Rect, color: Color);
     abstract drawBrush(rect: Rect, color: Color, brush: Readonly<Brush>);
     abstract drawText(rect: Rect, color: Color, text: string, font: string, fontSize: number);
 }
-
-

@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -23,18 +22,23 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { RenderMode, UIRuntimeDocumentSettings } from "../base/runtime-document-settings";
-import { UIDocument } from "../base/ui-document";
-import { InvalidateReason, UIElement } from "../base/ui-element";
-import { UISubSystem } from "../base/ui-subsystem";
-import { RuntimeDrawingContext } from "../rendering/runtime-drawing-context";
+import { ContainerElement } from '../base';
+import { RenderMode, UIRuntimeDocumentSettings } from '../base/runtime-document-settings';
+import { UIDocument } from '../base/ui-document';
+import { InvalidateReason, UIElement } from '../base/ui-element';
+import { UISubSystem } from '../base/ui-subsystem';
+import { Visual } from '../base/visual';
+import { RuntimeDrawingContext } from '../rendering/runtime-drawing-context';
+import { UIBatchBuilder } from '../rendering/ui-batch-builder';
+import { VisualProxy } from '../rendering/visual-proxy';
 
 export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set<UIElement>();
-    private _context: RuntimeDrawingContext;
+    private _drawingContext: RuntimeDrawingContext;
+    private _batchBuilder: UIBatchBuilder;
 
     get context () {
-        return this._context;
+        return this._drawingContext;
     }
 
     get settings () {
@@ -43,49 +47,59 @@ export class UIRenderSubsystem extends UISubSystem {
 
     constructor (document: UIDocument) {
         super(document);
-        this._context = new RuntimeDrawingContext(document);
+        this._drawingContext = new RuntimeDrawingContext(document);
+        this._batchBuilder = new UIBatchBuilder(document.window.renderData as VisualProxy);
     }
 
-    invalidate(element: UIElement, invalidateReason: InvalidateReason) {
-        if (!this._dirtyElementMap.has(element)) {
-            this._dirtyElementMap.add(element)
-            // 部分更新用
-            // 能否在这里进行 transform 的更新
+    onElementAdded (element: UIElement) {
+        element.renderData = new VisualProxy();
+    }
+
+    onElementRemoved (element: UIElement) {
+        element.renderData = null;
+    }
+
+    invalidate (element: UIElement, invalidateReason: InvalidateReason) {
+        if (invalidateReason & InvalidateReason.PAINT) {
+            if (!this._dirtyElementMap.has(element)) {
+                this._dirtyElementMap.add(element);
+            }
+        }
+        if (invalidateReason & InvalidateReason.HIERARCHY) {
+            const children = (element as ContainerElement).children;
+            const visualProxy = element.renderData as VisualProxy;
+
+            for (let i = 0; i < children.length; i++) {
+            }
         }
     }
 
-    removeInvalidation(element: UIElement, invalidateReason: InvalidateReason) {
-        
+    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
+
     }
 
     update () {
-        for (let element of this._dirtyElementMap) {
-            this._context.currentVisual = element;
-            element.paint(this._context);
+        for (const element of this._dirtyElementMap) {
+            this._drawingContext.paint(element);
         }
-        
+        this._dirtyElementMap.clear();
+
+        // build batches
+        this._batchBuilder.buildBatches();
+
         const camera = this.settings.lowLevelRenderCamera;
         camera?.cleanIntermediateModels();
-
-        // Assembly data // 可以缓存
-        // 再需要的时候进行更新即可
-        // vb 变化，hierarchy change
-        this._context.paint();
-
-        // mergeBatch
-        this._context.mergeBatches();
-
         // insert data
-        const renderModel = this._context.getContextModel();
+        const renderModel = this._batchBuilder.getContextModel();
         switch (this.settings.renderMode) {
-            case RenderMode.CAMERA:
-                break;
-            case RenderMode.WORLD_SPACE:
-                // renderModel.attachToScene();
-                break;
-            default:
-                camera?.addIntermediateModel(renderModel);
-                break;
+        case RenderMode.CAMERA:
+            break;
+        case RenderMode.WORLD_SPACE:
+            // renderModel.attachToScene();
+            break;
+        default:
+            camera?.addIntermediateModel(renderModel);
+            break;
         }
     }
 }

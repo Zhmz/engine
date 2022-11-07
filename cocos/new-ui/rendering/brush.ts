@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,7 +23,7 @@
  THE SOFTWARE.
 */
 
-import { Color } from "../../core";
+import { Color } from '../../core';
 
 enum BrushType {
     COLOR,

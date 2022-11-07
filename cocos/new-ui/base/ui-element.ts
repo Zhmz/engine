@@ -246,7 +246,6 @@ export class UIElement extends Visual {
         this.setValue(UIElement.RenderTransformPivotProperty, val.clone());
     }
 
-
     get worldTransform (): Readonly<Mat4> {
         if (this._worldTransformDirty) {
             this.updateWorldTransform();
@@ -276,7 +275,7 @@ export class UIElement extends Visual {
     }
 
     private get renderTransform () {
-        const { x : xOffsetPercentage, y : yOffsetPercentage } = this.renderTransformPivot;
+        const { x: xOffsetPercentage, y: yOffsetPercentage } = this.renderTransformPivot;
         if (!approx(xOffsetPercentage, 0.5) || !approx(yOffsetPercentage, 0.5)) {
             const matrix = new Mat4();
             const xOffset = this.layout.width * (xOffsetPercentage - 0.5);
@@ -322,19 +321,18 @@ export class UIElement extends Visual {
             const index = this._parent._children.indexOf(this);
             assert(index !== -1);
             this._parent._children.splice(index, 1);
-            this._parent.visualProxy.removeChildAt(index);
             this._parent.onChildRemoved(this);
         }
-        this.invalidateParentLayout();
+        this.invalidateParentHierarchy();
         this._parent = parent;
         if (this._parent) {
             this._parent._children.push(this);
-            this._parent.visualProxy.addChild(this.visualProxy);
             this._parent.onChildAdded(this);
         }
-        this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
+        // update document should be invoked first
         this.updateDocument(this._parent ? this._parent._document : null);
-        this.invalidateParentLayout();
+        this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
+        this.invalidateParentHierarchy();
         this.invalidateWorldTransform();
     }
 
@@ -348,7 +346,7 @@ export class UIElement extends Visual {
         }
     }
 
-    private updateDocument (document: UIDocument | null) {
+    protected updateDocument (document: UIDocument | null) {
         if (this._document !== document) {
             let invalidateReason = 0;
             if (this.isMeasureDirty) {
@@ -359,8 +357,18 @@ export class UIElement extends Visual {
                 invalidateReason |= InvalidateReason.ARRANGE;
             }
 
+            if (this._paintingDirty) {
+                invalidateReason |= InvalidateReason.PAINT;
+            }
+
             this.removeInvalidation(invalidateReason);
+            if (this._document) {
+                this._document.onElementRemoved(this);
+            }
             this._document = document;
+            if (this._document) {
+                this._document.onElementAdded(this);
+            }
             this.invalidate(invalidateReason);
             for (let i = 0; i < this._children.length; i++) {
                 this._children[i].updateDocument(document);
@@ -389,8 +397,9 @@ export class UIElement extends Visual {
         }
     }
 
-    public invalidateParentLayout () {
+    public invalidateParentHierarchy () {
         if (this._parent) {
+            this._parent.invalidate(InvalidateReason.HIERARCHY);
             this._parent.invalidateMeasure();
             this._parent.invalidateArrange();
         }
@@ -435,7 +444,7 @@ export class UIElement extends Visual {
     }
 
     //#region Behavior
-    
+
     public getBehavior <T extends UIBehavior> (type: UIBehaviorType<T>): T | null {
         for (let i = 0; i < this._behaviors.length; i++) {
             const behavior = this._behaviors[i];
@@ -494,7 +503,7 @@ export class UIElement extends Visual {
 
     public arrange (finalRect: Rect) {
         if (this._arrangeDirty || !finalRect.equals(this.previousArrangeRect)) {
-            const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight} = this.margin;
+            const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight } = this.margin;
             const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
             this.arrangeContent(arrangeSize);
             this._arrangeDirty = false;
@@ -535,5 +544,4 @@ export class UIElement extends Visual {
         }
     }
     // #endregion event
-
 }

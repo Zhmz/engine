@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -23,10 +22,11 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { Mat4 } from "../../core/math";
+import { Mat4 } from '../../core/math';
+import { IRenderData } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
-export class VisualProxy {
+export class VisualProxy extends IRenderData {
     private _parent: VisualProxy | null = null;
     private _children: VisualProxy[] = [];
     private _worldMatrix: Mat4 = new Mat4();

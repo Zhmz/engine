@@ -23,8 +23,8 @@
  THE SOFTWARE.
 */
 
-import { UIComponent } from "../base/ui-component";
-import { UIElement } from "../base/ui-element";
+import { UIComponent } from '../base/ui-component';
+import { UIElement } from '../base/ui-element';
 
 export class UIButton extends UIComponent {
     protected declare _uiElement: UIElement;

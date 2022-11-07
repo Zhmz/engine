@@ -23,8 +23,8 @@
  THE SOFTWARE.
 */
 
-import { AttachedObject } from "./attached-object";
-import { UIElement } from "./ui-element";
+import { AttachedObject } from './attached-object';
+import { UIElement } from './ui-element';
 
 export type UIBehaviorType<T extends UIBehavior> = new (element: UIElement) => T;
 
@@ -34,6 +34,7 @@ export class UIBehavior extends AttachedObject {
     }
 
     static produce<T extends UIBehavior> (type: UIBehaviorType<T>, owner: UIElement) {
+        // eslint-disable-next-line new-cap
         return new type(owner);
     }
 

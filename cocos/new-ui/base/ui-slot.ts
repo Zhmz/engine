@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -23,7 +22,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { UIBehavior } from "./ui-behavior";
+import { UIBehavior } from './ui-behavior';
 
 export class UISlot extends UIBehavior {
 }

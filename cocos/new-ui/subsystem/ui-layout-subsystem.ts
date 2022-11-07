@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,9 +23,9 @@
  THE SOFTWARE.
 */
 
-import { ErrorID, UIError } from "../base/error";
-import { InvalidateReason, UIElement } from "../base/ui-element";
-import { UISubSystem } from "../base/ui-subsystem";
+import { ErrorID, UIError } from '../base/error';
+import { InvalidateReason, UIElement } from '../base/ui-element';
+import { UISubSystem } from '../base/ui-subsystem';
 
 export class UILayoutSubsystem extends UISubSystem {
     private _measureDirtyElements = new Set<UIElement>();
@@ -45,11 +44,15 @@ export class UILayoutSubsystem extends UISubSystem {
         if (invalidateReason & InvalidateReason.ARRANGE) {
             this._arrangeDirtyElements.delete(element);
         }
-        
+
         if (invalidateReason & InvalidateReason.MEASURE) {
             this._measureDirtyElements.delete(element);
         }
     }
+
+    onElementAdded (element: UIElement) {}
+
+    onElementRemoved (element: UIElement) {}
 
     update () {
         let iteration = 0;
@@ -75,7 +78,7 @@ export class UILayoutSubsystem extends UISubSystem {
     private getBottomMostElement (elements: Set<UIElement>) {
         let level = -1;
         let bottomElement: UIElement | null = null;
-        for (let element of elements) {
+        for (const element of elements) {
             if (element.hierarchyLevel > level) {
                 bottomElement = element;
                 level = element.hierarchyLevel;
@@ -87,7 +90,7 @@ export class UILayoutSubsystem extends UISubSystem {
     private getTopMostElement (elements: Set<UIElement>) {
         let level = Number.MAX_VALUE;
         let topElement: UIElement | null = null;
-        for (let element of elements) {
+        for (const element of elements) {
             if (element.hierarchyLevel < level) {
                 topElement = element;
                 level = element.hierarchyLevel;

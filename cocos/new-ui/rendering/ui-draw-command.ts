@@ -1,6 +1,6 @@
-import { getAttributeStride, vfmtPosColor4B } from "../../2d/renderer/vertex-format";
-import { Material } from "../../core";
-import { Attribute, Sampler, Texture } from "../../core/gfx";
+import { getAttributeStride } from '../../2d/renderer/vertex-format';
+import { Material } from '../../core';
+import { Attribute, Sampler, Texture } from '../../core/gfx';
 
 export class UIDrawCommand {
     // texture
@@ -18,14 +18,14 @@ export class UIDrawCommand {
     protected _ib: Uint16Array | null = null;
 
     // batcher use
-    // protected _vData: Float32Array | null = null; // meshBUffer 的大数组 
+    // protected _vData: Float32Array | null = null; // meshBUffer 的大数组
     // protected _iData: Uint16Array | null = null; // 也可以之后再分配主要是用于合批的
     protected _dataHash = 0; // 合批用
-    protected _stride = 0; 
+    protected _stride = 0;
     protected _floatStride = 0;
     protected _vertexFormat: Attribute[];
 
-    constructor (vertexFormat) {
+    constructor (vertexFormat, vbCount, ibCount, vb, ib, material) {
         this._stride = getAttributeStride(vertexFormat);
         this._floatStride = this._stride >> 2;
         this._vertexFormat = vertexFormat;
@@ -86,7 +86,7 @@ export class UIDrawCommand {
     public setVBCount (vbCount) {
         this._vbCount = vbCount;
     }
-    public getVBCount() {
+    public getVBCount () {
         return this._vbCount;
     }
 

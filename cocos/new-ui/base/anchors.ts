@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,12 +23,12 @@
  THE SOFTWARE.
 */
 
-import { Vec2 } from "../../core/math/vec2";
-import { ValueType } from "../../core/value-types";
+import { Vec2 } from '../../core/math/vec2';
+import { ValueType } from '../../core/value-types';
 
 export class Anchors extends ValueType {
-    static ZERO = Object.freeze(new Anchors);
-    
+    static ZERO = Object.freeze(new Anchors());
+
     private _min: Vec2;
     private _max: Vec2;
 
@@ -73,12 +72,12 @@ export class Anchors extends ValueType {
         return new Anchors(this._min.x, this._min.y, this._max.x, this._max.y);
     }
 
-    public set(other: Anchors): void {
+    public set (other: Anchors): void {
         this._min.set(other._min);
         this._max.set(other._max);
     }
 
-    public equals(other: Anchors): boolean {
+    public equals (other: Anchors): boolean {
         return this._min.equals(other._min) && this._max.equals(other._max);
     }
 }

@@ -23,5 +23,4 @@
  THE SOFTWARE.
 */
 
-export { Brush } from "./brush";
-
+export { Brush } from './brush';

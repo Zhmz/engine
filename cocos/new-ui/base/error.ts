@@ -37,7 +37,7 @@ export class UIError extends Error {
     public get id () {
         return this._id;
     }
-    
+
     constructor (id: ErrorID, message?: string) {
         super(message);
         this._id = id;

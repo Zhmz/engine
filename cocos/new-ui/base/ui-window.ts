@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,14 +23,15 @@
  THE SOFTWARE.
 */
 
-import { UIDocument } from "./ui-document";
-import { ContentControl } from "../framework/content-control";
-import { Mat4 } from "../../core/math/mat4";
-import { ErrorID, UIError } from "./error";
+import { UIDocument } from './ui-document';
+import { ContentControl } from '../framework/content-control';
+import { Mat4 } from '../../core/math/mat4';
+import { ErrorID, UIError } from './error';
+
 export class UIWindow extends ContentControl {
     constructor (document: UIDocument) {
         super();
-        this._document = document;
+        this.updateDocument(document);
     }
 
     get isMeasureDirty () {

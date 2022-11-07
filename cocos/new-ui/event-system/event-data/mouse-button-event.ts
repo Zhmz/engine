@@ -23,8 +23,8 @@
  THE SOFTWARE.
 */
 
-import { Ray } from "../../../core/geometry";
-import { Event } from "../../../input/types";
+import { Ray } from '../../../core/geometry';
+import { Event } from '../../../input/types';
 
 export enum FramePressState {
     PRESSED,
@@ -40,29 +40,27 @@ export enum InputMouseButton {
 }
 
 export class MouseButtonEvent {
-
     protected _mouseButton: InputMouseButton = InputMouseButton.LEFT;
     protected _pressState: FramePressState = FramePressState.NOT_CHANGED;
     //protected _uiEvent: UIEvent | null = null;
     protected _event: Event | null = null;
     protected _ray: Ray | null = null;
 
-
-    constructor(mouseButton: InputMouseButton) {
+    constructor (mouseButton: InputMouseButton) {
         this._mouseButton = mouseButton;
     }
 
-    get mouseButton() {
+    get mouseButton () {
         return this._mouseButton;
     }
-    set mouseButton(val: InputMouseButton) {
+    set mouseButton (val: InputMouseButton) {
         this._mouseButton = val;
     }
 
-    get pressState() {
+    get pressState () {
         return this._pressState;
     }
-    set pressState(val: FramePressState) {
+    set pressState (val: FramePressState) {
         this._pressState = val;
     }
 
@@ -73,26 +71,25 @@ export class MouseButtonEvent {
     //     this._uiEvent = val;
     // }
 
-    get event(): Event | null {
+    get event (): Event | null {
         return this._event;
     }
-    set event(val: Event | null) {
+    set event (val: Event | null) {
         this._event = val;
     }
 
-    get ray(): Ray | null {
+    get ray (): Ray | null {
         return this._ray;
     }
-    set ray(val: Ray | null) {
+    set ray (val: Ray | null) {
         this._ray = val;
     }
 
-    public pressedThisFrame() {
+    public pressedThisFrame () {
         return this._pressState === FramePressState.PRESSED || this._pressState === FramePressState.PRESSED_AND_RELEASED;
     }
 
-    public releasedThisFrame() {
+    public releasedThisFrame () {
         return this._pressState === FramePressState.RELEASED || this._pressState === FramePressState.PRESSED_AND_RELEASED;
     }
 }
-

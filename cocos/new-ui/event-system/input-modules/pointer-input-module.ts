@@ -57,36 +57,35 @@ export class PointerInputModule extends BaseInputModule {
     private _eventTouchList: EventTouch[] = [];
     private _eventMouseList: EventMouse[] = [];
 
-    private _dispatchImmediately: boolean = true;
+    private _dispatchImmediately = true;
 
-    get mouseInput(): MouseInputSource {
+    get mouseInput (): MouseInputSource {
         return this._mouseInput;
     }
 
-    get ray(): Ray | null {
+    get ray (): Ray | null {
         return this._ray;
     }
-    set ray(val: Ray | null) {
+    set ray (val: Ray | null) {
         this._ray = val;
     }
 
-    get eventTouchList() {
+    get eventTouchList () {
         return this._eventTouchList;
     }
 
-    get eventMouseList() {
+    get eventMouseList () {
         return this._eventMouseList;
     }
 
-    constructor() {
+    constructor () {
         super();
         this._registerEvent();
         this._ray = new Ray();
     }
 
-    private _registerEvent() {
+    private _registerEvent () {
         // TODO: touch
-
 
         this._mouseInput.on(InputEventType.MOUSE_UP, (event) => {
             this._dispatchOrPushEvent(event, this._eventMouseList);
@@ -102,7 +101,7 @@ export class PointerInputModule extends BaseInputModule {
         });
     }
 
-    protected _dispatchOrPushEvent(event: Event, eventList: Event[]) {
+    protected _dispatchOrPushEvent (event: Event, eventList: Event[]) {
         // dispatch
         if (this._dispatchImmediately) {
             this._dispatchEvent(event, this._ray!);
@@ -111,7 +110,7 @@ export class PointerInputModule extends BaseInputModule {
         }
     }
 
-    protected _dispatchEvent(event: Event, ray: Ray) {
+    protected _dispatchEvent (event: Event, ray: Ray) {
         const eventSystem = UISystem.instance.eventSystem;
         const eventType = event.type as InputEventType;
         if (touchEvents.includes(eventType)) {
@@ -121,7 +120,7 @@ export class PointerInputModule extends BaseInputModule {
         }
     }
 
-    protected clearEvents() {
+    protected clearEvents () {
         this._eventMouseList.length = 0;
         this._eventTouchList.length = 0;
     }

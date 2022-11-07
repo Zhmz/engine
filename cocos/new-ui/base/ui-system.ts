@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,16 +23,16 @@
  THE SOFTWARE.
 */
 
-import { Director, director, js, System } from "../../core";
-import { Camera, CameraProjection } from "../../core/renderer/scene/camera";
-import { EventSystem } from "../event-system/event-system";
-import { RenderMode, UIRuntimeDocumentSettings } from "./runtime-document-settings";
-import { UIDocument } from "./ui-document";
-import { Node } from '../../core';
-import { ClearFlagBit } from "../../core/gfx";
+import { Director, director, js, System, Node } from '../../core';
+import { Camera, CameraProjection } from '../../core/renderer/scene/camera';
+import { EventSystem } from '../event-system/event-system';
+import { RenderMode, UIRuntimeDocumentSettings } from './runtime-document-settings';
+import { UIDocument } from './ui-document';
+
+import { ClearFlagBit } from '../../core/gfx';
 
 export class UISystem extends System {
-    private _camera: Camera;
+    private _camera!: Camera;
 
     public get hudCamera () {
         return this._camera;
@@ -42,7 +41,7 @@ export class UISystem extends System {
     static get instance () {
         return UISystem._instance;
     }
-    
+
     get documents (): ReadonlyArray<UIDocument> {
         return this._documents;
     }
@@ -58,10 +57,10 @@ export class UISystem extends System {
     init () {
         this._camera = director.root!.createCamera();
         this._camera.initialize({
-            name: "UI Hud Camera",
+            name: 'UI Hud Camera',
             node: new Node(),
             projection: CameraProjection.ORTHO,
-            priority: 1073741824
+            priority: 1073741824,
         });
         this._camera.clearFlag = ClearFlagBit.DEPTH_STENCIL;
         this._camera.visibility = 0;

@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,15 +23,22 @@
  THE SOFTWARE.
 */
 
-import { VisualProxy } from "../rendering/visual-proxy";
-import { AdvancedObject } from "./advanced-object";
-import { IDrawingContext } from "./ui-drawing-context";
+import { AdvancedObject } from './advanced-object';
+import { IDrawingContext } from './ui-drawing-context';
+
+export class IRenderData {
+
+}
 
 export class Visual extends AdvancedObject {
-    private _visualProxy = new VisualProxy();
+    private _renderData: IRenderData | null = null;
 
-    get visualProxy () {
-        return this._visualProxy;
+    get renderData () {
+        return this._renderData;
+    }
+
+    set renderData (val: IRenderData | null) {
+        this._renderData = val;
     }
 
     protected onPaint (drawingContext: IDrawingContext) {}

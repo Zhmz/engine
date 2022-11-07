@@ -23,11 +23,11 @@
  THE SOFTWARE.
 */
 
-import { Size } from "../../core";
-import { Enum } from "../../core/value-types";
-import { AdvancedProperty } from "../base/advanced-property";
-import { InvalidateReason } from "../base/ui-element";
-import { UISlot } from "../base/ui-slot";
+import { Size } from '../../core';
+import { Enum } from '../../core/value-types';
+import { AdvancedProperty } from '../base/advanced-property';
+import { InvalidateReason } from '../base/ui-element';
+import { UISlot } from '../base/ui-slot';
 
 export enum HorizontalAlignment {
     LEFT,
@@ -48,7 +48,7 @@ export class ContentSlot extends UISlot {
     public static VerticalAlignmentProperty = AdvancedProperty.register('VerticalAlignment', Enum(VerticalAlignment), ContentSlot, HorizontalAlignment.CENTER);
 
     get horizontalAlignment () {
-        return this.getValue(ContentSlot.HorizontalAlignmentProperty) as HorizontalAlignment; 
+        return this.getValue(ContentSlot.HorizontalAlignmentProperty) as HorizontalAlignment;
     }
 
     set horizontalAlignment (val) {

@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,10 +23,10 @@
  THE SOFTWARE.
 */
 
-import { assert } from "../../core";
-import { ErrorID, UIError } from "./error";
-import { UIElement } from "./ui-element";
-import { UISlot } from "./ui-slot";
+import { assert } from '../../core';
+import { ErrorID, UIError } from './error';
+import { UIElement } from './ui-element';
+import { UISlot } from './ui-slot';
 
 export class ContainerElement extends UIElement {
     get children (): ReadonlyArray<UIElement> {
@@ -83,7 +82,7 @@ export class ContainerElement extends UIElement {
         const child = this._children[index];
         child.setParent(null);
     }
-    
+
     public allowMultipleChild () {
         return false;
     }

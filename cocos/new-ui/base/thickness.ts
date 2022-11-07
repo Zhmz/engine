@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,12 +23,12 @@
  THE SOFTWARE.
 */
 
-import { approx } from "../../core/math/utils";
-import { ValueType } from "../../core/value-types";
+import { approx } from '../../core/math/utils';
+import { ValueType } from '../../core/value-types';
 
 export class Thickness extends ValueType {
-    static ZERO = Object.freeze(new Thickness);
-    
+    static ZERO = Object.freeze(new Thickness());
+
     private _left: number;
     private _right: number;
     private _top: number;
@@ -90,10 +89,9 @@ export class Thickness extends ValueType {
         } else {
             this._left = this._right = this._top = this._bottom = 0;
         }
-        
     }
 
-    public set(other: Thickness): void {
+    public set (other: Thickness): void {
         this._top = other._top;
         this._bottom = other._bottom;
         this._left = other._left;
@@ -104,10 +102,10 @@ export class Thickness extends ValueType {
         return new Thickness(this._left, this._top, this._right, this._bottom);
     }
 
-    public equals(other: Thickness): boolean {
+    public equals (other: Thickness): boolean {
         return approx(this._left, other._left)
                 && approx(this._right, other._right)
                 && approx(this._top, other._top)
-                && approx(this._bottom, other._bottom)
+                && approx(this._bottom, other._bottom);
     }
 }

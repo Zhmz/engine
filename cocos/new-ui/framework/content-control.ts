@@ -23,15 +23,14 @@
  THE SOFTWARE.
 */
 
-import { Rect, Size, Vec2 } from "../../core";
-import { ContainerElement } from "../base/container-element";
-import { UIElement, Visibility } from "../base/ui-element";
-import { UISlot } from "../base/ui-slot";
-import { ContentSlot, HorizontalAlignment, VerticalAlignment } from "./content-slot";
-import { assertIsNonNullable } from "../../core/data/utils/asserts";
+import { Rect, Size, Vec2 } from '../../core';
+import { ContainerElement } from '../base/container-element';
+import { UIElement, Visibility } from '../base/ui-element';
+import { UISlot } from '../base/ui-slot';
+import { ContentSlot, HorizontalAlignment, VerticalAlignment } from './content-slot';
+import { assertIsNonNullable } from '../../core/data/utils/asserts';
 
 export class ContentControl extends ContainerElement {
-
     get content (): UIElement | null {
         return this.childCount > 0 ? this._children[0] : null;
     }
@@ -91,21 +90,25 @@ export class ContentControl extends ContainerElement {
                 childRect.center = new Vec2(0, 0);
 
                 switch (contentSlot.horizontalAlignment) {
-                    case HorizontalAlignment.LEFT:
-                        childRect.x = -finalRect.width / 2;
-                        break;
-                    case HorizontalAlignment.RIGHT:
-                        childRect.x = finalRect.width / 2 - childRect.width;
-                        break;
+                case HorizontalAlignment.LEFT:
+                    childRect.x = -finalRect.width / 2;
+                    break;
+                case HorizontalAlignment.RIGHT:
+                    childRect.x = finalRect.width / 2 - childRect.width;
+                    break;
+                default:
+                    break;
                 }
 
                 switch (contentSlot.verticalAlignment) {
-                    case VerticalAlignment.TOP:
-                        childRect.y = finalRect.height / 2  - childRect.height;
-                        break;
-                    case VerticalAlignment.BOTTOM:
-                        childRect.y = -finalRect.height / 2;
-                        break;
+                case VerticalAlignment.TOP:
+                    childRect.y = finalRect.height / 2  - childRect.height;
+                    break;
+                case VerticalAlignment.BOTTOM:
+                    childRect.y = -finalRect.height / 2;
+                    break;
+                default:
+                    break;
                 }
                 content.arrange(childRect);
             }

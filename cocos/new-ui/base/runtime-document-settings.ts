@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,9 +23,9 @@
  THE SOFTWARE.
 */
 
-import { CameraComponent, Mat4, Rect, Size, Vec2 } from "../../core";
-import { UIDocumentSettings } from "./ui-document-settings";
-import { UISystem } from "./ui-system";
+import { CameraComponent, Mat4, Rect, Size, Vec2 } from '../../core';
+import { UIDocumentSettings } from './ui-document-settings';
+import { UISystem } from './ui-system';
 
 export enum RenderMode {
     OVERLAY,
@@ -35,7 +34,6 @@ export enum RenderMode {
 }
 
 export class UIRuntimeDocumentSettings extends UIDocumentSettings {
-
     private _camera: CameraComponent | null = null;
     private _planeDistance = 1000;
 
@@ -80,28 +78,32 @@ export class UIRuntimeDocumentSettings extends UIDocumentSettings {
     }
 
     get lowLevelRenderCamera () {
+        // eslint-disable-next-line default-case
         switch (this._renderMode) {
-            case RenderMode.OVERLAY:
-                return UISystem.instance.hudCamera;
-            case RenderMode.CAMERA:
-                return this._camera?.camera;
-            case RenderMode.WORLD_SPACE:
-                return null;
+        case RenderMode.OVERLAY:
+            return UISystem.instance.hudCamera;
+        case RenderMode.CAMERA:
+            return this._camera?.camera;
+        case RenderMode.WORLD_SPACE:
+            return null;
         }
     }
 
     public update () {
+        // eslint-disable-next-line default-case
         switch (this._renderMode) {
-            case RenderMode.OVERLAY:
-                const hudCamera = UISystem.instance.hudCamera;
-                this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(hudCamera.width, hudCamera.height)));
-                this._document.setOrigin(hudCamera.node.worldMatrix);
-                break;
-            case RenderMode.CAMERA:
-                const camera = this._camera?.camera;
-            case RenderMode.WORLD_SPACE:
-                this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(this._width, this._height)));
-                this._document.setOrigin(Mat4.IDENTITY);
+        case RenderMode.OVERLAY:
+            const hudCamera = UISystem.instance.hudCamera;
+            this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(hudCamera.width, hudCamera.height)));
+            this._document.setOrigin(hudCamera.node.worldMatrix);
+            break;
+        case RenderMode.CAMERA:
+            const camera = this._camera?.camera;
+            break;
+        case RenderMode.WORLD_SPACE:
+            this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(this._width, this._height)));
+            this._document.setOrigin(Mat4.IDENTITY);
+            break;
         }
     }
 

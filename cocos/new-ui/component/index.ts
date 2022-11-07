@@ -23,4 +23,4 @@
  THE SOFTWARE.
 */
 
-export { UIButton } from "./ui-button";
+export { UIButton } from './ui-button';

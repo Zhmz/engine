@@ -23,8 +23,7 @@
  THE SOFTWARE.
 */
 
-import { Vec3 } from "../../core/math";
-
+import { Vec3 } from '../../core/math';
 
 export class RaycastResult {
     private _node:Node;
@@ -35,9 +34,4 @@ export class RaycastResult {
     private _sortingOrder:number;
     private _worldPosition:Vec3;
     private _screenPosition:Vec3;
-
 }
-
-
-
-

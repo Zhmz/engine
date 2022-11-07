@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,14 +23,14 @@
  THE SOFTWARE.
 */
 
-import { Mat4, Rect } from "../../core/math";
-import { EventSubSystem } from "../subsystem/event-sub-system";
-import { UILayoutSubsystem } from "../subsystem/ui-layout-subsystem";
-import { UIRenderSubsystem } from "../subsystem/ui-render-subsystem";
-import { UIRuntimeDocumentSettings } from "./runtime-document-settings";
-import { UIDocumentSettings } from "./ui-document-settings";
-import { InvalidateReason, UIElement } from "./ui-element";
-import { UIWindow } from "./ui-window";
+import { Mat4, Rect } from '../../core/math';
+import { EventSubSystem } from '../subsystem/event-sub-system';
+import { UILayoutSubsystem } from '../subsystem/ui-layout-subsystem';
+import { UIRenderSubsystem } from '../subsystem/ui-render-subsystem';
+import { UIRuntimeDocumentSettings } from './runtime-document-settings';
+import { UIDocumentSettings } from './ui-document-settings';
+import { InvalidateReason, UIElement } from './ui-element';
+import { UIWindow } from './ui-window';
 
 export class UIDocument {
     get viewport (): Readonly<Rect> {
@@ -54,26 +53,25 @@ export class UIDocument {
         return this._window;
     }
 
-    get eventSubSystem() {
+    get eventSubSystem () {
         return this._eventSubSystem;
     }
 
-    get renderSubSystem() {
+    get renderSubSystem () {
         return this._renderSubsystem;
     }
 
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
-        if (invalidateReason & InvalidateReason.LAYOUT) {
-            this._layoutSubsystem.invalidate(element, invalidateReason);
-        }
-        if (invalidateReason & InvalidateReason.PAINT) {
-            this._renderSubsystem.invalidate(element, invalidateReason);
-        }
+        this._layoutSubsystem.invalidate(element, invalidateReason);
+        this._renderSubsystem.invalidate(element, invalidateReason);
     }
 
     removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
         if (invalidateReason & InvalidateReason.LAYOUT) {
             this._layoutSubsystem.removeInvalidation(element, invalidateReason);
+        }
+        if (invalidateReason & InvalidateReason.PAINT) {
+            this._renderSubsystem.removeInvalidation(element, invalidateReason);
         }
     }
 
@@ -103,6 +101,14 @@ export class UIDocument {
         }
     }
 
+    onElementRemoved (element: UIElement) {
+        this._renderSubsystem.onElementRemoved(element);
+    }
+
+    onElementAdded (element: UIElement) {
+        this._renderSubsystem.onElementAdded(element);
+    }
+
     private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
     private _origin = new Mat4();
     private _viewport = new Rect();
@@ -110,4 +116,4 @@ export class UIDocument {
     private _layoutSubsystem = new UILayoutSubsystem(this);
     private _eventSubSystem = new EventSubSystem(this);
     private _renderSubsystem = new UIRenderSubsystem(this);
-} 
+}

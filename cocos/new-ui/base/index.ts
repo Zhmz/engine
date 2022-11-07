@@ -23,17 +23,17 @@
  THE SOFTWARE.
 */
 
-export { RuntimeDrawingContext } from "../rendering/runtime-drawing-context";
-export { Anchors } from "./anchors";
-export { ContainerElement } from "./container-element";
-export { UIRuntimeDocumentSettings } from "./runtime-document-settings";
-export { Thickness } from "./thickness";
-export { UIBehavior } from "./ui-behavior";
-export { UIComponent } from "./ui-component";
-export { UIDocument } from "./ui-document";
-export { UIDocumentSettings } from "./ui-document-settings";
-export { UIElement } from "./ui-element";
-export { UIEvent } from "./ui-event";
-export { UISlot } from "./ui-slot";
-export { UISystem } from "./ui-system";
-export { UIWindow } from "./ui-window";
+export { RuntimeDrawingContext } from '../rendering/runtime-drawing-context';
+export { Anchors } from './anchors';
+export { ContainerElement } from './container-element';
+export { UIRuntimeDocumentSettings } from './runtime-document-settings';
+export { Thickness } from './thickness';
+export { UIBehavior } from './ui-behavior';
+export { UIComponent } from './ui-component';
+export { UIDocument } from './ui-document';
+export { UIDocumentSettings } from './ui-document-settings';
+export { UIElement } from './ui-element';
+export { UIEvent } from './ui-event';
+export { UISlot } from './ui-slot';
+export { UISystem } from './ui-system';
+export { UIWindow } from './ui-window';

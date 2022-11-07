@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,8 +23,8 @@
  THE SOFTWARE.
 */
 
-import { UIDocument } from "./ui-document";
-import { InvalidateReason, UIElement } from "./ui-element";
+import { UIDocument } from './ui-document';
+import { InvalidateReason, UIElement } from './ui-element';
 
 export abstract class UISubSystem {
     protected _document: UIDocument;
@@ -37,6 +36,8 @@ export abstract class UISubSystem {
         return this._document;
     }
 
+    abstract onElementAdded (element: UIElement);
+    abstract onElementRemoved (element: UIElement);
     abstract invalidate (element: UIElement, invalidateReason: InvalidateReason);
     abstract removeInvalidation (element: UIElement, invalidateReason: InvalidateReason);
     abstract update ();

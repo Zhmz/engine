@@ -23,15 +23,14 @@
  THE SOFTWARE.
 */
 
-import { Ray } from "../../../core/geometry";
-import { Event } from "../../../input/types";
-import { FramePressState, InputMouseButton, MouseButtonEvent } from "./mouse-button-event";
-
+import { Ray } from '../../../core/geometry';
+import { Event } from '../../../input/types';
+import { FramePressState, InputMouseButton, MouseButtonEvent } from './mouse-button-event';
 
 export class MouseState {
     private _trackedMouseEvents: Array<MouseButtonEvent> = [];
 
-    public getButtonEventData(mouseButton: InputMouseButton) {
+    public getButtonEventData (mouseButton: InputMouseButton) {
         let tracked: MouseButtonEvent | null = null;
         for (let i = 0; i < this._trackedMouseEvents.length; i++) {
             if (this._trackedMouseEvents[i].mouseButton === mouseButton) {
@@ -47,13 +46,10 @@ export class MouseState {
         return tracked;
     }
 
-    public setButtonEventData(mouseButton: InputMouseButton, pressState: FramePressState, event: Event, ray: Ray) {
+    public setButtonEventData (mouseButton: InputMouseButton, pressState: FramePressState, event: Event, ray: Ray) {
         const toModify = this.getButtonEventData(mouseButton);
         toModify.pressState = pressState;
         toModify.event = event;
         toModify.ray = ray;
     }
 }
-
-
-

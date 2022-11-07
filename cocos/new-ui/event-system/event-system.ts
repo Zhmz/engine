@@ -44,19 +44,18 @@ export class EventSystem {
 
     private _mouseState: MouseState = new MouseState();
 
-
-    constructor() {
+    constructor () {
 
     }
 
     // event data
 
     // raycast all
-    public raycastAll() {
+    public raycastAll () {
 
     }
 
-    public tick() {
+    public tick () {
         const eventMouseList = pointerInputModule.eventMouseList;
         const ray = pointerInputModule.ray!;
 
@@ -64,34 +63,31 @@ export class EventSystem {
             const eventMouse = eventMouseList[i];
             this.handleMouseEvent(eventMouse, ray);
         }
-
-
-
     }
 
-    protected emitEvent(event: Event) {
+    protected emitEvent (event: Event) {
 
     }
 
     //raycast comparer
-    private static raycastComparer(left: RaycastResult, right: RaycastResult) {
+    private static raycastComparer (left: RaycastResult, right: RaycastResult) {
 
     }
 
-    public registerInputModule(inputModule: BaseInputModule) {
+    public registerInputModule (inputModule: BaseInputModule) {
         this._inputModuleList.push(inputModule);
         this._inputModuleList.sort((a, b) => b.priority - a.priority);
     }
 
-    public handleTouchEvent(event: Event, ray: Ray) {
+    public handleTouchEvent (event: Event, ray: Ray) {
 
     }
 
-    public dispatchTouchEvent() {
+    public dispatchTouchEvent () {
 
     }
 
-    public handleMouseEvent(event: Event, ray: Ray) {
+    public handleMouseEvent (event: Event, ray: Ray) {
         const eventMouse = event as EventMouse;
         const button = eventMouse.getButton();
         let curMouseButtonEvent: MouseButtonEvent | null = null;
@@ -122,8 +118,8 @@ export class EventSystem {
         this.dispatchMouseEvent(curMouseButtonEvent!);
     }
 
-    public dispatchMouseEvent(mouseButtonEvent: MouseButtonEvent) {
-        if(!mouseButtonEvent) {
+    public dispatchMouseEvent (mouseButtonEvent: MouseButtonEvent) {
+        if (!mouseButtonEvent) {
             return;
         }
         //dispatch to the relevant document
@@ -137,5 +133,4 @@ export class EventSystem {
             }
         }
     }
-
 }

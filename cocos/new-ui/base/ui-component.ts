@@ -29,11 +29,11 @@ import { UIElement } from './ui-element';
 export abstract class UIComponent extends Component {
     protected abstract _uiElement: UIElement;
 
-    get uiElement() {
+    get uiElement () {
         return this._uiElement;
     }
 
-    buildUITree(context) {
+    buildUITree (context) {
         context.parent.addChild(this._uiElement);
     }
 }

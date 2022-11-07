@@ -23,10 +23,10 @@
  THE SOFTWARE.
 */
 
-import { UIEvent } from "../../base/ui-event";
+import { UIEvent } from '../../base/ui-event';
 
 export class PointerUpEvent extends UIEvent {
-    
+
 }
 
 export class PointerDownEvent extends UIEvent {
@@ -34,7 +34,7 @@ export class PointerDownEvent extends UIEvent {
 }
 
 export class PointerClickEvent extends UIEvent {
-    
+
 }
 
 export class PointerMoveEvent extends UIEvent {
@@ -52,10 +52,3 @@ export class PointerLeaveEvent extends UIEvent {
 export class ScrollEvent extends UIEvent {
 
 }
-
-
-
-
-
-
-

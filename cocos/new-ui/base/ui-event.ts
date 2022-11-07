@@ -23,7 +23,7 @@
  THE SOFTWARE.
 */
 
-import { UIElement } from "./ui-element";
+import { UIElement } from './ui-element';
 
 export type EventType<T extends UIEvent> = new (...arg: any[]) => T;
 
@@ -34,7 +34,6 @@ export interface IUIEventCallback<T extends UIEvent> {
 }
 
 export class UIEvent {
-
     protected _target: UIElement;
 
     constructor (target: UIElement) {
@@ -45,17 +44,3 @@ export class UIEvent {
         return this._target;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

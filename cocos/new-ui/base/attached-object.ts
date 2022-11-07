@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,8 +23,8 @@
  THE SOFTWARE.
 */
 
-import { AdvancedObject } from "./advanced-object";
-import { AdvancedProperty } from "./advanced-property";
+import { AdvancedObject } from './advanced-object';
+import { AdvancedProperty } from './advanced-property';
 
 export class AttachedObject {
     protected _owner: AdvancedObject;
@@ -41,7 +40,7 @@ export class AttachedObject {
     getValue (property: AdvancedProperty): any {
         return this._owner.getValue(property);
     }
-    
+
     setValue (property: AdvancedProperty, value: any) {
         this._owner.setValue(property, value);
     }

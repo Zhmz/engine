@@ -23,17 +23,16 @@
  THE SOFTWARE.
 */
 
-import { Ray } from "../../core/geometry";
-import { InputEventType } from "../../input/types/event-enum";
-import { InvalidateReason, UIElement } from "../base/ui-element";
-import { UISubSystem } from "../base/ui-subsystem";
-import { UIEvent } from "../base/ui-event";
-import { PointerUpEvent, PointerDownEvent, PointerClickEvent } from "../event-system/event-data/pointer-event";
-import { FramePressState, MouseButtonEvent } from "../event-system/event-data/mouse-button-event";
-
+import { Ray } from '../../core/geometry';
+import { InputEventType } from '../../input/types/event-enum';
+import { InvalidateReason, UIElement } from '../base/ui-element';
+import { UISubSystem } from '../base/ui-subsystem';
+import { UIEvent } from '../base/ui-event';
+import { PointerUpEvent, PointerDownEvent, PointerClickEvent } from '../event-system/event-data/pointer-event';
+import { FramePressState, MouseButtonEvent } from '../event-system/event-data/mouse-button-event';
 
 export class EventSubSystem extends UISubSystem {
-    get window() {
+    get window () {
         return this._document.window;
     }
 
@@ -42,14 +41,18 @@ export class EventSubSystem extends UISubSystem {
     }
 
     removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
-        
-    }
-
-    update() {
 
     }
 
-    protected getHitUIElement(ray: Ray): UIElement | null {
+    onElementAdded (element: UIElement) {}
+
+    onElementRemoved (element: UIElement) {}
+
+    update () {
+
+    }
+
+    protected getHitUIElement (ray: Ray): UIElement | null {
         const children: ReadonlyArray<UIElement> = this.window.children;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
@@ -70,8 +73,7 @@ export class EventSubSystem extends UISubSystem {
     //     // handle various touch events
     // }
 
-
-    public dispatchMouseEvent(mouseButtonEvent: MouseButtonEvent): boolean {
+    public dispatchMouseEvent (mouseButtonEvent: MouseButtonEvent): boolean {
         if (!mouseButtonEvent) {
             return false;
         }
@@ -83,20 +85,19 @@ export class EventSubSystem extends UISubSystem {
         }
 
         let uiEvent: UIEvent | null = null;
+        // eslint-disable-next-line default-case
         switch (mouseButtonEvent.pressState) {
-            case FramePressState.PRESSED:
-                uiEvent = new PointerDownEvent(element);
-                break;
-            case FramePressState.RELEASED:
-                uiEvent = new PointerUpEvent(element);
-                break;
-            case FramePressState.PRESSED_AND_RELEASED:
-                uiEvent = new PointerClickEvent(element);
-                break;
+        case FramePressState.PRESSED:
+            uiEvent = new PointerDownEvent(element);
+            break;
+        case FramePressState.RELEASED:
+            uiEvent = new PointerUpEvent(element);
+            break;
+        case FramePressState.PRESSED_AND_RELEASED:
+            uiEvent = new PointerClickEvent(element);
+            break;
         }
         element.dispatchEvent(uiEvent!);
         return true;
     }
-
 }
-
