@@ -72,6 +72,9 @@ export class UIRenderSubsystem extends UISubSystem {
         // vb 变化，hierarchy change
         this._context.paint();
 
+        // mergeBatch
+        this._context.mergeBatches();
+
         // insert data
         const renderModel = this._context.getContextModel();
         switch (this.settings.renderMode) {

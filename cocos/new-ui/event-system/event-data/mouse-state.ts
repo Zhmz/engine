@@ -23,39 +23,37 @@
  THE SOFTWARE.
 */
 
-import { UIEvent } from "../../base/ui-event";
+import { Ray } from "../../../core/geometry";
+import { Event } from "../../../input/types";
+import { FramePressState, InputMouseButton, MouseButtonEvent } from "./mouse-button-event";
 
-export class PointerUpEvent extends UIEvent {
-    
+
+export class MouseState {
+    private _trackedMouseEvents: Array<MouseButtonEvent> = [];
+
+    public getButtonEventData(mouseButton: InputMouseButton) {
+        let tracked: MouseButtonEvent | null = null;
+        for (let i = 0; i < this._trackedMouseEvents.length; i++) {
+            if (this._trackedMouseEvents[i].mouseButton === mouseButton) {
+                tracked = this._trackedMouseEvents[i];
+                break;
+            }
+        }
+
+        if (!tracked) {
+            tracked = new MouseButtonEvent(mouseButton);
+            this._trackedMouseEvents.push(tracked);
+        }
+        return tracked;
+    }
+
+    public setButtonEventData(mouseButton: InputMouseButton, pressState: FramePressState, event: Event, ray: Ray) {
+        const toModify = this.getButtonEventData(mouseButton);
+        toModify.pressState = pressState;
+        toModify.event = event;
+        toModify.ray = ray;
+    }
 }
-
-export class PointerDownEvent extends UIEvent {
-
-}
-
-export class PointerClickEvent extends UIEvent {
-    
-}
-
-export class PointerMoveEvent extends UIEvent {
-
-}
-
-export class PointerEnterEvent extends UIEvent {
-
-}
-
-export class PointerLeaveEvent extends UIEvent {
-
-}
-
-export class ScrollEvent extends UIEvent {
-
-}
-
-
-
-
 
 
 

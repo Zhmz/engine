@@ -137,13 +137,8 @@ export class RuntimeDrawingContext extends IDrawingContext {
 
     }
 
-    // 绘制提交全部
-    // update 调用
     public paint () {
-        this._subModelIndex = 0; // or reset function
-        this._contextModel.enabled = false;
-        this.buildRenderDataRecursively(this._rootProxy);
-        this._fillModel();
+        
     }
 
     private buildRenderDataRecursively (proxy: VisualProxy) {
@@ -166,6 +161,13 @@ export class RuntimeDrawingContext extends IDrawingContext {
 
     public getContextModel () {
         return this._contextModel; 
+    }
+
+    public mergeBatches () {
+        this._subModelIndex = 0; // or reset function
+        this._contextModel.enabled = false;
+        this.buildRenderDataRecursively(this._rootProxy);
+        this._fillModel();
     }
 
     private _fillModel (render?: VisualRenderProxy) {
