@@ -34,8 +34,8 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UIBehavior, UIBehaviorType } from './ui-behavior';
 import { UIDocument } from './ui-document';
-import { approx, Mat4, Rect, Size } from '../../core';
-import { Ray } from '../../core/geometry';
+import { approx, IVec3Like, Mat4, Rect, Size } from '../../core';
+import { Plane, ray, Ray } from '../../core/geometry';
 import { ContainerElement } from './container-element';
 import { Visual } from './visual';
 import { UISlot } from './ui-slot';
@@ -61,6 +61,7 @@ export enum InvalidateReason {
     PAINT = 1 << 5,
     LAYOUT = InvalidateReason.MEASURE | InvalidateReason.ARRANGE,
 }
+
 export class UIElement extends Visual {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement, 1);

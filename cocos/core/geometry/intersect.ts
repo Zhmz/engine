@@ -1407,6 +1407,34 @@ const capsuleWithCapsule = (function () {
 
 /**
  * @en
+ * ray and plane intersect detect.
+ * @zh
+ * 计算射线与平面相交点。
+ * @param intersectPoint @zh 相交点 @en intersected point
+ * @param ray @zh 参数射线 @en the ray parameter
+ * @param plane @zh 参数平面 @en the plane parameter
+ */
+export function raycastPlane<Out extends IVec3Like> (intersectPoint: Out, ray: Ray, plane: Plane) {
+    const pointInPlane = new Vec3();
+    Vec3.multiplyScalar(pointInPlane, plane.n, plane.d);
+    const rayOriToPointInPlane = new Vec3();
+    Vec3.subtract(rayOriToPointInPlane, pointInPlane, ray.o);
+    const dotN = Vec3.dot(ray.d, plane.n);
+    if (dotN === 0) {
+        return;
+    }
+    const scaleFactor: number = Vec3.dot(rayOriToPointInPlane, plane.n) / dotN;
+    if (scaleFactor <= 0) {
+        return;
+    }
+
+    const scaleRayDirection = new Vec3();
+    Vec3.multiplyScalar(scaleRayDirection, ray.d, scaleFactor);
+    Vec3.add(intersectPoint, ray.o, scaleRayDirection);
+}
+
+/**
+ * @en
  * Algorithm of intersect detect for basic geometry.
  * @zh
  * 基础几何的相交性检测算法。
