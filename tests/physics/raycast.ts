@@ -67,7 +67,7 @@ export default function (parent: Node) {
     expect(hits.length).toBe(1);
 
     // detect 2 & 4, except 1
-    isHit = physics.PhysicsSystem.instance.raycast(ray_t, (1 << 1) | (1 << 0));
+    isHit = physics.PhysicsSystem.instance.raycast(ray_t, (1 << 1) | (1 << 2));
     expect(isHit).toBe(true);
     expect(hits.length).toBe(2);
 

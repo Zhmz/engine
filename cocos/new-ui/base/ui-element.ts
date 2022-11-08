@@ -34,8 +34,8 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UIBehavior, UIBehaviorType } from './ui-behavior';
 import { UIDocument } from './ui-document';
-import { approx, Mat4, Rect, Size } from '../../core';
-import { Ray } from '../../core/geometry';
+import { approx, IVec3Like, Mat4, Rect, Size } from '../../core';
+import { Plane, ray, Ray } from '../../core/geometry';
 import { ContainerElement } from './container-element';
 import { Visual } from './visual';
 import { UISlot } from './ui-slot';
@@ -61,6 +61,12 @@ export enum InvalidateReason {
     PAINT = 1 << 5,
     LAYOUT = InvalidateReason.MEASURE | InvalidateReason.ARRANGE,
 }
+
+const _vec2a = new Vec2();
+const _vec2b = new Vec2();
+const _vec3a = new Vec3();
+const _mat4_temp = new Mat4();
+
 export class UIElement extends Visual {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement, 1);
@@ -507,8 +513,29 @@ export class UIElement extends Visual {
 
     //#region event
     public hitTest (ray: Ray): boolean {
+
+
         // temporarily return true
         return true;
+    }
+
+    public static raycastPlane<Out extends IVec3Like>(intersectPoint:Out,ray:Ray, plane:Plane){
+        const pointInPlane = new Vec3();//原点到平面的垂线
+        Vec3.multiplyScalar(pointInPlane, plane.n, plane.d);
+        const rayOriToPointInPlane = new Vec3();//射线原点到平面点向量
+        Vec3.subtract(rayOriToPointInPlane, pointInPlane, ray.o)
+        const dotN = Vec3.dot(ray.d, plane.n);
+        if(dotN === 0) {
+            return;
+        }
+        const scaleFactor: number = Vec3.dot(rayOriToPointInPlane, plane.n) / dotN;
+        if (scaleFactor <= 0) {
+            return;
+        }
+
+        const scaleRayDirection = new Vec3();
+        Vec3.multiplyScalar(scaleRayDirection, ray.d, scaleFactor);
+        Vec3.add(intersectPoint, ray.o, scaleRayDirection);
     }
 
     public addEventListener<TEvent extends UIEvent> (type: EventType<TEvent>, fn: (event: TEvent) => void, target?: any) {
