@@ -36,22 +36,6 @@ export class EventSubSystem extends UISubSystem {
         return this._document.window;
     }
 
-    invalidate (element: UIElement, invalidateReason: InvalidateReason) {
-
-    }
-
-    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
-
-    }
-
-    onElementMounted (element: UIElement) {}
-
-    onElementUnmounted (element: UIElement) {}
-
-    update () {
-
-    }
-
     protected getHitUIElement (ray: Ray): UIElement | null {
         const children: ReadonlyArray<UIElement> = this.window.children;
         for (let i = 0; i < children.length; i++) {

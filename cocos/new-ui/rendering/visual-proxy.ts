@@ -27,7 +27,7 @@ import { IRenderData, Visual } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
 export class VisualProxy extends IRenderData {
-    private _visual: Visual;
+    private _visual!: Visual;
     private _parent: VisualProxy | null = null;
     private _childrenHead: VisualProxy | null = null;
     private _nextSibling: VisualProxy | null = null;
@@ -35,9 +35,14 @@ export class VisualProxy extends IRenderData {
     private _isVisible = false;
     private _opacity = 1;
 
-    constructor (visual: Visual) {
+    static allocate (visual: Visual) {
+        const visualProxy = new VisualProxy();
+        visualProxy._visual = visual;
+        return visualProxy;
+    }
+
+    private constructor () {
         super();
-        this._visual = visual;
     }
 
     public get visual () {

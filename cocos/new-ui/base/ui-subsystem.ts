@@ -26,7 +26,7 @@
 import { UIDocument } from './ui-document';
 import { InvalidateReason, UIElement } from './ui-element';
 
-export abstract class UISubSystem {
+export class UISubSystem {
     protected _document: UIDocument;
     constructor (document: UIDocument) {
         this._document = document;
@@ -36,9 +36,9 @@ export abstract class UISubSystem {
         return this._document;
     }
 
-    abstract onElementMounted (element: UIElement);
-    abstract onElementUnmounted (element: UIElement);
-    abstract invalidate (element: UIElement, invalidateReason: InvalidateReason);
-    abstract removeInvalidation (element: UIElement, invalidateReason: InvalidateReason);
-    abstract update ();
+    onElementMounted (element: UIElement) {};
+    onElementUnmounted (element: UIElement) {};
+    invalidate (element: UIElement, invalidateReason: InvalidateReason) {};
+    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {};
+    update () {};
 }

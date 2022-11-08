@@ -50,10 +50,6 @@ export class UILayoutSubsystem extends UISubSystem {
         }
     }
 
-    onElementMounted (element: UIElement) {}
-
-    onElementUnmounted (element: UIElement) {}
-
     update () {
         let iteration = 0;
         console.time('Layout');

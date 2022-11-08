@@ -52,19 +52,19 @@ export class UIRenderSubsystem extends UISubSystem {
     }
 
     onElementMounted (element: UIElement) {
-        this.connect(element, null);
+        this.connectSubtree(element, null);
     }
 
-    connect (element: UIElement, parent: VisualProxy | null) {
+    connectSubtree (element: UIElement, parent: VisualProxy | null) {
         if (!element.renderData) {
-            element.renderData = new VisualProxy(element);
+            element.renderData = VisualProxy.allocate(element);
         }
         if (parent) {
             parent.addChild(element.renderData as VisualProxy);
         }
         if (element instanceof ContainerElement) {
             for (let i = 0; i < element.childCount; i++) {
-                this.connect(element.children[i], element.renderData as VisualProxy);
+                this.connectSubtree(element.children[i], element.renderData as VisualProxy);
             }
         }
     }
@@ -89,10 +89,6 @@ export class UIRenderSubsystem extends UISubSystem {
         if (invalidateReason & InvalidateReason.HIERARCHY) {
             this._dirtyHierarchyMap.add(element);
         }
-    }
-
-    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
-
     }
 
     update () {
