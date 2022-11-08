@@ -27,13 +27,13 @@ import { RenderMode, UIRuntimeDocumentSettings } from '../base/runtime-document-
 import { UIDocument } from '../base/ui-document';
 import { InvalidateReason, UIElement } from '../base/ui-element';
 import { UISubSystem } from '../base/ui-subsystem';
-import { Visual } from '../base/visual';
 import { RuntimeDrawingContext } from '../rendering/runtime-drawing-context';
 import { UIBatchBuilder } from '../rendering/ui-batch-builder';
 import { VisualProxy } from '../rendering/visual-proxy';
 
 export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set<UIElement>();
+    private _dirtyHierarchyMap = new Set<UIElement>();
     private _drawingContext: RuntimeDrawingContext;
     private _batchBuilder: UIBatchBuilder;
 
@@ -51,26 +51,43 @@ export class UIRenderSubsystem extends UISubSystem {
         this._batchBuilder = new UIBatchBuilder(document.window.renderData as VisualProxy);
     }
 
-    onElementAdded (element: UIElement) {
-        element.renderData = new VisualProxy();
+    onElementMounted (element: UIElement) {
+        this.connect(element, null);
     }
 
-    onElementRemoved (element: UIElement) {
+    connect (element: UIElement, parent: VisualProxy | null) {
+        if (!element.renderData) {
+            element.renderData = new VisualProxy(element);
+        }
+        if (parent) {
+            parent.addChild(element.renderData as VisualProxy);
+        }
+        if (element instanceof ContainerElement) {
+            for (let i = 0; i < element.childCount; i++) {
+                this.connect(element.children[i], element.renderData as VisualProxy);
+            }
+        }
+    }
+
+    onElementUnmounted (element: UIElement) {
+        this.clearRenderData(element);
+    }
+
+    clearRenderData (element: UIElement) {
         element.renderData = null;
+        if (element instanceof ContainerElement) {
+            for (let i = 0; i < element.childCount; i++) {
+                this.clearRenderData(element.children[i]);
+            }
+        }
     }
 
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
         if (invalidateReason & InvalidateReason.PAINT) {
-            if (!this._dirtyElementMap.has(element)) {
-                this._dirtyElementMap.add(element);
-            }
+            this._dirtyElementMap.add(element);
         }
         if (invalidateReason & InvalidateReason.HIERARCHY) {
-            const children = (element as ContainerElement).children;
-            const visualProxy = element.renderData as VisualProxy;
-
-            for (let i = 0; i < children.length; i++) {
-            }
+            this._dirtyHierarchyMap.add(element);
         }
     }
 
@@ -79,6 +96,15 @@ export class UIRenderSubsystem extends UISubSystem {
     }
 
     update () {
+        for (const element of this._dirtyHierarchyMap) {
+            const children = (element as ContainerElement).children;
+            const visualProxy = element.renderData as VisualProxy;
+            visualProxy.clearChildren();
+            for (let i = 0; i < children.length; i++) {
+                visualProxy.addChild(children[i].renderData as VisualProxy);
+            }
+        }
+
         for (const element of this._dirtyElementMap) {
             this._drawingContext.paint(element);
         }

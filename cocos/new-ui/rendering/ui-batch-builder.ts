@@ -24,11 +24,13 @@ export class UIBatchBuilder {
     private _currTexture: Texture | null = null;
     private _currSampler: Sampler | null = null;
     private _currHash = 0;
+    protected _floatsPerVertex: number;
 
     constructor (rootVisualProxy: VisualProxy) {
         this._rootProxy = rootVisualProxy;
         this._contextModel = legacyCC.director.root.createModel(scene.Model);
         this._bufferPool = new BufferPool(vfmtPosColor4B);
+        this._floatsPerVertex = getAttributeStride(vfmtPosColor4B) >> 2;
         this._currVerticesData = new Float32Array(65535 * this._floatsPerVertex); // Max length
         this._currIndicesData = new Uint16Array(65535 * UIBatchBuilder.IB_SCALE);
     }
@@ -48,9 +50,6 @@ export class UIBatchBuilder {
                 this._mergeBatch(render);
             }
         }
-        for (let i = 0; i < proxy.children.length; i++) {
-            this.buildBatchRecursively(proxy.children[i]);
-        }
     }
 
     public getContextModel () {
@@ -60,7 +59,7 @@ export class UIBatchBuilder {
     public buildBatches () {
         this._subModelIndex = 0; // or reset function
         this._contextModel.enabled = false;
-        this.buildBatchRecursively(this._rootProxy);
+        this._rootProxy.walkSubTree(this.buildBatchRecursively.bind(this));
         this._fillModel();
     }
 

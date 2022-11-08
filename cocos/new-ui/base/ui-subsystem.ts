@@ -36,8 +36,8 @@ export abstract class UISubSystem {
         return this._document;
     }
 
-    abstract onElementAdded (element: UIElement);
-    abstract onElementRemoved (element: UIElement);
+    abstract onElementMounted (element: UIElement);
+    abstract onElementUnmounted (element: UIElement);
     abstract invalidate (element: UIElement, invalidateReason: InvalidateReason);
     abstract removeInvalidation (element: UIElement, invalidateReason: InvalidateReason);
     abstract update ();

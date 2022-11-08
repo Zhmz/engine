@@ -101,12 +101,12 @@ export class UIDocument {
         }
     }
 
-    onElementRemoved (element: UIElement) {
-        this._renderSubsystem.onElementRemoved(element);
+    onElementMounted (element: UIElement) {
+        this._renderSubsystem.onElementMounted(element);
     }
 
-    onElementAdded (element: UIElement) {
-        this._renderSubsystem.onElementAdded(element);
+    onElementUnmounted (element: UIElement) {
+        this._renderSubsystem.onElementUnmounted(element);
     }
 
     private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);

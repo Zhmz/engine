@@ -23,20 +23,41 @@
  THE SOFTWARE.
 */
 import { Mat4 } from '../../core/math';
-import { IRenderData } from '../base/visual';
+import { IRenderData, Visual } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
 export class VisualProxy extends IRenderData {
+    private _visual: Visual;
     private _parent: VisualProxy | null = null;
-    private _children: VisualProxy[] = [];
+    private _childrenHead: VisualProxy | null = null;
+    private _nextSibling: VisualProxy | null = null;
     private _worldMatrix: Mat4 = new Mat4();
+    private _isVisible = false;
+    private _opacity = 1;
 
-    public get parent () {
-        return this._parent;
+    constructor (visual: Visual) {
+        super();
+        this._visual = visual;
     }
 
-    public get children () {
-        return this._children;
+    public get visual () {
+        return this._visual;
+    }
+
+    public get isVisible () {
+        return this._isVisible;
+    }
+
+    public set isVisible (val) {
+        this._isVisible = val;
+    }
+
+    public get opacity () {
+        return this._opacity;
+    }
+
+    public set opacity (val) {
+        this._opacity = val;
     }
 
     public get worldMatrix () {
@@ -47,14 +68,68 @@ export class VisualProxy extends IRenderData {
         this._worldMatrix.set(val);
     }
 
+    public get parent () {
+        return this._parent;
+    }
+
+    public get children () {
+        return this._childrenHead;
+    }
+
     public addChild (child: VisualProxy) {
-        this._children.push(child);
+        if (child._parent) {
+            child._parent.removeChild(child);
+        }
+
+        if (!this._childrenHead) {
+            this._childrenHead = child;
+        } else {
+            let cur = this._childrenHead;
+            while (cur) {
+                if (cur._nextSibling === null) {
+                    cur._nextSibling = child;
+                    break;
+                }
+                cur = cur._nextSibling;
+            }
+        }
         child._parent = this;
     }
 
-    public removeChildAt (index: number) {
-        this._children[index]._parent = null;
-        this._children.splice(index, 1);
+    public removeChild (child: VisualProxy) {
+        let cur = this._childrenHead;
+        if (child === this._childrenHead) {
+            this._childrenHead = child._nextSibling;
+        } else {
+            while (cur) {
+                if (cur._nextSibling === child) {
+                    cur._nextSibling = child._nextSibling;
+                    break;
+                }
+                cur = cur._nextSibling;
+            }
+        }
+        child._parent = null;
+    }
+
+    public clearChildren () {
+        let cur = this._childrenHead;
+        while (cur) {
+            cur._parent = null;
+            const next = cur._nextSibling;
+            cur._nextSibling = null;
+            cur = next;
+        }
+        this._childrenHead = null;
+    }
+
+    public walkSubTree (func: (visualProxy: VisualProxy) => void) {
+        let cur = this._childrenHead;
+        while (cur) {
+            func(cur);
+            cur.walkSubTree(func);
+            cur = cur._nextSibling;
+        }
     }
 
     public addDrawCommands (command: UIDrawCommand) {

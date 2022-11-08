@@ -330,7 +330,15 @@ export class UIElement extends Visual {
             this._parent.onChildAdded(this);
         }
         // update document should be invoked first
-        this.updateDocument(this._parent ? this._parent._document : null);
+        const newDocument = this._parent ? this._parent._document : null;
+        const documentChanged = newDocument !== this._document;
+        if (documentChanged && this._document) {
+            this._document.onElementUnmounted(this);
+        }
+        this.updateDocument(newDocument);
+        if (documentChanged && this._document) {
+            this._document.onElementMounted(this);
+        }
         this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
         this.invalidateParentHierarchy();
         this.invalidateWorldTransform();
@@ -362,13 +370,7 @@ export class UIElement extends Visual {
             }
 
             this.removeInvalidation(invalidateReason);
-            if (this._document) {
-                this._document.onElementRemoved(this);
-            }
             this._document = document;
-            if (this._document) {
-                this._document.onElementAdded(this);
-            }
             this.invalidate(invalidateReason);
             for (let i = 0; i < this._children.length; i++) {
                 this._children[i].updateDocument(document);

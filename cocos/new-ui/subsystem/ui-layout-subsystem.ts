@@ -50,9 +50,9 @@ export class UILayoutSubsystem extends UISubSystem {
         }
     }
 
-    onElementAdded (element: UIElement) {}
+    onElementMounted (element: UIElement) {}
 
-    onElementRemoved (element: UIElement) {}
+    onElementUnmounted (element: UIElement) {}
 
     update () {
         let iteration = 0;
