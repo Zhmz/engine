@@ -519,25 +519,6 @@ export class UIElement extends Visual {
         return true;
     }
 
-    public static raycastPlane<Out extends IVec3Like>(intersectPoint:Out,ray:Ray, plane:Plane){
-        const pointInPlane = new Vec3();//原点到平面的垂线
-        Vec3.multiplyScalar(pointInPlane, plane.n, plane.d);
-        const rayOriToPointInPlane = new Vec3();//射线原点到平面点向量
-        Vec3.subtract(rayOriToPointInPlane, pointInPlane, ray.o)
-        const dotN = Vec3.dot(ray.d, plane.n);
-        if(dotN === 0) {
-            return;
-        }
-        const scaleFactor: number = Vec3.dot(rayOriToPointInPlane, plane.n) / dotN;
-        if (scaleFactor <= 0) {
-            return;
-        }
-
-        const scaleRayDirection = new Vec3();
-        Vec3.multiplyScalar(scaleRayDirection, ray.d, scaleFactor);
-        Vec3.add(intersectPoint, ray.o, scaleRayDirection);
-    }
-
     public addEventListener<TEvent extends UIEvent> (type: EventType<TEvent>, fn: (event: TEvent) => void, target?: any) {
         this._eventListeners.push({ eventType: type, callback: fn, target });
     }
