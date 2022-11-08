@@ -112,8 +112,8 @@ export class UIDocument {
     private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
     private _origin = new Mat4();
     private _viewport = new Rect();
-    private _window = new UIWindow(this);
     private _layoutSubsystem = new UILayoutSubsystem(this);
     private _eventSubSystem = new EventSubSystem(this);
     private _renderSubsystem = new UIRenderSubsystem(this);
+    private _window = new UIWindow(this);
 }

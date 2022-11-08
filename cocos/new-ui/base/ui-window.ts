@@ -32,6 +32,7 @@ export class UIWindow extends ContentControl {
     constructor (document: UIDocument) {
         super();
         this.updateDocument(document);
+        document.onElementMounted(this);
     }
 
     get isMeasureDirty () {

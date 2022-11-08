@@ -9,7 +9,6 @@ import { UIDrawCommand } from './ui-draw-command';
 
 export class UIBatchBuilder {
     public static IB_SCALE = 4; // ib size scale based on vertex count
-    private _rootProxy: VisualProxy; // 用这个来渲染？// 应该不用双层？
     private _bufferPool : BufferPool; // todo
     private _contextModel :Model;
     private _subModelIndex = 0;
@@ -26,8 +25,7 @@ export class UIBatchBuilder {
     private _currHash = 0;
     protected _floatsPerVertex: number;
 
-    constructor (rootVisualProxy: VisualProxy) {
-        this._rootProxy = rootVisualProxy;
+    constructor () {
         this._contextModel = legacyCC.director.root.createModel(scene.Model);
         this._bufferPool = new BufferPool(vfmtPosColor4B);
         this._floatsPerVertex = getAttributeStride(vfmtPosColor4B) >> 2;
@@ -56,10 +54,10 @@ export class UIBatchBuilder {
         return this._contextModel;
     }
 
-    public buildBatches () {
+    public buildBatches (rootProxy: VisualProxy) {
         this._subModelIndex = 0; // or reset function
         this._contextModel.enabled = false;
-        this._rootProxy.walkSubTree(this.buildBatchRecursively.bind(this));
+        rootProxy.walkSubTree(this.buildBatchRecursively.bind(this));
         this._fillModel();
     }
 

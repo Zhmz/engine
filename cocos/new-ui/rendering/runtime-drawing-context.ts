@@ -17,7 +17,7 @@ enum MaterialType {
 
 // 在上层进行了paint命令之后，进行方法的提供和 visualProxy 的数据填充
 export class RuntimeDrawingContext extends IDrawingContext {
-    private _currentElement: UIElement;
+    private _currentElement!: UIElement;
     private _vertexFormat = vfmtPosColor4B;
 
     protected _floatsPerVertex: number;
@@ -26,9 +26,8 @@ export class RuntimeDrawingContext extends IDrawingContext {
         return this._currentElement;
     }
 
-    constructor (document: UIDocument) {
+    constructor () {
         super();
-        this._currentElement = document.window;
         this._floatsPerVertex = getAttributeStride(vfmtPosColor4B) >> 2;
     }
 
@@ -48,7 +47,8 @@ export class RuntimeDrawingContext extends IDrawingContext {
     public drawRect (rect: Rect, color: Color) {
         const stride = this._floatsPerVertex;
         // only need fill local mesh
-        const vb = new Float32Array(4 * stride); // 5?
+        const vb = new Float32Array(4 * stride);
+        const uvb = new Uint32Array(vb.buffer);
         const ib = new Uint16Array(6);
 
         const left = -rect.width * 0.5;
@@ -61,7 +61,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
         vb[vertexOffset] = left;
         vb[1 + vertexOffset] = bottom;
         vb[2 + vertexOffset] = 0;
-        vb[3 + vertexOffset] = color._val;
+        uvb[3 + vertexOffset] = color._val;
 
         vertexOffset += stride;
 
@@ -69,7 +69,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
         vb[vertexOffset] = right;
         vb[1 + vertexOffset] = bottom;
         vb[2 + vertexOffset] = 0;
-        vb[3 + vertexOffset] = color._val;
+        uvb[3 + vertexOffset] = color._val;
 
         vertexOffset += stride;
 
@@ -77,7 +77,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
         vb[vertexOffset] = left;
         vb[1 + vertexOffset] = top;
         vb[2 + vertexOffset] = 0;
-        vb[3 + vertexOffset] = color._val;
+        uvb[3 + vertexOffset] = color._val;
 
         vertexOffset += stride;
 
@@ -85,7 +85,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
         vb[vertexOffset] = right;
         vb[1 + vertexOffset] = top;
         vb[2 + vertexOffset] = 0;
-        vb[3 + vertexOffset] = color._val;
+        uvb[3 + vertexOffset] = color._val;
 
         ib[0] = 0;
         ib[1] = 1;

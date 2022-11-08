@@ -29,6 +29,11 @@ export class UIDrawCommand {
         this._stride = getAttributeStride(vertexFormat);
         this._floatStride = this._stride >> 2;
         this._vertexFormat = vertexFormat;
+        this._vbCount = vbCount;
+        this._ibCount = ibCount;
+        this._vb = vb;
+        this._ib = ib;
+        this._material = material;
     }
 
     get floatStride () {

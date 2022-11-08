@@ -47,8 +47,8 @@ export class UIRenderSubsystem extends UISubSystem {
 
     constructor (document: UIDocument) {
         super(document);
-        this._drawingContext = new RuntimeDrawingContext(document);
-        this._batchBuilder = new UIBatchBuilder(document.window.renderData as VisualProxy);
+        this._drawingContext = new RuntimeDrawingContext();
+        this._batchBuilder = new UIBatchBuilder(); // 对应关系有点奇怪，几乎是成套
     }
 
     onElementMounted (element: UIElement) {
@@ -111,7 +111,9 @@ export class UIRenderSubsystem extends UISubSystem {
         this._dirtyElementMap.clear();
 
         // build batches
-        this._batchBuilder.buildBatches();
+        const visualProxy = this._document.window.renderData as VisualProxy;
+        if (!visualProxy) return;
+        this._batchBuilder.buildBatches(visualProxy);
 
         const camera = this.settings.lowLevelRenderCamera;
         camera?.cleanIntermediateModels();
