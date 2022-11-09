@@ -32,7 +32,7 @@ export class VisualProxy extends IRenderData {
     private _childrenHead: VisualProxy | null = null;
     private _nextSibling: VisualProxy | null = null;
     private _worldMatrix: Mat4 = new Mat4();
-    private _isVisible = false;
+    private _isVisible = true;
     private _opacity = 1;
 
     static allocate (visual: Visual) {
@@ -43,6 +43,10 @@ export class VisualProxy extends IRenderData {
 
     private constructor () {
         super();
+    }
+
+    public get nextSibling () {
+        return this._nextSibling;
     }
 
     public get visual () {
@@ -126,15 +130,6 @@ export class VisualProxy extends IRenderData {
             cur = next;
         }
         this._childrenHead = null;
-    }
-
-    public walkSubTree (func: (visualProxy: VisualProxy) => void) {
-        let cur = this._childrenHead;
-        while (cur) {
-            func(cur);
-            cur.walkSubTree(func);
-            cur = cur._nextSibling;
-        }
     }
 
     public addDrawCommands (command: UIDrawCommand) {

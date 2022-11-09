@@ -59,6 +59,7 @@ export enum InvalidateReason {
     STYLE = 1 << 3,
     TRANSFORM = 1 << 4,
     PAINT = 1 << 5,
+    VISIBILITY = 1 << 6,
     LAYOUT = InvalidateReason.MEASURE | InvalidateReason.ARRANGE,
 }
 
@@ -169,6 +170,7 @@ export class UIElement extends Visual {
     }
 
     set opacity (val: number) {
+        this.invalidateVisibility();
         this.setValue(UIElement.OpacityProperty, val);
     }
 
@@ -178,6 +180,7 @@ export class UIElement extends Visual {
 
     set visibility (val: Visibility) {
         this.invalidateParentMeasure();
+        this.invalidateVisibility();
         this.setValue(UIElement.VisibilityProperty, val);
     }
 
@@ -382,6 +385,7 @@ export class UIElement extends Visual {
     public invalidateWorldTransform () {
         if (!this._worldTransformDirty) {
             this._worldTransformDirty = true;
+            this.invalidate(InvalidateReason.TRANSFORM);
             for (let i = 0; i < this._children.length; i++) {
                 this._children[i].invalidateWorldTransform();
             }
@@ -391,6 +395,12 @@ export class UIElement extends Visual {
     public invalidateParentMeasure () {
         if (this._parent) {
             this._parent.invalidateMeasure();
+        }
+    }
+
+    public invalidateVisibility () {
+        if (this._document) {
+            this._document.invalidate(this, InvalidateReason.VISIBILITY);
         }
     }
 

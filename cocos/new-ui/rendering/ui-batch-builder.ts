@@ -4,7 +4,7 @@ import { VisualProxy } from './visual-proxy';
 import { Model } from '../../core/renderer/scene';
 import { legacyCC } from '../../core/global-exports';
 import { scene } from '../../core/renderer';
-import { Material, RenderingSubMesh } from '../../core';
+import { approx, Material, RenderingSubMesh } from '../../core';
 import { UIDrawCommand } from './ui-draw-command';
 
 export class UIBatchBuilder {
@@ -34,6 +34,9 @@ export class UIBatchBuilder {
     }
 
     private buildBatchRecursively (proxy: VisualProxy) {
+        if (!proxy.isVisible || approx(proxy.opacity, 0)) {
+            return;
+        }
         const drawCommands = proxy.getDrawCommands();
         const len = drawCommands.length;
         if (drawCommands.length > 0) {
@@ -48,6 +51,11 @@ export class UIBatchBuilder {
                 this._mergeBatch(render);
             }
         }
+        let cur: VisualProxy | null = proxy.children;
+        while (cur) {
+            this.buildBatchRecursively(cur);
+            cur = cur.nextSibling;
+        }
     }
 
     public getContextModel () {
@@ -57,7 +65,7 @@ export class UIBatchBuilder {
     public buildBatches (rootProxy: VisualProxy) {
         this._subModelIndex = 0; // or reset function
         this._contextModel.enabled = false;
-        rootProxy.walkSubTree(this.buildBatchRecursively.bind(this));
+        this.buildBatchRecursively(rootProxy);
         this._fillModel();
     }
 

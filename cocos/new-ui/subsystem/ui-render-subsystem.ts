@@ -25,7 +25,7 @@
 import { ContainerElement } from '../base';
 import { RenderMode, UIRuntimeDocumentSettings } from '../base/runtime-document-settings';
 import { UIDocument } from '../base/ui-document';
-import { InvalidateReason, UIElement } from '../base/ui-element';
+import { InvalidateReason, UIElement, Visibility } from '../base/ui-element';
 import { UISubSystem } from '../base/ui-subsystem';
 import { RuntimeDrawingContext } from '../rendering/runtime-drawing-context';
 import { UIBatchBuilder } from '../rendering/ui-batch-builder';
@@ -34,6 +34,8 @@ import { VisualProxy } from '../rendering/visual-proxy';
 export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set<UIElement>();
     private _dirtyHierarchyMap = new Set<UIElement>();
+    private _dirtyTransformMap = new Set<UIElement>();
+    private _dirtyVisibilityMap = new Set<UIElement>();
     private _drawingContext: RuntimeDrawingContext;
     private _batchBuilder: UIBatchBuilder;
 
@@ -89,6 +91,12 @@ export class UIRenderSubsystem extends UISubSystem {
         if (invalidateReason & InvalidateReason.HIERARCHY) {
             this._dirtyHierarchyMap.add(element);
         }
+        if (invalidateReason & InvalidateReason.TRANSFORM) {
+            this._dirtyHierarchyMap.add(element);
+        }
+        if (invalidateReason & InvalidateReason.VISIBILITY) {
+            this._dirtyVisibilityMap.add(element)
+        }
     }
 
     update () {
@@ -100,6 +108,18 @@ export class UIRenderSubsystem extends UISubSystem {
                 visualProxy.addChild(children[i].renderData as VisualProxy);
             }
         }
+        this._dirtyHierarchyMap.clear();
+
+        for (const element of this._dirtyTransformMap) {
+            (element.renderData as VisualProxy).worldMatrix = element.worldTransform;
+        }
+        this._dirtyTransformMap.clear();
+
+        for (const element of this._dirtyVisibilityMap) {
+            (element.renderData as VisualProxy).isVisible = element.visibility === Visibility.VISIBLE;
+            (element.renderData as VisualProxy).opacity = element.opacity;
+        }
+        this._dirtyVisibilityMap.clear();
 
         for (const element of this._dirtyElementMap) {
             this._drawingContext.paint(element);
