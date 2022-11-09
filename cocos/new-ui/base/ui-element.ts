@@ -59,7 +59,6 @@ export enum InvalidateReason {
     STYLE = 1 << 3,
     TRANSFORM = 1 << 4,
     PAINT = 1 << 5,
-    VISIBILITY = 1 << 6,
     LAYOUT = InvalidateReason.MEASURE | InvalidateReason.ARRANGE,
 }
 
@@ -170,7 +169,7 @@ export class UIElement extends Visual {
     }
 
     set opacity (val: number) {
-        this.invalidateVisibility();
+        this.setCascadedOpacity(val);
         this.setValue(UIElement.OpacityProperty, val);
     }
 
@@ -180,7 +179,7 @@ export class UIElement extends Visual {
 
     set visibility (val: Visibility) {
         this.invalidateParentMeasure();
-        this.invalidateVisibility();
+        this.setIsVisible(val === Visibility.VISIBLE);
         this.setValue(UIElement.VisibilityProperty, val);
     }
 
@@ -252,7 +251,7 @@ export class UIElement extends Visual {
 
     get worldTransform (): Readonly<Mat4> {
         if (this._worldTransformDirty) {
-            this.updateWorldTransform();
+            this.calculateWorldTransform();
             this._worldTransformDirty = false;
         }
         return this._worldTransform;
@@ -293,12 +292,16 @@ export class UIElement extends Visual {
         return this.localTransform;
     }
 
-    protected updateWorldTransform () {
+    protected calculateWorldTransform () {
         Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.center.x, this.layout.center.y, 0));
         Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
         if (this.parent) {
             Mat4.multiply(this._worldTransform, this.parent.worldTransform, this._worldTransform);
         }
+    }
+
+    public updateWorldTransform () {
+        this.setVisualTransform(this.worldTransform);
     }
 
     public worldToLocal (out: Vec3, worldPoint: Vec3) {
@@ -334,15 +337,7 @@ export class UIElement extends Visual {
             this._parent.onChildAdded(this);
         }
         // update document should be invoked first
-        const newDocument = this._parent ? this._parent._document : null;
-        const documentChanged = newDocument !== this._document;
-        if (documentChanged && this._document) {
-            this._document.onElementUnmounted(this);
-        }
-        this.updateDocument(newDocument);
-        if (documentChanged && this._document) {
-            this._document.onElementMounted(this);
-        }
+        this.updateDocument(this._parent ? this._parent._document : null);
         this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
         this.invalidateParentHierarchy();
         this.invalidateWorldTransform();
@@ -374,7 +369,9 @@ export class UIElement extends Visual {
             }
 
             this.removeInvalidation(invalidateReason);
+            this._document?.onElementUnmounted(this);
             this._document = document;
+            this._document?.onElementMounted(this);
             this.invalidate(invalidateReason);
             for (let i = 0; i < this._children.length; i++) {
                 this._children[i].updateDocument(document);
@@ -395,12 +392,6 @@ export class UIElement extends Visual {
     public invalidateParentMeasure () {
         if (this._parent) {
             this._parent.invalidateMeasure();
-        }
-    }
-
-    public invalidateVisibility () {
-        if (this._document) {
-            this._document.invalidate(this, InvalidateReason.VISIBILITY);
         }
     }
 

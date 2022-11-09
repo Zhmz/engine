@@ -23,22 +23,36 @@
  THE SOFTWARE.
 */
 
+import { Mat4 } from '../../core/math';
+import { VisualProxy } from '../rendering/visual-proxy';
 import { AdvancedObject } from './advanced-object';
 import { IDrawingContext } from './ui-drawing-context';
 
-export class IRenderData {
-
-}
-
 export class Visual extends AdvancedObject {
-    private _renderData: IRenderData | null = null;
+    private _visualProxy = new VisualProxy(this);
 
-    get renderData () {
-        return this._renderData;
+    get visualProxy () {
+        return this._visualProxy;
     }
 
-    set renderData (val: IRenderData | null) {
-        this._renderData = val;
+    protected setIsVisible (val: boolean) {
+        this._visualProxy.isVisible = val;
+    }
+
+    protected setCascadedOpacity (val: number) {
+        this._visualProxy.opacity = val;
+    }
+
+    protected setVisualTransform (val: Readonly<Mat4>) {
+        this._visualProxy.worldMatrix = val;
+    }
+
+    protected removeVisualChild (child: Visual) {
+        this._visualProxy.removeChild(child._visualProxy);
+    }
+
+    protected addVisualChild (child: Visual) {
+        this._visualProxy.addChild(child._visualProxy);
     }
 
     protected onPaint (drawingContext: IDrawingContext) {}

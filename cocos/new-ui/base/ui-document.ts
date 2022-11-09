@@ -27,6 +27,7 @@ import { Mat4, Rect } from '../../core/math';
 import { EventSubSystem } from '../subsystem/event-sub-system';
 import { UILayoutSubsystem } from '../subsystem/ui-layout-subsystem';
 import { UIRenderSubsystem } from '../subsystem/ui-render-subsystem';
+import { UITransformSubsystem } from '../subsystem/ui-transform-subsystem';
 import { UIRuntimeDocumentSettings } from './runtime-document-settings';
 import { UIDocumentSettings } from './ui-document-settings';
 import { InvalidateReason, UIElement } from './ui-element';
@@ -63,21 +64,20 @@ export class UIDocument {
 
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
         this._layoutSubsystem.invalidate(element, invalidateReason);
+        this._transformSubsystem.invalidate(element, invalidateReason);
         this._renderSubsystem.invalidate(element, invalidateReason);
     }
 
     removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
-        if (invalidateReason & InvalidateReason.LAYOUT) {
-            this._layoutSubsystem.removeInvalidation(element, invalidateReason);
-        }
-        if (invalidateReason & InvalidateReason.PAINT) {
-            this._renderSubsystem.removeInvalidation(element, invalidateReason);
-        }
+        this._layoutSubsystem.removeInvalidation(element, invalidateReason);
+        this._transformSubsystem.removeInvalidation(element, invalidateReason);
+        this._renderSubsystem.removeInvalidation(element, invalidateReason);
     }
 
     update () {
         this._settings.update();
         this._layoutSubsystem.update();
+        this._transformSubsystem.update();
         this._renderSubsystem.update();
     }
 
@@ -102,6 +102,8 @@ export class UIDocument {
     }
 
     onElementMounted (element: UIElement) {
+        this._layoutSubsystem.onElementMounted(element);
+        this._transformSubsystem.onElementMounted(element);
         this._renderSubsystem.onElementMounted(element);
     }
 
@@ -115,5 +117,6 @@ export class UIDocument {
     private _layoutSubsystem = new UILayoutSubsystem(this);
     private _eventSubSystem = new EventSubSystem(this);
     private _renderSubsystem = new UIRenderSubsystem(this);
+    private _transformSubsystem = new UITransformSubsystem(this);
     private _window = new UIWindow(this);
 }

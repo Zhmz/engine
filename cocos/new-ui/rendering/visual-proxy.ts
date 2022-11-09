@@ -23,11 +23,11 @@
  THE SOFTWARE.
 */
 import { Mat4 } from '../../core/math';
-import { IRenderData, Visual } from '../base/visual';
+import { Visual } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
-export class VisualProxy extends IRenderData {
-    private _visual!: Visual;
+export class VisualProxy {
+    private _visual: Visual;
     private _parent: VisualProxy | null = null;
     private _childrenHead: VisualProxy | null = null;
     private _nextSibling: VisualProxy | null = null;
@@ -35,14 +35,8 @@ export class VisualProxy extends IRenderData {
     private _isVisible = true;
     private _opacity = 1;
 
-    static allocate (visual: Visual) {
-        const visualProxy = new VisualProxy();
-        visualProxy._visual = visual;
-        return visualProxy;
-    }
-
-    private constructor () {
-        super();
+    constructor (visual: Visual) {
+        this._visual = visual;
     }
 
     public get nextSibling () {

@@ -93,9 +93,11 @@ export class ContainerElement extends UIElement {
 
     public onChildAdded (child: UIElement) {
         child.addBehavior(this.getSlotClass());
+        this.addVisualChild(child);
     }
 
     public onChildRemoved (oldChild: UIElement) {
         oldChild.removeBehavior(UISlot);
+        this.removeVisualChild(oldChild);
     }
 }

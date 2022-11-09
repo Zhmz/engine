@@ -3,12 +3,9 @@
 import { getAttributeStride, vfmtPosColor4B } from '../../2d/renderer/vertex-format';
 import { builtinResMgr, Color, Material, Rect } from '../../core';
 import { IDrawingContext } from '../base/ui-drawing-context';
-import { UIDocument } from '../base/ui-document';
-import { Visual } from '../base/visual';
 import { Brush } from './brush';
 import { UIDrawCommand } from './ui-draw-command';
 import { UIElement } from '../base';
-import { VisualProxy } from './visual-proxy';
 
 enum MaterialType {
     ADD_COLOR,
@@ -95,7 +92,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
         ib[5] = 2;
 
         const command = new UIDrawCommand(this._vertexFormat, 4, 6, vb, ib, this.getDefaultMaterialByType(MaterialType.ADD_COLOR));
-        (this._currentElement.renderData as VisualProxy).addDrawCommands(command);
+        this._currentElement.visualProxy.addDrawCommands(command);
     }
 
     public drawBrush (rect: Rect, color: Color, brush: Readonly<Brush>) {

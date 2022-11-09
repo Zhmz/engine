@@ -22,20 +22,15 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { ContainerElement } from '../base';
 import { RenderMode, UIRuntimeDocumentSettings } from '../base/runtime-document-settings';
 import { UIDocument } from '../base/ui-document';
-import { InvalidateReason, UIElement, Visibility } from '../base/ui-element';
+import { InvalidateReason, UIElement } from '../base/ui-element';
 import { UISubSystem } from '../base/ui-subsystem';
 import { RuntimeDrawingContext } from '../rendering/runtime-drawing-context';
 import { UIBatchBuilder } from '../rendering/ui-batch-builder';
-import { VisualProxy } from '../rendering/visual-proxy';
 
 export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set<UIElement>();
-    private _dirtyHierarchyMap = new Set<UIElement>();
-    private _dirtyTransformMap = new Set<UIElement>();
-    private _dirtyVisibilityMap = new Set<UIElement>();
     private _drawingContext: RuntimeDrawingContext;
     private _batchBuilder: UIBatchBuilder;
 
@@ -53,83 +48,20 @@ export class UIRenderSubsystem extends UISubSystem {
         this._batchBuilder = new UIBatchBuilder(); // 对应关系有点奇怪，几乎是成套
     }
 
-    onElementMounted (element: UIElement) {
-        this.connectSubtree(element, null);
-    }
-
-    connectSubtree (element: UIElement, parent: VisualProxy | null) {
-        if (!element.renderData) {
-            element.renderData = VisualProxy.allocate(element);
-        }
-        if (parent) {
-            parent.addChild(element.renderData as VisualProxy);
-        }
-        if (element instanceof ContainerElement) {
-            for (let i = 0; i < element.childCount; i++) {
-                this.connectSubtree(element.children[i], element.renderData as VisualProxy);
-            }
-        }
-    }
-
-    onElementUnmounted (element: UIElement) {
-        this.clearRenderData(element);
-    }
-
-    clearRenderData (element: UIElement) {
-        element.renderData = null;
-        if (element instanceof ContainerElement) {
-            for (let i = 0; i < element.childCount; i++) {
-                this.clearRenderData(element.children[i]);
-            }
-        }
-    }
-
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
         if (invalidateReason & InvalidateReason.PAINT) {
             this._dirtyElementMap.add(element);
         }
-        if (invalidateReason & InvalidateReason.HIERARCHY) {
-            this._dirtyHierarchyMap.add(element);
-        }
-        if (invalidateReason & InvalidateReason.TRANSFORM) {
-            this._dirtyHierarchyMap.add(element);
-        }
-        if (invalidateReason & InvalidateReason.VISIBILITY) {
-            this._dirtyVisibilityMap.add(element)
-        }
     }
 
     update () {
-        for (const element of this._dirtyHierarchyMap) {
-            const children = (element as ContainerElement).children;
-            const visualProxy = element.renderData as VisualProxy;
-            visualProxy.clearChildren();
-            for (let i = 0; i < children.length; i++) {
-                visualProxy.addChild(children[i].renderData as VisualProxy);
-            }
-        }
-        this._dirtyHierarchyMap.clear();
-
-        for (const element of this._dirtyTransformMap) {
-            (element.renderData as VisualProxy).worldMatrix = element.worldTransform;
-        }
-        this._dirtyTransformMap.clear();
-
-        for (const element of this._dirtyVisibilityMap) {
-            (element.renderData as VisualProxy).isVisible = element.visibility === Visibility.VISIBLE;
-            (element.renderData as VisualProxy).opacity = element.opacity;
-        }
-        this._dirtyVisibilityMap.clear();
-
         for (const element of this._dirtyElementMap) {
             this._drawingContext.paint(element);
         }
         this._dirtyElementMap.clear();
 
         // build batches
-        const visualProxy = this._document.window.renderData as VisualProxy;
-        if (!visualProxy) return;
-        this._batchBuilder.buildBatches(visualProxy);
+        this._batchBuilder.buildBatches(this._document.window.visualProxy);
 
         const camera = this.settings.lowLevelRenderCamera;
         camera?.cleanIntermediateModels();

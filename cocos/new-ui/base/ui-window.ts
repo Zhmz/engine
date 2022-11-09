@@ -32,7 +32,6 @@ export class UIWindow extends ContentControl {
     constructor (document: UIDocument) {
         super();
         this.updateDocument(document);
-        document.onElementMounted(this);
     }
 
     get isMeasureDirty () {
@@ -47,8 +46,8 @@ export class UIWindow extends ContentControl {
         throw new UIError(ErrorID.INVALID_WINDOW_PARENT);
     }
 
-    protected updateWorldTransform () {
-        super.updateWorldTransform();
+    protected calculateWorldTransform () {
+        super.calculateWorldTransform();
         Mat4.multiply(this._worldTransform, this.document!.origin, this._worldTransform);
     }
 }
