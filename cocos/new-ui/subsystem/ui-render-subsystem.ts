@@ -22,6 +22,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+import { assert } from '../../core';
 import { ContainerElement } from '../base';
 import { RenderMode, UIRuntimeDocumentSettings } from '../base/runtime-document-settings';
 import { UIDocument } from '../base/ui-document';
@@ -128,7 +129,7 @@ export class UIRenderSubsystem extends UISubSystem {
 
         // build batches
         const visualProxy = this._document.window.renderData as VisualProxy;
-        if (!visualProxy) return;
+        assert(visualProxy);
         this._batchBuilder.buildBatches(visualProxy);
 
         const camera = this.settings.lowLevelRenderCamera;

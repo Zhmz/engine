@@ -1,11 +1,12 @@
 import { getAttributeStride, vfmtPosColor4B } from '../../2d/renderer/vertex-format';
 import { Attribute, Buffer, BufferInfo, BufferUsageBit, Device, deviceManager, MemoryUsageBit, PrimitiveMode, Sampler, Texture } from '../../core/gfx';
-import { VisualProxy } from './visual-proxy';
+import { VisualDirty, VisualProxy } from './visual-proxy';
 import { Model } from '../../core/renderer/scene';
 import { legacyCC } from '../../core/global-exports';
 import { scene } from '../../core/renderer';
 import { approx, Material, RenderingSubMesh } from '../../core';
 import { UIDrawCommand } from './ui-draw-command';
+import { ILocalVertexData } from './runtime-drawing-context';
 
 export class UIBatchBuilder {
     public static IB_SCALE = 4; // ib size scale based on vertex count
@@ -42,6 +43,12 @@ export class UIBatchBuilder {
         if (drawCommands.length > 0) {
             for (let j = 0; j < len; j++) {
                 const render = drawCommands[j];
+                if (proxy.Dirty & VisualDirty.TRANSFORM) { // worldTrsDirty
+                    this._updateWorldVerts(render, proxy);
+                }
+                if (proxy.Dirty & VisualDirty.OPACITY) { // opacity dirty
+                    this._updateOpacity(render, proxy);
+                }
                 // todo 合批判断 可以利用 dataHash 之类的
                 // todo 需要处理 texture 和 simpler
                 // todo 需要更新 dataHash
@@ -51,6 +58,7 @@ export class UIBatchBuilder {
                 this._mergeBatch(render);
             }
         }
+        proxy.resetDirty();
         let cur: VisualProxy | null = proxy.children;
         while (cur) {
             this.buildBatchRecursively(cur);
@@ -144,6 +152,49 @@ export class UIBatchBuilder {
         this._contextModel.initSubModel(this._subModelIndex, submesh, this._currMaterial);// heavy & slow todo
         this._contextModel.enabled = true;
         this._subModelIndex++;
+    }
+
+    private _updateWorldVerts (render: UIDrawCommand, proxy: VisualProxy) {
+        const dataList: ILocalVertexData[] = render.getLocalVB();
+        const vData = render.getVB();
+        const uintVData = render.getUintVB();
+        // hack for Synchronization 
+        // const m = proxy.worldMatrix;// todo use this
+        const m = proxy.visual.worldTransform;
+
+        // todo
+        // 如何判断是否包含 uv
+        const stride = render.floatStride;
+        let offset = 0;
+        const length = dataList.length;
+        for (let i = 0; i < length; i++) {
+            const curData = dataList[i];
+            const x = curData.x;
+            const y = curData.y;
+            let rhw = m.m03 * x + m.m07 * y + m.m15;
+            rhw = rhw ? Math.abs(1 / rhw) : 1;
+
+            offset = i * stride;
+            vData[offset + 0] = (m.m00 * x + m.m04 * y + m.m12) * rhw;
+            vData[offset + 1] = (m.m01 * x + m.m05 * y + m.m13) * rhw;
+            vData[offset + 2] = (m.m02 * x + m.m06 * y + m.m14) * rhw;
+            uintVData[offset + 3] = curData.color;
+        }
+    }
+
+    private _updateOpacity (render: UIDrawCommand, proxy: VisualProxy) {
+        const dataList: ILocalVertexData[] = render.getLocalVB();
+        const uintVData = render.getUintVB();
+        const opacity = proxy.opacity * 255;
+        const stride = render.floatStride;
+        let offset = 0;
+        const length = dataList.length;
+        for (let i = 0; i < length; i++) {
+            const curData = dataList[i];
+            const color = ((curData.color & 0x00ffffff) | (opacity << 24)) >>> 0;
+            offset = i * stride;
+            uintVData[offset + 3] = color;
+        }
     }
 }
 

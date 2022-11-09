@@ -26,6 +26,11 @@ import { Mat4 } from '../../core/math';
 import { IRenderData, Visual } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
+export enum VisualDirty {
+    TRANSFORM = 1,
+    OPACITY = 1 << 1,
+}
+
 export class VisualProxy extends IRenderData {
     private _visual!: Visual;
     private _parent: VisualProxy | null = null;
@@ -34,6 +39,7 @@ export class VisualProxy extends IRenderData {
     private _worldMatrix: Mat4 = new Mat4();
     private _isVisible = true;
     private _opacity = 1;
+    private _dirtyFlag = 3;// hack to dirty
 
     static allocate (visual: Visual) {
         const visualProxy = new VisualProxy();
@@ -43,6 +49,14 @@ export class VisualProxy extends IRenderData {
 
     private constructor () {
         super();
+    }
+
+    public get Dirty () {
+        return this._dirtyFlag;
+    }
+
+    public resetDirty () {
+        this._dirtyFlag = 0;
     }
 
     public get nextSibling () {
@@ -67,6 +81,7 @@ export class VisualProxy extends IRenderData {
 
     public set opacity (val) {
         this._opacity = val;
+        this._dirtyFlag |= VisualDirty.OPACITY;
     }
 
     public get worldMatrix () {
@@ -75,6 +90,7 @@ export class VisualProxy extends IRenderData {
 
     public set worldMatrix (val) {
         this._worldMatrix.set(val);
+        this._dirtyFlag |= VisualDirty.TRANSFORM;
     }
 
     public get parent () {
