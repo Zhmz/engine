@@ -26,6 +26,11 @@ import { Mat4 } from '../../core/math';
 import { Visual } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
+export enum VisualDirty {
+    TRANSFORM = 1,
+    OPACITY = 1 << 1,
+}
+
 export class VisualProxy {
     private _visual: Visual;
     private _parent: VisualProxy | null = null;
@@ -34,9 +39,18 @@ export class VisualProxy {
     private _worldMatrix: Mat4 = new Mat4();
     private _isVisible = true;
     private _opacity = 1;
+    private _dirtyFlag = 3;// hack to dirty
 
     constructor (visual: Visual) {
         this._visual = visual;
+    }
+
+    public get Dirty () {
+        return this._dirtyFlag;
+    }
+
+    public resetDirty () {
+        this._dirtyFlag = 0;
     }
 
     public get nextSibling () {
@@ -61,6 +75,7 @@ export class VisualProxy {
 
     public set opacity (val) {
         this._opacity = val;
+        this._dirtyFlag |= VisualDirty.OPACITY;
     }
 
     public get worldMatrix () {
@@ -69,6 +84,7 @@ export class VisualProxy {
 
     public set worldMatrix (val) {
         this._worldMatrix.set(val);
+        this._dirtyFlag |= VisualDirty.TRANSFORM;
     }
 
     public get parent () {

@@ -22,6 +22,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+import { assert } from '../../core';
 import { RenderMode, UIRuntimeDocumentSettings } from '../base/runtime-document-settings';
 import { UIDocument } from '../base/ui-document';
 import { InvalidateReason, UIElement } from '../base/ui-element';

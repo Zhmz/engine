@@ -1,7 +1,7 @@
 // drawContext 为一个 canvas 所持有的上下文，那么其负责提供了 draw方法和 PainterParameters 结构
 
 import { getAttributeStride, vfmtPosColor4B } from '../../2d/renderer/vertex-format';
-import { builtinResMgr, Color, Material, Rect } from '../../core';
+import { builtinResMgr, Color, Material, Pool, Rect } from '../../core';
 import { IDrawingContext } from '../base/ui-drawing-context';
 import { Brush } from './brush';
 import { UIDrawCommand } from './ui-draw-command';
@@ -11,6 +11,24 @@ enum MaterialType {
     ADD_COLOR,
     ADD_COLOR_AND_TEXTURE,
 }
+
+export interface ILocalVertexData {
+    x: number;
+    y: number;
+    z: number;
+    u: number;
+    v: number;
+    color: number;
+}
+
+const _localVertexDataPool = new Pool(() => ({
+    x: 0,
+    y: 0,
+    z: 0,
+    u: 0,
+    v: 0,
+    color: Color.WHITE._val,
+}), 128);
 
 // 在上层进行了paint命令之后，进行方法的提供和 visualProxy 的数据填充
 export class RuntimeDrawingContext extends IDrawingContext {
@@ -42,10 +60,8 @@ export class RuntimeDrawingContext extends IDrawingContext {
     }
 
     public drawRect (rect: Rect, color: Color) {
-        const stride = this._floatsPerVertex;
-        // only need fill local mesh
-        const vb = new Float32Array(4 * stride);
-        const uvb = new Uint32Array(vb.buffer);
+        // fill local mesh
+        const localVbs: ILocalVertexData[] = [];
         const ib = new Uint16Array(6);
 
         const left = -rect.width * 0.5;
@@ -54,35 +70,38 @@ export class RuntimeDrawingContext extends IDrawingContext {
         const top = rect.height * 0.5;
 
         // left bottom corner
-        let vertexOffset = 0;
-        vb[vertexOffset] = left;
-        vb[1 + vertexOffset] = bottom;
-        vb[2 + vertexOffset] = 0;
-        uvb[3 + vertexOffset] = color._val;
-
-        vertexOffset += stride;
+        const localVb0 = _localVertexDataPool.alloc();
+        localVb0.x = left;
+        localVb0.y = bottom;
+        localVb0.z = 0;
+        localVb0.color = color._val;
+        localVbs.push(localVb0);
 
         // right bottom corner
-        vb[vertexOffset] = right;
-        vb[1 + vertexOffset] = bottom;
-        vb[2 + vertexOffset] = 0;
-        uvb[3 + vertexOffset] = color._val;
-
-        vertexOffset += stride;
+        const localVb1 = _localVertexDataPool.alloc();
+        localVb1.x = right;
+        localVb1.y = bottom;
+        localVb1.z = 0;
+        localVb1.color = color._val;
+        localVbs.push(localVb1);
 
         // left top corner
-        vb[vertexOffset] = left;
-        vb[1 + vertexOffset] = top;
-        vb[2 + vertexOffset] = 0;
-        uvb[3 + vertexOffset] = color._val;
-
-        vertexOffset += stride;
+        const localVb2 = _localVertexDataPool.alloc();
+        localVb2.x = left;
+        localVb2.y = top;
+        localVb2.z = 0;
+        localVb2.color = color._val;
+        localVbs.push(localVb2);
 
         // right top corner
-        vb[vertexOffset] = right;
-        vb[1 + vertexOffset] = top;
-        vb[2 + vertexOffset] = 0;
-        uvb[3 + vertexOffset] = color._val;
+        const localVb3 = _localVertexDataPool.alloc();
+        localVb3.x = right;
+        localVb3.y = top;
+        localVb3.z = 0;
+        localVb3.color = color._val;
+        localVbs.push(localVb3);
+
+        // need free localVertexData after used
 
         ib[0] = 0;
         ib[1] = 1;
@@ -91,7 +110,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
         ib[4] = 3;
         ib[5] = 2;
 
-        const command = new UIDrawCommand(this._vertexFormat, 4, 6, vb, ib, this.getDefaultMaterialByType(MaterialType.ADD_COLOR));
+        const command = new UIDrawCommand(this._vertexFormat, 4, 6, localVbs, ib, this.getDefaultMaterialByType(MaterialType.ADD_COLOR));
         this._currentElement.visualProxy.addDrawCommands(command);
     }
 
