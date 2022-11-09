@@ -250,10 +250,7 @@ export class UIElement extends Visual {
     }
 
     get worldTransform (): Readonly<Mat4> {
-        if (this._worldTransformDirty) {
-            this.calculateWorldTransform();
-            this._worldTransformDirty = false;
-        }
+        this.updateWorldTransform();
         return this._worldTransform;
     }
 
@@ -301,7 +298,11 @@ export class UIElement extends Visual {
     }
 
     public updateWorldTransform () {
-        this.setVisualTransform(this.worldTransform);
+        if (this._worldTransformDirty) {
+            this.calculateWorldTransform();
+            this.setVisualTransform(this._worldTransform);
+            this._worldTransformDirty = false;
+        }
     }
 
     public worldToLocal (out: Vec3, worldPoint: Vec3) {
@@ -366,6 +367,10 @@ export class UIElement extends Visual {
 
             if (this._paintingDirty) {
                 invalidateReason |= InvalidateReason.PAINT;
+            }
+
+            if (this._worldTransformDirty) {
+                invalidateReason |= InvalidateReason.TRANSFORM;
             }
 
             this.removeInvalidation(invalidateReason);

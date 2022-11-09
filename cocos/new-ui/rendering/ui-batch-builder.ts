@@ -160,7 +160,7 @@ export class UIBatchBuilder {
         const uintVData = render.getUintVB();
         // hack for Synchronization 
         // const m = proxy.worldMatrix;// todo use this
-        const m = proxy.visual.worldTransform;
+        const m = proxy.worldMatrix;
 
         // todo
         // 如何判断是否包含 uv
