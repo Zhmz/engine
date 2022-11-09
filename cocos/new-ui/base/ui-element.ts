@@ -40,6 +40,7 @@ import { ContainerElement } from './container-element';
 import { Visual } from './visual';
 import { UISlot } from './ui-slot';
 import { EventType, IUIEventCallback, UIEvent } from './ui-event';
+import { raycastPlane } from '../../core/geometry/intersect';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -61,6 +62,12 @@ export enum InvalidateReason {
     PAINT = 1 << 5,
     LAYOUT = InvalidateReason.MEASURE | InvalidateReason.ARRANGE,
 }
+
+const hitPoint = new Vec3();
+const pointA = new Vec3();
+const pointB = new Vec3();
+const pointC = new Vec3();
+const temp_plane = new Plane();
 
 export class UIElement extends Visual {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
@@ -519,8 +526,38 @@ export class UIElement extends Visual {
 
     //#region event
     public hitTest (ray: Ray): boolean {
+
+        const width = this._layout.width;
+        const height = this._layout.height;
+        // bottom left
+        pointA.set(this.position.x-width/2,this.position.y-height/2);
+        // bottom right
+        pointB.set(this.position.x+width/2,this.position.y-height/2);
+        // top right
+        pointC.set(this.position.x+width/2,this.position.y+height/2);
+
+        Plane.fromPoints(temp_plane,pointA,pointB,pointC);
+        raycastPlane(hitPoint,ray,temp_plane);
+
+
+        this.worldToLocal(hitPoint,hitPoint);
+        const hitPointVec2 = new Vec2(hitPoint.x,hitPoint.y);
+        const hit = this._layout.contains(hitPointVec2);
+
+        // const pivotX = this.renderTransformPivot.x;
+        // const pivotY = this.renderTransformPivot.y;
+
+        // const left = this.position.x-pivotX*width;
+        // const right = this.position.x+(1-pivotX)*width;
+        // const top = this.position.y+(1-pivotY)*height;
+        // const bottom = this.position.y-pivotY*height;
+
+        // if(hitPoint.x>=left && hitPoint.x<=right && hitPoint.y>=bottom && hitPoint.y<=top) {
+
+        // }
+
         // temporarily return true
-        return true;
+        return hit;
     }
 
     public addEventListener<TEvent extends UIEvent> (type: EventType<TEvent>, fn: (event: TEvent) => void, target?: any) {
