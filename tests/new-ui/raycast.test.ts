@@ -2,6 +2,16 @@ import { Vec3 } from "../../cocos/core";
 import { Plane, Ray } from "../../cocos/core/geometry";
 import { raycastPlane } from "../../cocos/core/geometry/intersect";
 
+test('hitTest',()=>{
+
+    
+
+
+
+
+
+});
+
 test('raycastPlane', () => {
     // default as a xoz plane
     const plane: Plane = new Plane();

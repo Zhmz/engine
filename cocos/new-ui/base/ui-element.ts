@@ -526,7 +526,6 @@ export class UIElement extends Visual {
 
     //#region event
     public hitTest (ray: Ray): boolean {
-
         const width = this._layout.width;
         const height = this._layout.height;
         // bottom left
@@ -538,7 +537,6 @@ export class UIElement extends Visual {
 
         Plane.fromPoints(temp_plane,pointA,pointB,pointC);
         raycastPlane(hitPoint,ray,temp_plane);
-
 
         this.worldToLocal(hitPoint,hitPoint);
         const hitPointVec2 = new Vec2(hitPoint.x,hitPoint.y);
