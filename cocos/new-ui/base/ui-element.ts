@@ -38,8 +38,9 @@ import { approx, IVec3Like, Mat4, Rect, Size } from '../../core';
 import { Plane, ray, Ray } from '../../core/geometry';
 import { ContainerElement } from './container-element';
 import { Visual } from './visual';
-import { UISlot } from './ui-slot';
+import { UILayout } from './ui-slot';
 import { EventType, IUIEventCallback, UIEvent } from './ui-event';
+import { RenderTransform } from './render-transform';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -67,32 +68,30 @@ export class UIElement extends Visual {
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement, 1);
     public static VisibilityProperty = AdvancedProperty.register('Visibility', Enum(Visibility), UIElement, Visibility.VISIBLE);
     public static ClipToBoundsProperty = AdvancedProperty.register('ClipToBounds', Primitive.BOOLEAN, UIElement, true);
-    public static PositionProperty = AdvancedProperty.register('Position', Vec3, UIElement, Vec3.ZERO);
-    public static RotationProperty = AdvancedProperty.register('Rotation', Quat, UIElement, Quat.IDENTITY);
-    public static ScaleProperty = AdvancedProperty.register('Scale', Vec3, UIElement, Vec3.ONE);
-    public static ShearProperty = AdvancedProperty.register('Shear', Vec2, UIElement, Vec2.ZERO);
-    public static RenderTransformPivotProperty = AdvancedProperty.register('RenderTransformPivot', Vec2, UIElement, Object.freeze(new Vec2(0.5, 0.5)));
-    public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UIElement, Thickness.ZERO);
 
     protected _behaviors: Array<UIBehavior> = [];
     protected _document: UIDocument | null = null;
     protected _parent: ContainerElement | null = null;
     protected _children: Array<UIElement> = [];
     protected _eventListeners: Array<IUIEventCallback<UIEvent>> = [];
-    protected _layout = new Rect();
+    protected _layoutRect = new Rect();
     protected _previousArrangeRect = new Rect();
     protected _desiredSize = new Size();
     protected _worldTransform = new Mat4();
-    protected _localTransform = new Mat4();
     protected _worldTransformDirty = false;
-    protected _localTransformDirty = false;
     protected _paintingDirty = false;
     protected _measureDirty = false;
     protected _arrangeDirty = false;
     protected _hierarchyLevel = 0;
+    protected _renderTransform = this.addBehavior(RenderTransform);
+    protected _layout: UILayout | null = null;
 
-    get slot () {
-        return this.getBehavior(UISlot);
+    get layout () {
+        return this._layout;
+    }
+
+    get renderTransform () {
+        return this._renderTransform;
     }
 
     get parent () {
@@ -121,17 +120,17 @@ export class UIElement extends Visual {
         return this._previousArrangeRect;
     }
 
-    get layout () {
-        return this._layout;
+    get layoutRect () {
+        return this._layoutRect;
     }
 
-    set layout (val: Readonly<Rect>) {
-        if (!this._layout.size.equals(val.size)) {
+    protected set layoutRect (val: Readonly<Rect>) {
+        if (!this._layoutRect.size.equals(val.size)) {
             this.invalidatePainting();
         }
-        if (!this._layout.equals(val)) {
+        if (!this._layoutRect.equals(val)) {
             this.invalidateWorldTransform();
-            this._layout.set(val);
+            this._layoutRect.set(val);
         }
     }
 
@@ -140,16 +139,6 @@ export class UIElement extends Visual {
             return Size.ZERO;
         }
         return this._desiredSize;
-    }
-
-    get margin () {
-        return this.getValue(UIElement.MarginProperty) as Thickness;
-    }
-
-    set margin (val: Thickness) {
-        this.invalidateParentMeasure();
-        this.invalidateArrange();
-        this.setValue(UIElement.MarginProperty, val);
     }
 
     get flowDirection () {
@@ -195,103 +184,29 @@ export class UIElement extends Visual {
 
     //#region RenderTransform
 
-    get position () {
-        return this.getValue(UIElement.PositionProperty) as Vec3;
-    }
-
-    set position (val: Vec3) {
-        this.invalidateLocalTransform();
-        this.setValue(UIElement.PositionProperty, val.clone());
-    }
-
-    get eulerAngles () {
-        return Quat.toEuler(new Vec3(), this.rotation) as Vec3;
-    }
-
-    set eulerAngles (val: Vec3) {
-        const quat = Quat.fromEuler(new Quat(), val.x, val.y, val.z);
-        this.rotation = quat;
-    }
-
-    get rotation () {
-        return this.getValue(UIElement.RotationProperty) as Quat;
-    }
-
-    set rotation (val: Quat) {
-        this.invalidateLocalTransform();
-        this.setValue(UIElement.RotationProperty, val.clone());
-    }
-
-    get shear () {
-        return this.getValue(UIElement.ShearProperty) as Vec2;
-    }
-
-    set shear (val: Vec2) {
-        this.invalidateLocalTransform();
-        this.setValue(UIElement.ShearProperty, val);
-    }
-
-    get scale () {
-        return this.getValue(UIElement.ScaleProperty) as Vec3;
-    }
-
-    set scale (val: Vec3) {
-        this.invalidateLocalTransform();
-        this.setValue(UIElement.ScaleProperty, val.clone());
-    }
-
-    get renderTransformPivot () {
-        return this.getValue(UIElement.RenderTransformPivotProperty) as Vec2;
-    }
-
-    set renderTransformPivot (val: Vec2) {
-        this.invalidateWorldTransform();
-        this.setValue(UIElement.RenderTransformPivotProperty, val.clone());
-    }
-
     get worldTransform (): Readonly<Mat4> {
         this.updateWorldTransform();
         return this._worldTransform;
     }
 
     private get localTransform () {
-        if (this._localTransformDirty) {
-            const { x: shearX, y: shearY } = this.shear;
-            if (approx(shearX, 0) && approx(shearY, 0)) {
-                Mat4.fromRTS(this._localTransform, this.rotation, this.position, this.scale);
-            } else {
-                // apply order: scale -> shear -> rotation -> translation
-                Mat4.fromScaling(this._localTransform, this.scale);
-                const tempMat = new Mat4();
-                tempMat.m01 = shearY;
-                tempMat.m04 = shearX;
-                Mat4.multiply(this._localTransform, tempMat, this._localTransform);
-                Mat4.fromRT(tempMat, this.rotation, this.position);
-                Mat4.multiply(this._localTransform, tempMat, this._localTransform);
-            }
-            this._localTransformDirty = false;
-        }
-        return this._localTransform;
-    }
-
-    private get renderTransform () {
-        const { x: xOffsetPercentage, y: yOffsetPercentage } = this.renderTransformPivot;
+        const { x: xOffsetPercentage, y: yOffsetPercentage } = this._renderTransform.pivot;
         if (!approx(xOffsetPercentage, 0.5) || !approx(yOffsetPercentage, 0.5)) {
             const matrix = new Mat4();
-            const xOffset = this.layout.width * (xOffsetPercentage - 0.5);
-            const yOffset = this.layout.height * (yOffsetPercentage - 0.5);
+            const xOffset = this.layoutRect.width * (xOffsetPercentage - 0.5);
+            const yOffset = this.layoutRect.height * (yOffsetPercentage - 0.5);
             Mat4.fromTranslation(matrix, new Vec3(xOffset, yOffset, 0));
-            Mat4.multiply(matrix, matrix, this.localTransform);
+            Mat4.multiply(matrix, matrix, this._renderTransform.matrix);
             const temp = Mat4.fromTranslation(new Mat4(), new Vec3(-xOffset, -yOffset, 0));
             Mat4.multiply(matrix, matrix, temp);
             return matrix;
         }
-        return this.localTransform;
+        return this._renderTransform.matrix;
     }
 
     protected calculateWorldTransform () {
-        Mat4.fromTranslation(this._worldTransform, new Vec3(this.layout.center.x, this.layout.center.y, 0));
-        Mat4.multiply(this._worldTransform, this._worldTransform, this.renderTransform);
+        Mat4.fromTranslation(this._worldTransform, new Vec3(this.layoutRect.center.x, this.layoutRect.center.y, 0));
+        Mat4.multiply(this._worldTransform, this._worldTransform, this.localTransform);
         if (this.parent) {
             Mat4.multiply(this._worldTransform, this.parent.worldTransform, this._worldTransform);
         }
@@ -337,7 +252,8 @@ export class UIElement extends Visual {
             this._parent._children.push(this);
             this._parent.onChildAdded(this);
         }
-        // update document should be invoked first
+
+        this.updateSlot();
         this.updateDocument(this._parent ? this._parent._document : null);
         this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
         this.invalidateParentHierarchy();
@@ -352,6 +268,10 @@ export class UIElement extends Visual {
                 this._children[i].updateHierarchyLevel(level + 1);
             }
         }
+    }
+
+    private updateSlot () {
+        this._layout = this.getBehavior(UILayout);
     }
 
     protected updateDocument (document: UIDocument | null) {
@@ -428,11 +348,6 @@ export class UIElement extends Visual {
         }
     }
 
-    public invalidateLocalTransform () {
-        this._localTransformDirty = true;
-        this.invalidateWorldTransform();
-    }
-
     public invalidatePainting () {
         if (!this._paintingDirty) {
             this._paintingDirty = true;
@@ -489,14 +404,14 @@ export class UIElement extends Visual {
 
     //#endregion Behavior
 
-    //#region layout
+    //#region layoutRect
     protected computeDesiredSize () {
         return new Size(0, 0);
     }
 
     protected arrangeContent (arrangeSize: Size) {}
 
-    // sealed, invoked by layout system
+    // sealed, invoked by layoutRect system
     public measure () {
         if (this._measureDirty) {
             const desiredSize = this.computeDesiredSize();
@@ -512,16 +427,17 @@ export class UIElement extends Visual {
 
     public arrange (finalRect: Rect) {
         if (this._arrangeDirty || !finalRect.equals(this.previousArrangeRect)) {
-            const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight } = this.margin;
+            const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight } = this._layout
+                ? this._layout.margin : Thickness.ZERO;
             const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
             this.arrangeContent(arrangeSize);
             this._arrangeDirty = false;
             this._previousArrangeRect.set(finalRect);
-            this.layout = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
+            this.layoutRect = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
         }
         this.removeInvalidation(InvalidateReason.ARRANGE);
     }
-    //#endregion layout
+    //#endregion layoutRect
 
     //#region event
     public hitTest (ray: Ray): boolean {

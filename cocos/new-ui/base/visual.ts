@@ -29,7 +29,7 @@ import { AdvancedObject } from './advanced-object';
 import { IDrawingContext } from './ui-drawing-context';
 
 export class Visual extends AdvancedObject {
-    private _visualProxy = new VisualProxy(this);
+    private _visualProxy = new VisualProxy();
 
     get visualProxy () {
         return this._visualProxy;
@@ -53,6 +53,10 @@ export class Visual extends AdvancedObject {
 
     protected addVisualChild (child: Visual) {
         this._visualProxy.addChild(child._visualProxy);
+    }
+
+    protected clearVisualChildren () {
+        this._visualProxy.clearChildren();
     }
 
     protected onPaint (drawingContext: IDrawingContext) {}

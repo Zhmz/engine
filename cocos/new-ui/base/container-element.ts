@@ -26,7 +26,7 @@
 import { assert } from '../../core';
 import { ErrorID, UIError } from './error';
 import { UIElement } from './ui-element';
-import { UISlot } from './ui-slot';
+import { UILayout } from './ui-slot';
 
 export class ContainerElement extends UIElement {
     get children (): ReadonlyArray<UIElement> {
@@ -87,8 +87,8 @@ export class ContainerElement extends UIElement {
         return false;
     }
 
-    protected getSlotClass (): typeof UISlot {
-        return UISlot;
+    protected getSlotClass (): typeof UILayout {
+        return UILayout;
     }
 
     public onChildAdded (child: UIElement) {
@@ -97,7 +97,7 @@ export class ContainerElement extends UIElement {
     }
 
     public onChildRemoved (oldChild: UIElement) {
-        oldChild.removeBehavior(UISlot);
+        oldChild.removeBehavior(UILayout);
         this.removeVisualChild(oldChild);
     }
 }

@@ -26,9 +26,47 @@
 import { Rect, Size, Vec2 } from '../../core';
 import { ContainerElement } from '../base/container-element';
 import { UIElement, Visibility } from '../base/ui-element';
-import { UISlot } from '../base/ui-slot';
-import { ContentSlot, HorizontalAlignment, VerticalAlignment } from './content-slot';
+import { UILayout } from '../base/ui-slot';
 import { assertIsNonNullable } from '../../core/data/utils/asserts';
+import { Enum } from '../../core/value-types';
+import { AdvancedProperty } from '../base/advanced-property';
+
+export enum HorizontalAlignment {
+    LEFT,
+    CENTER,
+    RIGHT,
+    STRETCH
+}
+
+export enum VerticalAlignment {
+    TOP,
+    CENTER,
+    BOTTOM,
+    STRETCH
+}
+
+export class ContentLayout extends UILayout {
+    public static HorizontalAlignmentProperty = AdvancedProperty.register('HorizontalAlignment', Enum(HorizontalAlignment), ContentLayout, HorizontalAlignment.CENTER);
+    public static VerticalAlignmentProperty = AdvancedProperty.register('VerticalAlignment', Enum(VerticalAlignment), ContentLayout, HorizontalAlignment.CENTER);
+
+    get horizontalAlignment () {
+        return this.getValue(ContentLayout.HorizontalAlignmentProperty) as HorizontalAlignment;
+    }
+
+    set horizontalAlignment (val) {
+        this.element.invalidateParentArrange();
+        this.setValue(ContentLayout.HorizontalAlignmentProperty, val);
+    }
+
+    get verticalAlignment () {
+        return this.getValue(ContentLayout.VerticalAlignmentProperty) as VerticalAlignment;
+    }
+
+    set verticalAlignment (val) {
+        this.element.invalidateParentArrange();
+        this.setValue(ContentLayout.VerticalAlignmentProperty, val);
+    }
+}
 
 export class ContentControl extends ContainerElement {
     get content (): UIElement | null {
@@ -52,8 +90,8 @@ export class ContentControl extends ContainerElement {
         return false;
     }
 
-    protected getSlotClass (): typeof UISlot {
-        return ContentSlot;
+    protected getSlotClass (): typeof UILayout {
+        return ContentLayout;
     }
 
     protected computeDesiredSize () {
@@ -61,7 +99,7 @@ export class ContentControl extends ContainerElement {
         const content = this.content;
         if (content) {
             content.measure();
-            const { width: marginWidth, height: marginHeight } = content.margin;
+            const { width: marginWidth, height: marginHeight } = (content.layout as ContentLayout).margin;
             desiredSize.set(content.desiredSize.width + marginWidth, content.desiredSize.height + marginHeight);
         }
         return desiredSize;
@@ -72,9 +110,9 @@ export class ContentControl extends ContainerElement {
         if (content) {
             if (content.visibility !== Visibility.COLLAPSED) {
                 const childRect = new Rect();
-                const contentSlot = content.slot as ContentSlot;
+                const contentSlot = content.layout as ContentLayout;
                 assertIsNonNullable(contentSlot);
-                const { width: marginWidth, height: marginHeight } = content.margin;
+                const { width: marginWidth, height: marginHeight } = contentSlot.margin;
                 if (contentSlot.horizontalAlignment === HorizontalAlignment.STRETCH) {
                     childRect.width = finalRect.width;
                 } else {

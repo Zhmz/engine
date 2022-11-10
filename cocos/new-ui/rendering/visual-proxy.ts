@@ -23,7 +23,6 @@
  THE SOFTWARE.
 */
 import { Mat4 } from '../../core/math';
-import { Visual } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
 export enum VisualDirty {
@@ -32,7 +31,6 @@ export enum VisualDirty {
 }
 
 export class VisualProxy {
-    private _visual: Visual;
     private _parent: VisualProxy | null = null;
     private _childrenHead: VisualProxy | null = null;
     private _nextSibling: VisualProxy | null = null;
@@ -41,24 +39,12 @@ export class VisualProxy {
     private _opacity = 1;
     private _dirtyFlag = 3;// hack to dirty
 
-    constructor (visual: Visual) {
-        this._visual = visual;
-    }
-
-    public get Dirty () {
+    public get dirtyFlags () {
         return this._dirtyFlag;
     }
 
     public resetDirty () {
         this._dirtyFlag = 0;
-    }
-
-    public get nextSibling () {
-        return this._nextSibling;
-    }
-
-    public get visual () {
-        return this._visual;
     }
 
     public get isVisible () {
@@ -95,6 +81,10 @@ export class VisualProxy {
         return this._childrenHead;
     }
 
+    public get nextSibling () {
+        return this._nextSibling;
+    }
+
     public addChild (child: VisualProxy) {
         if (child._parent) {
             child._parent.removeChild(child);
@@ -128,6 +118,7 @@ export class VisualProxy {
                 cur = cur._nextSibling;
             }
         }
+        child._nextSibling = null;
         child._parent = null;
     }
 
@@ -146,7 +137,7 @@ export class VisualProxy {
         this._drawCommands.push(command);
     }
 
-    public getDrawCommands () {
+    public getDrawCommands (): ReadonlyArray<UIDrawCommand> {
         return this._drawCommands;
     }
 

@@ -34,6 +34,6 @@ export { UIDocument } from './ui-document';
 export { UIDocumentSettings } from './ui-document-settings';
 export { UIElement } from './ui-element';
 export { UIEvent } from './ui-event';
-export { UISlot } from './ui-slot';
+export { UILayout } from './ui-slot';
 export { UISystem } from './ui-system';
 export { UIWindow } from './ui-window';

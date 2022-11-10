@@ -28,7 +28,7 @@ export { Button } from "./button";
 export { Canvas } from "./canvas";
 export { CanvasSlot } from "./canvas-slot";
 export { ContentControl } from "./content-control";
-export { ContentSlot } from "./content-slot";
+export { ContentLayout } from "./content-slot";
 export { Image } from "./image";
 export { Label } from "./label";
 export { Panel } from "./panel";

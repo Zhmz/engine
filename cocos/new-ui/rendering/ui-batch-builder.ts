@@ -43,10 +43,10 @@ export class UIBatchBuilder {
         if (drawCommands.length > 0) {
             for (let j = 0; j < len; j++) {
                 const render = drawCommands[j];
-                if (proxy.Dirty & VisualDirty.TRANSFORM) { // worldTrsDirty
+                if (proxy.dirtyFlags & VisualDirty.TRANSFORM) { // worldTrsDirty
                     this._updateWorldVerts(render, proxy);
                 }
-                if (proxy.Dirty & VisualDirty.OPACITY) { // opacity dirty
+                if (proxy.dirtyFlags & VisualDirty.OPACITY) { // opacity dirty
                     this._updateOpacity(render, proxy);
                 }
                 // todo 合批判断 可以利用 dataHash 之类的
@@ -158,7 +158,7 @@ export class UIBatchBuilder {
         const dataList: ILocalVertexData[] = render.getLocalVB();
         const vData = render.getVB();
         const uintVData = render.getUintVB();
-        // hack for Synchronization 
+        // hack for Synchronization
         // const m = proxy.worldMatrix;// todo use this
         const m = proxy.worldMatrix;
 

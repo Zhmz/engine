@@ -56,6 +56,10 @@ export class Panel extends ContainerElement {
         } else {
             this._children.splice(originIndex, 1);
         }
+        this.clearVisualChildren();
+        for (let i = 0; i < this._children.length; i++) {
+            this.addVisualChild(this._children[i]);
+        }
     }
     
     public allowMultipleChild () {
