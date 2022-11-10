@@ -28,7 +28,6 @@ import { ContentControl } from "./content-control";
 import { UIElement } from "../base/ui-element";
 import { UILayout } from "../base/ui-slot";
 import { PointerUpEvent } from "../event-system/event-data/pointer-up-event";
-import { ContentLayout } from "./content-slot";
 import { PointerDownEvent } from "../event-system/event-data/pointer-event";
 
 export class Button extends ContentControl {

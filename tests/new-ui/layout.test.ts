@@ -4,7 +4,7 @@ import { Thickness } from "../../cocos/new-ui/base/thickness";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { ContentControl } from "../../cocos/new-ui/framework/content-control";
-import { ContentLayout, HorizontalAlignment, VerticalAlignment } from "../../cocos/new-ui/framework/content-slot";
+import { ContentLayout, HorizontalAlignment, VerticalAlignment } from "../../cocos/new-ui/framework/content-control";
 
 class FixedContentElement extends UIElement {
     private _width = 0;
