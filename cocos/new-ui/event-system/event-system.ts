@@ -90,6 +90,10 @@ export class EventSystem {
     public handleMouseEvent (event: Event, ray: Ray) {
         const eventMouse = event as EventMouse;
         const button = eventMouse.getButton();
+        if(button<0){
+            // the event might be move which is not handled with.
+            return;
+        }
         let curMouseButtonEvent: MouseButtonEvent | null = null;
 
         if (button === EventMouse.BUTTON_LEFT) {
