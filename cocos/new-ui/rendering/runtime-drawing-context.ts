@@ -3,7 +3,7 @@
 import { getAttributeStride, vfmtPosColor4B } from '../../2d/renderer/vertex-format';
 import { builtinResMgr, Color, Material, Pool, Rect } from '../../core';
 import { IDrawingContext } from '../base/ui-drawing-context';
-import { Brush } from './brush';
+import { Brush, BrushType } from './brush';
 import { UIDrawCommand } from './ui-draw-command';
 import { UIElement } from '../base';
 import { VisualProxy } from './visual-proxy';
@@ -30,6 +30,8 @@ const _localVertexDataPool = new Pool(() => ({
     v: 0,
     color: Color.WHITE._val,
 }), 128);
+
+let TempColor = new Color();
 
 // 在上层进行了paint命令之后，进行方法的提供和 visualProxy 的数据填充
 export class RuntimeDrawingContext extends IDrawingContext {
@@ -65,10 +67,10 @@ export class RuntimeDrawingContext extends IDrawingContext {
         const localVbs: ILocalVertexData[] = [];
         const ib = new Uint16Array(6);
 
-        const left = -rect.width * 0.5;
-        const right = rect.width * 0.5;
-        const bottom = -rect.height * 0.5;
-        const top = rect.height * 0.5;
+        const left = rect.x;
+        const right =  rect.x + rect.width;
+        const bottom = rect.y;
+        const top = rect.y + rect.height;
 
         // left bottom corner
         const localVb0 = _localVertexDataPool.alloc();
@@ -116,6 +118,64 @@ export class RuntimeDrawingContext extends IDrawingContext {
     }
 
     public drawBrush (rect: Rect, color: Color, brush: Readonly<Brush>) {
+        // rect 以传入为准
+        if (brush.type === BrushType.COLOR) {
+            // color
+            TempColor = Color.multiply(TempColor, color, brush.tintColor);
+
+            // fill local mesh
+            const localVbs: ILocalVertexData[] = [];
+            const ib = new Uint16Array(6);
+
+            const left = rect.x;
+            const right =  rect.x + rect.width;
+            const bottom = rect.y;
+            const top = rect.y + rect.height;
+
+            // left bottom corner
+            const localVb0 = _localVertexDataPool.alloc();
+            localVb0.x = left;
+            localVb0.y = bottom;
+            localVb0.z = 0;
+            localVb0.color = TempColor._val;
+            localVbs.push(localVb0);
+
+            // right bottom corner
+            const localVb1 = _localVertexDataPool.alloc();
+            localVb1.x = right;
+            localVb1.y = bottom;
+            localVb1.z = 0;
+            localVb1.color = TempColor._val;
+            localVbs.push(localVb1);
+
+            // left top corner
+            const localVb2 = _localVertexDataPool.alloc();
+            localVb2.x = left;
+            localVb2.y = top;
+            localVb2.z = 0;
+            localVb2.color = TempColor._val;
+            localVbs.push(localVb2);
+
+            // right top corner
+            const localVb3 = _localVertexDataPool.alloc();
+            localVb3.x = right;
+            localVb3.y = top;
+            localVb3.z = 0;
+            localVb3.color = TempColor._val;
+            localVbs.push(localVb3);
+
+            // need free localVertexData after used
+
+            ib[0] = 0;
+            ib[1] = 1;
+            ib[2] = 2;
+            ib[3] = 1;
+            ib[4] = 3;
+            ib[5] = 2;
+
+            const command = new UIDrawCommand(this._vertexFormat, 4, 6, localVbs, ib, this.getDefaultMaterialByType(MaterialType.ADD_COLOR));
+            (this._currentElement.renderData as VisualProxy).addDrawCommands(command);
+        }
 
     }
 

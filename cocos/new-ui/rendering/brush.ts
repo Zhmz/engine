@@ -25,7 +25,7 @@
 
 import { Color } from '../../core';
 
-enum BrushType {
+export enum BrushType {
     COLOR,
     TEXTURE,
     RENDER_TEXTURE,
@@ -38,12 +38,16 @@ export class Brush {
     static WHITE = Object.freeze(new Brush());
 
     private _type: BrushType = BrushType.COLOR;
-    private _tintColor = Color.WHITE;
+    private _tintColor = Color.WHITE.clone();
     private _width = 0;
     private _height = 0;
 
     get type () {
         return this._type;
+    }
+
+    set width (val) {
+        this._width = val;
     }
 
     get width () {
@@ -63,7 +67,7 @@ export class Brush {
     }
 
     set tintColor (color: Color) {
-        if (this._tintColor.equals(color)) {
+        if (!this._tintColor.equals(color)) {
             this._tintColor.set(color);
         }
     }
