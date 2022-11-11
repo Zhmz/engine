@@ -74,12 +74,6 @@ export class Visual extends AdvancedObject {
         this._renderData.clearChildren();
     }
 
-    protected onPaint (drawingContext: IDrawingContext) {}
-
-    public paint (drawingContext: IDrawingContext) {
-        this.onPaint(drawingContext);
-    }
-
     private static _renderDataFactory = new UIRenderDataFactory();
     static registerRenderDataFactory (renderDataFactory: UIRenderDataFactory) {
         this._renderDataFactory = renderDataFactory;

@@ -38,6 +38,7 @@ import { Visual } from './visual';
 import { UILayout } from './ui-layout';
 import { EventType, IUIEventCallback, UIEvent } from './ui-event';
 import { RenderTransform } from './render-transform';
+import { IDrawingContext } from './ui-drawing-context';
 
 export enum FlowDirection {
     LEFT_TO_RIGHT,
@@ -432,6 +433,17 @@ export class UIElement extends Visual {
         this.removeInvalidation(InvalidateReason.ARRANGE);
     }
     //#endregion layoutRect
+
+    //#region render
+    protected onPaint (drawingContext: IDrawingContext) {}
+
+    public paint (drawingContext: IDrawingContext) {
+        if (this._paintingDirty) {
+            this.onPaint(drawingContext);
+            this._paintingDirty = false;
+        }
+    }
+    //#endregion render
 
     //#region event
     public hitTest (ray: Ray): boolean {

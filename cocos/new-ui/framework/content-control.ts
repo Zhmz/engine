@@ -119,7 +119,7 @@ export class ContentControl extends ContainerElement {
         return desiredSize;
     }
 
-    protected arrangeContent (finalRect: Rect) {
+    protected arrangeContent (arrangeSize: Size) {
         const content = this.content;
         if (content) {
             if (content.visibility !== Visibility.COLLAPSED) {
@@ -128,13 +128,13 @@ export class ContentControl extends ContainerElement {
                 assertIsNonNullable(contentLayout);
                 const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight } = contentLayout.margin;
                 if (contentLayout.horizontalAlignment === HorizontalAlignment.STRETCH) {
-                    childRect.width = finalRect.width;
+                    childRect.width = arrangeSize.width;
                 } else {
                     childRect.width = content.desiredSize.width + marginWidth;
                 }
 
                 if (contentLayout.verticalAlignment === VerticalAlignment.STRETCH) {
-                    childRect.height = finalRect.height;
+                    childRect.height = arrangeSize.height;
                 } else {
                     childRect.height = content.desiredSize.height + marginHeight;
                 }
@@ -143,10 +143,10 @@ export class ContentControl extends ContainerElement {
 
                 switch (contentLayout.horizontalAlignment) {
                 case HorizontalAlignment.LEFT:
-                    childRect.x = -finalRect.width / 2;
+                    childRect.x = -arrangeSize.width / 2;
                     break;
                 case HorizontalAlignment.RIGHT:
-                    childRect.x = finalRect.width / 2 - childRect.width;
+                    childRect.x = arrangeSize.width / 2 - childRect.width;
                     break;
                 default:
                     break;
@@ -154,10 +154,10 @@ export class ContentControl extends ContainerElement {
 
                 switch (contentLayout.verticalAlignment) {
                 case VerticalAlignment.TOP:
-                    childRect.y = finalRect.height / 2  - childRect.height;
+                    childRect.y = arrangeSize.height / 2  - childRect.height;
                     break;
                 case VerticalAlignment.BOTTOM:
-                    childRect.y = -finalRect.height / 2;
+                    childRect.y = -arrangeSize.height / 2;
                     break;
                 default:
                     break;

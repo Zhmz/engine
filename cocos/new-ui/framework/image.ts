@@ -48,6 +48,7 @@ export class Image extends UIElement {
     }
 
     set tintColor (val) {
+        this.invalidatePainting();
         this.setValue(Image.TintColorProperty, val);
     }
 
