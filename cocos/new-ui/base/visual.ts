@@ -24,44 +24,68 @@
 */
 
 import { Mat4 } from '../../core/math';
-import { VisualProxy } from '../rendering/visual-proxy';
 import { AdvancedObject } from './advanced-object';
+import { ErrorID, UIError } from './error';
 import { IDrawingContext } from './ui-drawing-context';
 
-export class Visual extends AdvancedObject {
-    private _visualProxy = new VisualProxy();
+export class UIRenderData {
+    setIsVisible (val: boolean) {}
+    setCascadedOpacity (val: number) {}
+    setWorldMatrix (val: Mat4) {}
+    clearChildren () {}
+    addChild (child: UIRenderData) {}
+    removeChild (child: UIRenderData) {}
+}
 
-    get visualProxy () {
-        return this._visualProxy;
+export class UIRenderDataFactory {
+    public produce (visual: Visual) {
+        return new UIRenderData();
+    }
+}
+
+export class Visual extends AdvancedObject {
+    private _renderData: UIRenderData = Visual.allocateRenderData(this);
+
+    get renderData () {
+        return this._renderData;
     }
 
     protected setIsVisible (val: boolean) {
-        this._visualProxy.isVisible = val;
+        this._renderData.setIsVisible(val);
     }
 
     protected setCascadedOpacity (val: number) {
-        this._visualProxy.opacity = val;
+        this._renderData.setCascadedOpacity(val);
     }
 
     protected setVisualTransform (val: Readonly<Mat4>) {
-        this._visualProxy.worldMatrix = val;
+        this._renderData.setWorldMatrix(val);
     }
 
     protected removeVisualChild (child: Visual) {
-        this._visualProxy.removeChild(child._visualProxy);
+        this._renderData.removeChild(child._renderData);
     }
 
     protected addVisualChild (child: Visual) {
-        this._visualProxy.addChild(child._visualProxy);
+        this._renderData.addChild(child._renderData);
     }
 
     protected clearVisualChildren () {
-        this._visualProxy.clearChildren();
+        this._renderData.clearChildren();
     }
 
     protected onPaint (drawingContext: IDrawingContext) {}
 
     public paint (drawingContext: IDrawingContext) {
         this.onPaint(drawingContext);
+    }
+
+    private static _renderDataFactory = new UIRenderDataFactory();
+    static registerRenderDataFactory (renderDataFactory: UIRenderDataFactory) {
+        this._renderDataFactory = renderDataFactory;
+    }
+
+    static allocateRenderData (visual: Visual) {
+        return this._renderDataFactory.produce(visual);
     }
 }

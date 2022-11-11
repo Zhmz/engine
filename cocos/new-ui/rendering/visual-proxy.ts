@@ -23,6 +23,7 @@
  THE SOFTWARE.
 */
 import { Mat4 } from '../../core/math';
+import { UIRenderData, UIRenderDataFactory, Visual } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
 export enum VisualDirty {
@@ -30,7 +31,15 @@ export enum VisualDirty {
     OPACITY = 1 << 1,
 }
 
-export class VisualProxy {
+class VisualProxyFactory extends UIRenderDataFactory {
+    public produce (visual: Visual): VisualProxy {
+        return new VisualProxy();
+    }
+}
+
+Visual.registerRenderDataFactory(new VisualProxyFactory());
+
+export class VisualProxy extends UIRenderData {
     private _parent: VisualProxy | null = null;
     private _childrenHead: VisualProxy | null = null;
     private _nextSibling: VisualProxy | null = null;
@@ -43,34 +52,16 @@ export class VisualProxy {
         return this._dirtyFlag;
     }
 
-    public resetDirty () {
-        this._dirtyFlag = 0;
-    }
-
     public get isVisible () {
         return this._isVisible;
-    }
-
-    public set isVisible (val) {
-        this._isVisible = val;
     }
 
     public get opacity () {
         return this._opacity;
     }
 
-    public set opacity (val) {
-        this._opacity = val;
-        this._dirtyFlag |= VisualDirty.OPACITY;
-    }
-
     public get worldMatrix () {
         return this._worldMatrix;
-    }
-
-    public set worldMatrix (val) {
-        this._worldMatrix.set(val);
-        this._dirtyFlag |= VisualDirty.TRANSFORM;
     }
 
     public get parent () {
@@ -83,6 +74,24 @@ export class VisualProxy {
 
     public get nextSibling () {
         return this._nextSibling;
+    }
+
+    public resetDirty () {
+        this._dirtyFlag = 0;
+    }
+
+    public setIsVisible (val) {
+        this._isVisible = val;
+    }
+
+    public setCascadedOpacity (val) {
+        this._opacity = val;
+        this._dirtyFlag |= VisualDirty.OPACITY;
+    }
+
+    public setWorldMatrix (val) {
+        this._worldMatrix.set(val);
+        this._dirtyFlag |= VisualDirty.TRANSFORM;
     }
 
     public addChild (child: VisualProxy) {

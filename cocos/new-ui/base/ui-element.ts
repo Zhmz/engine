@@ -424,13 +424,10 @@ export class UIElement extends Visual {
 
     public arrange (finalRect: Rect) {
         if (this._arrangeDirty || !finalRect.equals(this.previousArrangeRect)) {
-            const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight } = this._layout
-                ? this._layout.margin : Thickness.ZERO;
-            const arrangeSize = new Size(Math.max(finalRect.width - marginWidth, 0), Math.max(finalRect.height - marginHeight, 0));
-            this.arrangeContent(arrangeSize);
+            this.arrangeContent(finalRect.size);
             this._arrangeDirty = false;
             this._previousArrangeRect.set(finalRect);
-            this.layoutRect = new Rect(finalRect.x + marginLeft, finalRect.y + marginBottom, arrangeSize.width, arrangeSize.height);
+            this.layoutRect = finalRect;
         }
         this.removeInvalidation(InvalidateReason.ARRANGE);
     }

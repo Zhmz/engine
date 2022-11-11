@@ -27,15 +27,5 @@ import { Thickness } from './thickness';
 import { UIBehavior } from './ui-behavior';
 
 export class UILayout extends UIBehavior {
-    public static MarginProperty = AdvancedProperty.register('Margin', Thickness, UILayout, Thickness.ZERO);
 
-    get margin () {
-        return this.getValue(UILayout.MarginProperty) as Thickness;
-    }
-
-    set margin (val: Thickness) {
-        this.element.invalidateParentMeasure();
-        this.element.invalidateArrange();
-        this.setValue(UILayout.MarginProperty, val);
-    }
 }

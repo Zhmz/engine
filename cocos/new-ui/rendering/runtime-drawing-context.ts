@@ -6,6 +6,7 @@ import { IDrawingContext } from '../base/ui-drawing-context';
 import { Brush } from './brush';
 import { UIDrawCommand } from './ui-draw-command';
 import { UIElement } from '../base';
+import { VisualProxy } from './visual-proxy';
 
 enum MaterialType {
     ADD_COLOR,
@@ -111,7 +112,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
         ib[5] = 2;
 
         const command = new UIDrawCommand(this._vertexFormat, 4, 6, localVbs, ib, this.getDefaultMaterialByType(MaterialType.ADD_COLOR));
-        this._currentElement.visualProxy.addDrawCommands(command);
+        (this._currentElement.renderData as VisualProxy).addDrawCommands(command);
     }
 
     public drawBrush (rect: Rect, color: Color, brush: Readonly<Brush>) {

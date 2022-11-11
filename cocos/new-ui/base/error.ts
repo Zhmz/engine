@@ -31,6 +31,7 @@ export enum ErrorID {
     MULTIPLE_CHILD,
     MAX_LAYOUT_ITERATION_COUNT,
     INVALID_WINDOW_PARENT,
+    NO_RENDER_DATA_FACTORY
 }
 
 export class UIError extends Error {

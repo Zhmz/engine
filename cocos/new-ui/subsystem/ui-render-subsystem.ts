@@ -29,6 +29,7 @@ import { InvalidateReason, UIElement } from '../base/ui-element';
 import { UISubSystem } from '../base/ui-subsystem';
 import { RuntimeDrawingContext } from '../rendering/runtime-drawing-context';
 import { UIBatchBuilder } from '../rendering/ui-batch-builder';
+import { VisualProxy } from '../rendering/visual-proxy';
 
 export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set<UIElement>();
@@ -62,7 +63,7 @@ export class UIRenderSubsystem extends UISubSystem {
         this._dirtyElementMap.clear();
 
         // build batches
-        this._batchBuilder.buildBatches(this._document.window.visualProxy);
+        this._batchBuilder.buildBatches(this._document.window.renderData as VisualProxy);
 
         const camera = this.settings.lowLevelRenderCamera;
         camera?.cleanIntermediateModels();

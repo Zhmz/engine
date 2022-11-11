@@ -30,6 +30,7 @@ import { UILayout } from '../base/ui-layout';
 import { assertIsNonNullable } from '../../core/data/utils/asserts';
 import { Enum } from '../../core/value-types';
 import { AdvancedProperty } from '../base/advanced-property';
+import { Thickness } from '../base/thickness';
 
 export enum HorizontalAlignment {
     LEFT,
@@ -46,8 +47,11 @@ export enum VerticalAlignment {
 }
 
 export class ContentLayout extends UILayout {
-    public static HorizontalAlignmentProperty = AdvancedProperty.register('HorizontalAlignment', Enum(HorizontalAlignment), ContentLayout, HorizontalAlignment.CENTER);
-    public static VerticalAlignmentProperty = AdvancedProperty.register('VerticalAlignment', Enum(VerticalAlignment), ContentLayout, HorizontalAlignment.CENTER);
+    public static HorizontalAlignmentProperty = AdvancedProperty.register('HorizontalAlignment',
+        Enum(HorizontalAlignment), ContentLayout, HorizontalAlignment.CENTER);
+    public static VerticalAlignmentProperty = AdvancedProperty.register('VerticalAlignment',
+        Enum(VerticalAlignment), ContentLayout, HorizontalAlignment.CENTER);
+    public static MarginProperty = AdvancedProperty.register('Margin', Thickness, ContentLayout, Thickness.ZERO);
 
     get horizontalAlignment () {
         return this.getValue(ContentLayout.HorizontalAlignmentProperty) as HorizontalAlignment;
@@ -65,6 +69,16 @@ export class ContentLayout extends UILayout {
     set verticalAlignment (val) {
         this.element.invalidateParentArrange();
         this.setValue(ContentLayout.VerticalAlignmentProperty, val);
+    }
+
+    get margin () {
+        return this.getValue(ContentLayout.MarginProperty) as Thickness;
+    }
+
+    set margin (val: Thickness) {
+        this.element.invalidateParentMeasure();
+        this.element.invalidateParentArrange();
+        this.setValue(ContentLayout.MarginProperty, val);
     }
 }
 
@@ -110,16 +124,16 @@ export class ContentControl extends ContainerElement {
         if (content) {
             if (content.visibility !== Visibility.COLLAPSED) {
                 const childRect = new Rect();
-                const contentSlot = content.layout as ContentLayout;
-                assertIsNonNullable(contentSlot);
-                const { width: marginWidth, height: marginHeight } = contentSlot.margin;
-                if (contentSlot.horizontalAlignment === HorizontalAlignment.STRETCH) {
+                const contentLayout = content.layout as ContentLayout;
+                assertIsNonNullable(contentLayout);
+                const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight } = contentLayout.margin;
+                if (contentLayout.horizontalAlignment === HorizontalAlignment.STRETCH) {
                     childRect.width = finalRect.width;
                 } else {
                     childRect.width = content.desiredSize.width + marginWidth;
                 }
 
-                if (contentSlot.verticalAlignment === VerticalAlignment.STRETCH) {
+                if (contentLayout.verticalAlignment === VerticalAlignment.STRETCH) {
                     childRect.height = finalRect.height;
                 } else {
                     childRect.height = content.desiredSize.height + marginHeight;
@@ -127,7 +141,7 @@ export class ContentControl extends ContainerElement {
 
                 childRect.center = new Vec2(0, 0);
 
-                switch (contentSlot.horizontalAlignment) {
+                switch (contentLayout.horizontalAlignment) {
                 case HorizontalAlignment.LEFT:
                     childRect.x = -finalRect.width / 2;
                     break;
@@ -138,7 +152,7 @@ export class ContentControl extends ContainerElement {
                     break;
                 }
 
-                switch (contentSlot.verticalAlignment) {
+                switch (contentLayout.verticalAlignment) {
                 case VerticalAlignment.TOP:
                     childRect.y = finalRect.height / 2  - childRect.height;
                     break;
@@ -148,6 +162,10 @@ export class ContentControl extends ContainerElement {
                 default:
                     break;
                 }
+                childRect.x += marginLeft;
+                childRect.y += marginBottom;
+                childRect.width = Math.max(childRect.width - marginWidth, 0);
+                childRect.height = Math.max(childRect.height - marginHeight, 0);
                 content.arrange(childRect);
             }
         }

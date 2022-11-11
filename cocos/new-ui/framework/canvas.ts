@@ -80,7 +80,7 @@ export class Canvas extends Panel {
         if (childCount === 0) return;
         for (let i = 0; i < childCount; i++) {
             const child = this._children[i];
-            const canvasSlot = child.layout as CanvasLayout;
+            const canvasLayout = child.layout as CanvasLayout;
         }
     }
 }

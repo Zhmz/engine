@@ -41,7 +41,7 @@ test('content-layout-measure', () => {
     parent.measure();
     expect(parent.desiredSize).toStrictEqual(new Size(100, 100));
     expect(content.desiredSize).toStrictEqual(new Size(100, 100));
-    content.layout!.margin = new Thickness(20, 10, 10, 10);
+    (content.layout as ContentLayout).margin = new Thickness(20, 10, 10, 10);
     content.measure();
     parent.measure();
     expect(parent.desiredSize).toStrictEqual(new Size(130, 120));
@@ -53,14 +53,14 @@ test('content-layout-measure', () => {
     expect(parent.desiredSize).toStrictEqual(new Size(40, 30));
     expect(content.desiredSize).toStrictEqual(new Size(10, 10));
 
-    content.layout!.margin = new Thickness(0, 0, 0, 0);
+    (content.layout as ContentLayout).margin = new Thickness(0, 0, 0, 0);
     content.measure();
     parent.measure();
     expect(parent.desiredSize).toStrictEqual(new Size(10, 10));
     expect(parent.content.desiredSize).toStrictEqual(new Size(10, 10));
     content.width = 150;
     content.height = 120;
-    content.layout!.margin = new Thickness(15, -10, -7, 9);
+    (content.layout as ContentLayout).margin = new Thickness(15, -10, -7, 9);
     content.measure();
     parent.measure();
     expect(content.desiredSize).toStrictEqual(new Size(150, 120));
@@ -115,7 +115,7 @@ test('content-layout-arrange', () => {
     expect(content.layoutRect.center).toStrictEqual(new Vec2(0, 0));
     expect(parent.layoutRect.center).toStrictEqual(new Vec2(0, 0));
     expect(parent.layoutRect.size).toStrictEqual(new Size(50, 50));
-    content.layout!.margin = new Thickness(15, 15, 5, 5);
+    (content.layout as ContentLayout).margin = new Thickness(15, 15, 5, 5);
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(10, 20), new Size(50, 50)));
@@ -170,7 +170,7 @@ test('content-layout-arrange', () => {
 
     content.width = 20;
     content.height = 20;
-    content.layout!.margin = new Thickness(10, 5, 5, 3);
+    (content.layout as ContentLayout).margin = new Thickness(10, 5, 5, 3);
     content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.LEFT;
     content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.TOP;
     content.measure();
@@ -190,7 +190,7 @@ test('content-layout-arrange', () => {
 
     content.width = 50;
     content.height = 50;
-    content.layout!.margin = new Thickness(-8, 10, 7, 3);
+    (content.layout as ContentLayout).margin = new Thickness(-8, 10, 7, 3);
     content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.CENTER;
     content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.TOP;
 
@@ -212,7 +212,7 @@ test('content-layout-arrange', () => {
 
     content.width = 100;
     content.height = 100;
-    content.layout!.margin = new Thickness(4, 2, 2, 5);
+    (content.layout as ContentLayout).margin = new Thickness(4, 2, 2, 5);
     content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.RIGHT;
     content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.TOP;
 
@@ -234,7 +234,7 @@ test('content-layout-arrange', () => {
 
     content.width = 100;
     content.height = 30;
-    content.layout!.margin = new Thickness(4, 2, 2, 5);
+    (content.layout as ContentLayout).margin = new Thickness(4, 2, 2, 5);
     content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.STRETCH;
     content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.TOP;
 
@@ -254,7 +254,7 @@ test('content-layout-arrange', () => {
 
     content.width = 40;
     content.height = 40;
-    content.layout!.margin = new Thickness(10, 5, 5, 3);
+    (content.layout as ContentLayout).margin = new Thickness(10, 5, 5, 3);
     content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.LEFT;
     content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.CENTER;
 
@@ -276,7 +276,7 @@ test('content-layout-arrange', () => {
 
     content.width = 40;
     content.height = 100;
-    content.layout!.margin = new Thickness(10, 0, 5, -10);
+    (content.layout as ContentLayout).margin = new Thickness(10, 0, 5, -10);
     content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.CENTER;
     content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.CENTER;
 
@@ -299,7 +299,7 @@ test('content-layout-arrange', () => {
 
     content.width = 60;
     content.height = 40;
-    content.layout!.margin = new Thickness(5, 2, -10, 5);
+    (content.layout as ContentLayout).margin = new Thickness(5, 2, -10, 5);
     content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.RIGHT;
     content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.CENTER;
     content.measure();
@@ -327,7 +327,7 @@ test('auto layoutRect', () => {
     document.window.addChild(content);
     (content.layout as ContentLayout).horizontalAlignment = HorizontalAlignment.STRETCH;
     (content.layout as ContentLayout).verticalAlignment = VerticalAlignment.STRETCH;
-    content.layout!.margin = new Thickness(10, 10, 10, 10);
+    (content.layout as ContentLayout).margin = new Thickness(10, 10, 10, 10);
     document.update();
 
     expect(content.desiredSize).toStrictEqual(new Size(100, 100));

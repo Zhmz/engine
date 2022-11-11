@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,33 +23,34 @@
  THE SOFTWARE.
 */
 
-import { Color, Rect, Size, Vec2 } from "../../core";
-import { AdvancedProperty } from "../base/advanced-property";
-import { IDrawingContext } from "../base/ui-drawing-context";
-import { UIElement } from "../base/ui-element";
-import { Brush } from "../rendering/brush";
+import { Color, Rect, Size, Vec2 } from '../../core';
+import { AdvancedProperty } from '../base/advanced-property';
+import { IDrawingContext } from '../base/ui-drawing-context';
+import { UIElement } from '../base/ui-element';
+import { Brush } from '../rendering/brush';
 
 export class Image extends UIElement {
     public static SourceProperty = AdvancedProperty.register('Source', Brush, Image, Brush.WHITE);
     public static TintColorProperty = AdvancedProperty.register('TintColor', Color, Image, Color.WHITE);
 
     get source (): Readonly<Brush> {
-        return this.getValue(Image.SourceProperty);
+        return this.getValue(Image.SourceProperty) as Brush;
     }
 
     set source (val: Readonly<Brush>) {
+        this.invalidateMeasure();
         this.invalidatePainting();
         this.setValue(Image.SourceProperty, val);
     }
 
     get tintColor (): Readonly<Color> {
-        return this.getValue(Image.TintColorProperty);
+        return this.getValue(Image.TintColorProperty) as Color;
     }
 
     set tintColor (val) {
         this.setValue(Image.TintColorProperty, val);
     }
-    
+
     computeDesiredSize () {
         const { width: naturalWidth, height: naturalHeight } = this.source;
         return new Size(naturalWidth, naturalHeight);
