@@ -78,7 +78,6 @@ export class UIRuntimeDocumentSettings extends UIDocumentSettings {
     }
 
     get lowLevelRenderCamera () {
-        // eslint-disable-next-line default-case
         switch (this._renderMode) {
         case RenderMode.OVERLAY:
             return UISystem.instance.hudCamera;
@@ -86,23 +85,26 @@ export class UIRuntimeDocumentSettings extends UIDocumentSettings {
             return this._camera?.camera;
         case RenderMode.WORLD_SPACE:
             return null;
+        default:
+            return null;
         }
     }
 
     public update () {
-        // eslint-disable-next-line default-case
+        const hudCamera = UISystem.instance.hudCamera;
+        const camera = this._camera?.camera;
         switch (this._renderMode) {
         case RenderMode.OVERLAY:
-            const hudCamera = UISystem.instance.hudCamera;
             this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(hudCamera.width, hudCamera.height)));
             this._document.setOrigin(hudCamera.node.worldMatrix);
             break;
         case RenderMode.CAMERA:
-            const camera = this._camera?.camera;
             break;
         case RenderMode.WORLD_SPACE:
             this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(this._width, this._height)));
             this._document.setOrigin(Mat4.IDENTITY);
+            break;
+        default:
             break;
         }
     }

@@ -26,9 +26,6 @@
 import { AdvancedProperty, Primitive } from './advanced-property';
 import { Enum } from '../../core/value-types/enum';
 import { Vec3 } from '../../core/math/vec3';
-import { Vec2 } from '../../core/math/vec2';
-import { Quat } from '../../core/math/quat';
-import { IDrawingContext } from './ui-drawing-context';
 import { assert } from '../../core/platform/debug';
 import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
@@ -38,7 +35,7 @@ import { approx, IVec3Like, Mat4, Rect, Size } from '../../core';
 import { Plane, ray, Ray } from '../../core/geometry';
 import { ContainerElement } from './container-element';
 import { Visual } from './visual';
-import { UILayout } from './ui-slot';
+import { UILayout } from './ui-layout';
 import { EventType, IUIEventCallback, UIEvent } from './ui-event';
 import { RenderTransform } from './render-transform';
 
@@ -253,7 +250,7 @@ export class UIElement extends Visual {
             this._parent.onChildAdded(this);
         }
 
-        this.updateSlot();
+        this.updateLayout();
         this.updateDocument(this._parent ? this._parent._document : null);
         this.updateHierarchyLevel(this._parent ? this._parent._hierarchyLevel + 1 : 0);
         this.invalidateParentHierarchy();
@@ -270,7 +267,7 @@ export class UIElement extends Visual {
         }
     }
 
-    private updateSlot () {
+    private updateLayout () {
         this._layout = this.getBehavior(UILayout);
     }
 

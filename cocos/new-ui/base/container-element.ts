@@ -26,7 +26,7 @@
 import { assert } from '../../core';
 import { ErrorID, UIError } from './error';
 import { UIElement } from './ui-element';
-import { UILayout } from './ui-slot';
+import { UILayout } from './ui-layout';
 
 export class ContainerElement extends UIElement {
     get children (): ReadonlyArray<UIElement> {
@@ -87,12 +87,12 @@ export class ContainerElement extends UIElement {
         return false;
     }
 
-    protected getSlotClass (): typeof UILayout {
+    protected getLayoutClass (): typeof UILayout {
         return UILayout;
     }
 
     public onChildAdded (child: UIElement) {
-        child.addBehavior(this.getSlotClass());
+        child.addBehavior(this.getLayoutClass());
         this.addVisualChild(child);
     }
 

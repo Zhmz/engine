@@ -26,7 +26,7 @@
 import { Rect, Size, Vec2 } from '../../core';
 import { ContainerElement } from '../base/container-element';
 import { UIElement, Visibility } from '../base/ui-element';
-import { UILayout } from '../base/ui-slot';
+import { UILayout } from '../base/ui-layout';
 import { assertIsNonNullable } from '../../core/data/utils/asserts';
 import { Enum } from '../../core/value-types';
 import { AdvancedProperty } from '../base/advanced-property';
@@ -90,7 +90,7 @@ export class ContentControl extends ContainerElement {
         return false;
     }
 
-    protected getSlotClass (): typeof UILayout {
+    protected getLayoutClass (): typeof UILayout {
         return ContentLayout;
     }
 

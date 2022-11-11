@@ -1,7 +1,7 @@
 import { Mat4, Quat, Rect, Scene, Size, Vec2, Vec3 } from "../../cocos/core";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
-import { UILayout } from "../../cocos/new-ui/base/ui-slot";
+import { UILayout } from "../../cocos/new-ui/base/ui-layout";
 import { ContentLayout } from "../../cocos/new-ui/framework/content-control";
 import { Node } from '../../cocos/core/scene-graph';
 import { ContainerElement } from "../../cocos/new-ui/base/container-element";
@@ -15,7 +15,7 @@ class SingleChildElement extends ContainerElement {
         return false;
     }
 
-    public getSlotClass () {
+    public getLayoutClass () {
         return ContentLayout;
     }
 
@@ -34,7 +34,7 @@ class MultipleChildElement extends ContainerElement {
         return true;
     }
 
-    public getSlotClass () {
+    public getLayoutClass () {
         return ContentLayout;
     }
 
@@ -47,10 +47,10 @@ class MultipleChildElement extends ContainerElement {
     }
 }
 
-test('slot', () => {
+test('layout', () => {
     const element1 = new UIElement();
     class TestElement extends ContainerElement {
-        public getSlotClass () {
+        public getLayoutClass () {
             return ContentLayout;
         }
     }
@@ -60,7 +60,7 @@ test('slot', () => {
     }
 
     class TestElement2 extends ContainerElement {
-        protected getSlotClass () {
+        protected getLayoutClass () {
             return TestSlot;
         }
     }
@@ -136,7 +136,7 @@ test('hierarchy', () => {
             return true;
         }
 
-        public getSlotClass () {
+        public getLayoutClass () {
             return ContentLayout;
         }
     }
@@ -287,7 +287,7 @@ test('other', () => {
             return true;
         }
 
-        public getSlotClass () {
+        public getLayoutClass () {
             return ContentLayout;
         }
     }

@@ -1,5 +1,5 @@
-import { InvalidateReason, UIElement } from "../base/ui-element";
-import { UISubSystem } from "../base/ui-subsystem";
+import { InvalidateReason, UIElement } from '../base/ui-element';
+import { UISubSystem } from '../base/ui-subsystem';
 
 export class UITransformSubsystem extends UISubSystem {
     private _dirtyTransformMap = new Set<UIElement>();

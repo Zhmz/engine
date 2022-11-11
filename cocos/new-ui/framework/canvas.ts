@@ -25,7 +25,7 @@
 */
 
 import { Size } from "../../core";
-import { UILayout } from "../base/ui-slot";
+import { UILayout } from "../base/ui-layout";
 import { Panel } from "./panel";
 import { Vec2 } from "../../core/math/vec2";
 import { Anchors } from "../base/anchors";
@@ -67,7 +67,7 @@ export class CanvasLayout extends UILayout {
 }
 
 export class Canvas extends Panel {
-    protected getSlotClass () {
+    protected getLayoutClass () {
         return CanvasLayout;
     }
 
