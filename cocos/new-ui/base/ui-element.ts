@@ -31,7 +31,7 @@ import { ErrorID, UIError } from './error';
 import { Thickness } from './thickness';
 import { UIBehavior, UIBehaviorType } from './ui-behavior';
 import { UIDocument } from './ui-document';
-import { approx, IVec3Like, Mat4, Rect, Size } from '../../core';
+import { approx, IVec3Like, Mat4, Rect, Size, Vec2 } from '../../core';
 import { Plane, ray, Ray } from '../../core/geometry';
 import { ContainerElement } from './container-element';
 import { Visual } from './visual';
@@ -454,35 +454,24 @@ export class UIElement extends Visual {
 
     //#region event
     public hitTest (ray: Ray): boolean {
-        const width = this._layout.width;
-        const height = this._layout.height;
+        const width = this._layoutRect.width;
+        const height = this._layoutRect.height;
+
+        const position = this._renderTransform.position;
         // bottom left
-        pointA.set(this.position.x-width/2,this.position.y-height/2);
+        pointA.set(position.x-width/2,position.y-height/2);
         // bottom right
-        pointB.set(this.position.x+width/2,this.position.y-height/2);
+        pointB.set(position.x+width/2,position.y-height/2);
         // top right
-        pointC.set(this.position.x+width/2,this.position.y+height/2);
+        pointC.set(position.x+width/2,position.y+height/2);
 
         Plane.fromPoints(temp_plane,pointA,pointB,pointC);
         raycastPlane(hitPoint,ray,temp_plane);
 
         this.worldToLocal(hitPoint,hitPoint);
         const hitPointVec2 = new Vec2(hitPoint.x,hitPoint.y);
-        const hit = this._layout.contains(hitPointVec2);
+        const hit = this._layoutRect.contains(hitPointVec2);
 
-        // const pivotX = this.renderTransformPivot.x;
-        // const pivotY = this.renderTransformPivot.y;
-
-        // const left = this.position.x-pivotX*width;
-        // const right = this.position.x+(1-pivotX)*width;
-        // const top = this.position.y+(1-pivotY)*height;
-        // const bottom = this.position.y-pivotY*height;
-
-        // if(hitPoint.x>=left && hitPoint.x<=right && hitPoint.y>=bottom && hitPoint.y<=top) {
-
-        // }
-
-        // temporarily return true
         return hit;
     }
 
