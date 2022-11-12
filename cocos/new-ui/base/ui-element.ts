@@ -62,12 +62,6 @@ export enum InvalidateReason {
     LAYOUT = InvalidateReason.MEASURE | InvalidateReason.ARRANGE,
 }
 
-const hitPoint = new Vec3();
-const pointA = new Vec3();
-const pointB = new Vec3();
-const pointC = new Vec3();
-const temp_plane = new Plane();
-
 export class UIElement extends Visual {
     public static FlowDirectionProperty = AdvancedProperty.register('FlowDirection', Enum(FlowDirection), UIElement, FlowDirection.LEFT_TO_RIGHT);
     public static OpacityProperty = AdvancedProperty.register('Opacity', Primitive.NUMBER, UIElement, 1);
@@ -454,6 +448,12 @@ export class UIElement extends Visual {
 
     //#region event
     public hitTest (ray: Ray): boolean {
+        const hitPoint = new Vec3();
+        const pointA = new Vec3();
+        const pointB = new Vec3();
+        const pointC = new Vec3();
+        const temp_plane = new Plane();
+
         const width = this._layoutRect.width;
         const height = this._layoutRect.height;
 
