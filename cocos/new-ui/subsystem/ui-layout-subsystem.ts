@@ -50,13 +50,8 @@ export class UILayoutSubsystem extends UISubSystem {
         }
     }
 
-    onElementMounted (element: UIElement) {}
-
-    onElementUnmounted (element: UIElement) {}
-
     update () {
         let iteration = 0;
-        console.time('Layout');
         while (this._arrangeDirtyElements.size > 0 || this._measureDirtyElements.size > 0) {
             while (this._measureDirtyElements.size > 0) {
                 const dirtyElement = this.getBottomMostElement(this._measureDirtyElements);
@@ -72,7 +67,6 @@ export class UILayoutSubsystem extends UISubSystem {
                 throw new UIError(ErrorID.MAX_LAYOUT_ITERATION_COUNT);
             }
         }
-        console.timeEnd('Layout');
     }
 
     private getBottomMostElement (elements: Set<UIElement>) {

@@ -22,7 +22,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { ContainerElement } from '../base';
+import { assert } from '../../core';
 import { RenderMode, UIRuntimeDocumentSettings } from '../base/runtime-document-settings';
 import { UIDocument } from '../base/ui-document';
 import { InvalidateReason, UIElement } from '../base/ui-element';
@@ -33,7 +33,6 @@ import { VisualProxy } from '../rendering/visual-proxy';
 
 export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set<UIElement>();
-    private _dirtyHierarchyMap = new Set<UIElement>();
     private _drawingContext: RuntimeDrawingContext;
     private _batchBuilder: UIBatchBuilder;
 
@@ -47,71 +46,24 @@ export class UIRenderSubsystem extends UISubSystem {
 
     constructor (document: UIDocument) {
         super(document);
-        this._drawingContext = new RuntimeDrawingContext(document);
-        this._batchBuilder = new UIBatchBuilder(document.window.renderData as VisualProxy);
-    }
-
-    onElementMounted (element: UIElement) {
-        this.connect(element, null);
-    }
-
-    connect (element: UIElement, parent: VisualProxy | null) {
-        if (!element.renderData) {
-            element.renderData = new VisualProxy(element);
-        }
-        if (parent) {
-            parent.addChild(element.renderData as VisualProxy);
-        }
-        if (element instanceof ContainerElement) {
-            for (let i = 0; i < element.childCount; i++) {
-                this.connect(element.children[i], element.renderData as VisualProxy);
-            }
-        }
-    }
-
-    onElementUnmounted (element: UIElement) {
-        this.clearRenderData(element);
-    }
-
-    clearRenderData (element: UIElement) {
-        element.renderData = null;
-        if (element instanceof ContainerElement) {
-            for (let i = 0; i < element.childCount; i++) {
-                this.clearRenderData(element.children[i]);
-            }
-        }
+        this._drawingContext = new RuntimeDrawingContext();
+        this._batchBuilder = new UIBatchBuilder(); // 对应关系有点奇怪，几乎是成套
     }
 
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
         if (invalidateReason & InvalidateReason.PAINT) {
             this._dirtyElementMap.add(element);
         }
-        if (invalidateReason & InvalidateReason.HIERARCHY) {
-            this._dirtyHierarchyMap.add(element);
-        }
-    }
-
-    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
-
     }
 
     update () {
-        for (const element of this._dirtyHierarchyMap) {
-            const children = (element as ContainerElement).children;
-            const visualProxy = element.renderData as VisualProxy;
-            visualProxy.clearChildren();
-            for (let i = 0; i < children.length; i++) {
-                visualProxy.addChild(children[i].renderData as VisualProxy);
-            }
-        }
-
         for (const element of this._dirtyElementMap) {
             this._drawingContext.paint(element);
         }
         this._dirtyElementMap.clear();
 
         // build batches
-        this._batchBuilder.buildBatches();
+        this._batchBuilder.buildBatches(this._document.window.renderData as VisualProxy);
 
         const camera = this.settings.lowLevelRenderCamera;
         camera?.cleanIntermediateModels();

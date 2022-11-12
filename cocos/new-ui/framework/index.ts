@@ -23,14 +23,12 @@
  THE SOFTWARE.
 */
 
-export { Border } from "./border";
-export { Button } from "./button";
-export { Canvas } from "./canvas";
-export { CanvasSlot } from "./canvas-slot";
-export { ContentControl } from "./content-control";
-export { ContentSlot } from "./content-slot";
-export { Image } from "./image";
-export { Label } from "./label";
-export { Panel } from "./panel";
+export { Border } from './border';
+export { Button } from './button';
+export * from './canvas';
+export * from './content-control';
+export { Image } from './image';
+export { Label } from './label';
+export { Panel } from './panel';
 
 // May have same name error // todo

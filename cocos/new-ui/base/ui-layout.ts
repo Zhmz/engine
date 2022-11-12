@@ -22,7 +22,10 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+import { AdvancedProperty } from './advanced-property';
+import { Thickness } from './thickness';
 import { UIBehavior } from './ui-behavior';
 
-export class UISlot extends UIBehavior {
+export class UILayout extends UIBehavior {
+
 }

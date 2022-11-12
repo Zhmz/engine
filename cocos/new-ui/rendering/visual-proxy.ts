@@ -23,49 +23,45 @@
  THE SOFTWARE.
 */
 import { Mat4 } from '../../core/math';
-import { IRenderData, Visual } from '../base/visual';
+import { UIRenderData, UIRenderDataFactory, Visual } from '../base/visual';
 import { UIDrawCommand } from './ui-draw-command';
 
-export class VisualProxy extends IRenderData {
-    private _visual: Visual;
+export enum VisualDirty {
+    TRANSFORM = 1,
+    OPACITY = 1 << 1,
+}
+
+class VisualProxyFactory extends UIRenderDataFactory {
+    public produce (visual: Visual): VisualProxy {
+        return new VisualProxy();
+    }
+}
+
+Visual.registerRenderDataFactory(new VisualProxyFactory());
+
+export class VisualProxy extends UIRenderData {
     private _parent: VisualProxy | null = null;
     private _childrenHead: VisualProxy | null = null;
     private _nextSibling: VisualProxy | null = null;
     private _worldMatrix: Mat4 = new Mat4();
-    private _isVisible = false;
+    private _isVisible = true;
     private _opacity = 1;
+    private _dirtyFlag = 3;// hack to dirty
 
-    constructor (visual: Visual) {
-        super();
-        this._visual = visual;
-    }
-
-    public get visual () {
-        return this._visual;
+    public get dirtyFlags () {
+        return this._dirtyFlag;
     }
 
     public get isVisible () {
         return this._isVisible;
     }
 
-    public set isVisible (val) {
-        this._isVisible = val;
-    }
-
     public get opacity () {
         return this._opacity;
     }
 
-    public set opacity (val) {
-        this._opacity = val;
-    }
-
     public get worldMatrix () {
         return this._worldMatrix;
-    }
-
-    public set worldMatrix (val) {
-        this._worldMatrix.set(val);
     }
 
     public get parent () {
@@ -74,6 +70,28 @@ export class VisualProxy extends IRenderData {
 
     public get children () {
         return this._childrenHead;
+    }
+
+    public get nextSibling () {
+        return this._nextSibling;
+    }
+
+    public resetDirty () {
+        this._dirtyFlag = 0;
+    }
+
+    public setIsVisible (val) {
+        this._isVisible = val;
+    }
+
+    public setCascadedOpacity (val) {
+        this._opacity = val;
+        this._dirtyFlag |= VisualDirty.OPACITY;
+    }
+
+    public setWorldMatrix (val) {
+        this._worldMatrix.set(val);
+        this._dirtyFlag |= VisualDirty.TRANSFORM;
     }
 
     public addChild (child: VisualProxy) {
@@ -109,6 +127,7 @@ export class VisualProxy extends IRenderData {
                 cur = cur._nextSibling;
             }
         }
+        child._nextSibling = null;
         child._parent = null;
     }
 
@@ -123,20 +142,11 @@ export class VisualProxy extends IRenderData {
         this._childrenHead = null;
     }
 
-    public walkSubTree (func: (visualProxy: VisualProxy) => void) {
-        let cur = this._childrenHead;
-        while (cur) {
-            func(cur);
-            cur.walkSubTree(func);
-            cur = cur._nextSibling;
-        }
-    }
-
     public addDrawCommands (command: UIDrawCommand) {
         this._drawCommands.push(command);
     }
 
-    public getDrawCommands () {
+    public getDrawCommands (): ReadonlyArray<UIDrawCommand> {
         return this._drawCommands;
     }
 

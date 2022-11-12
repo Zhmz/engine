@@ -1,6 +1,7 @@
 import { getAttributeStride } from '../../2d/renderer/vertex-format';
 import { Material } from '../../core';
 import { Attribute, Sampler, Texture } from '../../core/gfx';
+import { ILocalVertexData } from './runtime-drawing-context';
 
 export class UIDrawCommand {
     // texture
@@ -14,8 +15,10 @@ export class UIDrawCommand {
     protected _vertexOffset = 0;
     protected _indexOffset = 0;
     // 这个结构理应可以精简
-    protected _vb: Float32Array | null = null; // local vertex //不可为空
-    protected _ib: Uint16Array | null = null;
+    protected _localVb : ILocalVertexData[]; // local vertex
+    protected _vb: Float32Array; // world vertex
+    protected _uintVb: Uint32Array;
+    protected _ib: Uint16Array;
 
     // batcher use
     // protected _vData: Float32Array | null = null; // meshBUffer 的大数组
@@ -25,10 +28,17 @@ export class UIDrawCommand {
     protected _floatStride = 0;
     protected _vertexFormat: Attribute[];
 
-    constructor (vertexFormat, vbCount, ibCount, vb, ib, material) {
+    constructor (vertexFormat, vbCount, ibCount, localVb, ib, material) {
         this._stride = getAttributeStride(vertexFormat);
         this._floatStride = this._stride >> 2;
         this._vertexFormat = vertexFormat;
+        this._vbCount = vbCount;
+        this._ibCount = ibCount;
+        this._localVb = localVb;
+        this._vb = new Float32Array(vbCount * this._floatStride); // world VB
+        this._uintVb = new Uint32Array(this._vb.buffer);
+        this._ib = ib;
+        this._material = material;
     }
 
     get floatStride () {
@@ -59,7 +69,11 @@ export class UIDrawCommand {
         this._vb = vbBuffer;
     }
     public getVB () {
-        return this._vb!; // 单个对象的顶点值，合批前使用这个
+        return this._vb!; // world vertex
+    }
+
+    public getUintVB () {
+        return this._uintVb!; // buffer view
     }
 
     public setIB (ibBuffer: Uint16Array) {
@@ -67,6 +81,10 @@ export class UIDrawCommand {
     }
     public getIB () {
         return this._ib!;
+    }
+
+    public getLocalVB () {
+        return this._localVb;
     }
 
     // public setVData (vDataBuffer: Float32Array) {

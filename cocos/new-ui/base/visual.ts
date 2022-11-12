@@ -23,27 +23,63 @@
  THE SOFTWARE.
 */
 
+import { Mat4 } from '../../core/math';
 import { AdvancedObject } from './advanced-object';
+import { ErrorID, UIError } from './error';
 import { IDrawingContext } from './ui-drawing-context';
 
-export class IRenderData {
+export class UIRenderData {
+    setIsVisible (val: boolean) {}
+    setCascadedOpacity (val: number) {}
+    setWorldMatrix (val: Mat4) {}
+    clearChildren () {}
+    addChild (child: UIRenderData) {}
+    removeChild (child: UIRenderData) {}
+}
 
+export class UIRenderDataFactory {
+    public produce (visual: Visual) {
+        return new UIRenderData();
+    }
 }
 
 export class Visual extends AdvancedObject {
-    private _renderData: IRenderData | null = null;
+    private _renderData: UIRenderData = Visual.allocateRenderData(this);
 
     get renderData () {
         return this._renderData;
     }
 
-    set renderData (val: IRenderData | null) {
-        this._renderData = val;
+    protected setIsVisible (val: boolean) {
+        this._renderData.setIsVisible(val);
     }
 
-    protected onPaint (drawingContext: IDrawingContext) {}
+    protected setCascadedOpacity (val: number) {
+        this._renderData.setCascadedOpacity(val);
+    }
 
-    public paint (drawingContext: IDrawingContext) {
-        this.onPaint(drawingContext);
+    protected setVisualTransform (val: Readonly<Mat4>) {
+        this._renderData.setWorldMatrix(val);
+    }
+
+    protected removeVisualChild (child: Visual) {
+        this._renderData.removeChild(child._renderData);
+    }
+
+    protected addVisualChild (child: Visual) {
+        this._renderData.addChild(child._renderData);
+    }
+
+    protected clearVisualChildren () {
+        this._renderData.clearChildren();
+    }
+
+    private static _renderDataFactory = new UIRenderDataFactory();
+    static registerRenderDataFactory (renderDataFactory: UIRenderDataFactory) {
+        this._renderDataFactory = renderDataFactory;
+    }
+
+    static allocateRenderData (visual: Visual) {
+        return this._renderDataFactory.produce(visual);
     }
 }

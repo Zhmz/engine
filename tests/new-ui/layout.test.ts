@@ -1,12 +1,10 @@
-import { RunningScriptOptions } from "vm";
 import { Rect, Size, Vec2 } from "../../cocos/core";
 import { RenderMode, UIRuntimeDocumentSettings } from "../../cocos/new-ui/base/runtime-document-settings";
 import { Thickness } from "../../cocos/new-ui/base/thickness";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
-import { UIDocumentSettings } from "../../cocos/new-ui/base/ui-document-settings";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { ContentControl } from "../../cocos/new-ui/framework/content-control";
-import { ContentSlot, HorizontalAlignment, VerticalAlignment } from "../../cocos/new-ui/framework/content-slot";
+import { ContentLayout, HorizontalAlignment, VerticalAlignment } from "../../cocos/new-ui/framework/content-control";
 
 class FixedContentElement extends UIElement {
     private _width = 0;
@@ -34,7 +32,7 @@ class FixedContentElement extends UIElement {
     }
 }
 
-test('content-slot-measure', () => {
+test('content-layout-measure', () => {
     const parent = new ContentControl();
     const content = new FixedContentElement();
     parent.content = content;
@@ -43,7 +41,7 @@ test('content-slot-measure', () => {
     parent.measure();
     expect(parent.desiredSize).toStrictEqual(new Size(100, 100));
     expect(content.desiredSize).toStrictEqual(new Size(100, 100));
-    content.margin = new Thickness(20, 10, 10, 10);
+    (content.layout as ContentLayout).margin = new Thickness(20, 10, 10, 10);
     content.measure();
     parent.measure();
     expect(parent.desiredSize).toStrictEqual(new Size(130, 120));
@@ -55,14 +53,14 @@ test('content-slot-measure', () => {
     expect(parent.desiredSize).toStrictEqual(new Size(40, 30));
     expect(content.desiredSize).toStrictEqual(new Size(10, 10));
 
-    content.margin = new Thickness(0, 0, 0, 0);
+    (content.layout as ContentLayout).margin = new Thickness(0, 0, 0, 0);
     content.measure();
     parent.measure();
     expect(parent.desiredSize).toStrictEqual(new Size(10, 10));
     expect(parent.content.desiredSize).toStrictEqual(new Size(10, 10));
     content.width = 150;
     content.height = 120;
-    content.margin = new Thickness(15, -10, -7, 9);
+    (content.layout as ContentLayout).margin = new Thickness(15, -10, -7, 9);
     content.measure();
     parent.measure();
     expect(content.desiredSize).toStrictEqual(new Size(150, 120));
@@ -101,32 +99,32 @@ test('content-slot-measure', () => {
     expect(content2.desiredSize).toStrictEqual(new Size(50, 50));
 });
 
-test('content-slot-arrange', () => {
+test('content-layout-arrange', () => {
     const parent = new ContentControl();
     const content = new FixedContentElement();
     content.width = content.height = 100;
     parent.content = content;
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.STRETCH;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.STRETCH;
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.STRETCH;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.STRETCH;
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(50, 50)));
     expect(content.desiredSize).toStrictEqual(new Size(100, 100));
     expect(parent.desiredSize).toStrictEqual(new Size(100, 100));
-    expect(content.layout.size).toStrictEqual(new Size(50, 50));
-    expect(content.layout.center).toStrictEqual(new Vec2(0, 0));
-    expect(parent.layout.center).toStrictEqual(new Vec2(0, 0));
-    expect(parent.layout.size).toStrictEqual(new Size(50, 50));
-    content.margin = new Thickness(15, 15, 5, 5);
+    expect(content.layoutRect.size).toStrictEqual(new Size(50, 50));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(0, 0));
+    expect(parent.layoutRect.center).toStrictEqual(new Vec2(0, 0));
+    expect(parent.layoutRect.size).toStrictEqual(new Size(50, 50));
+    (content.layout as ContentLayout).margin = new Thickness(15, 15, 5, 5);
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(10, 20), new Size(50, 50)));
     expect(content.desiredSize).toStrictEqual(new Size(100, 100));
     expect(parent.desiredSize).toStrictEqual(new Size(120, 120));
-    expect(content.layout.size).toStrictEqual(new Size(30, 30));
-    expect(content.layout.center).toStrictEqual(new Vec2(5, -5));
-    expect(parent.layout.center).toStrictEqual(new Vec2(10, 20));
-    expect(parent.layout.size).toStrictEqual(new Size(50, 50));
+    expect(content.layoutRect.size).toStrictEqual(new Size(30, 30));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(5, -5));
+    expect(parent.layoutRect.center).toStrictEqual(new Vec2(10, 20));
+    expect(parent.layoutRect.size).toStrictEqual(new Size(50, 50));
     content.width = 20;
     content.height = 20;
     content.measure();
@@ -134,23 +132,23 @@ test('content-slot-arrange', () => {
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(50, 50)));
     expect(content.desiredSize).toStrictEqual(new Size(20, 20));
     expect(parent.desiredSize).toStrictEqual(new Size(40, 40));
-    expect(content.layout.size).toStrictEqual(new Size(30, 30));
-    expect(content.layout.center).toStrictEqual(new Vec2(5, -5));
-    expect(parent.layout.center).toStrictEqual(new Vec2(0, 0));
-    expect(parent.layout.size).toStrictEqual(new Size(50, 50));
+    expect(content.layoutRect.size).toStrictEqual(new Size(30, 30));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(5, -5));
+    expect(parent.layoutRect.center).toStrictEqual(new Vec2(0, 0));
+    expect(parent.layoutRect.size).toStrictEqual(new Size(50, 50));
 
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(10, 5), new Size(200, 100)));
     expect(content.desiredSize).toStrictEqual(new Size(20, 20));
     expect(parent.desiredSize).toStrictEqual(new Size(40, 40));
-    expect(content.layout.size).toStrictEqual(new Size(180, 80));
-    expect(content.layout.center).toStrictEqual(new Vec2(5, -5));
-    expect(parent.layout.center).toStrictEqual(new Vec2(10, 5));
-    expect(parent.layout.size).toStrictEqual(new Size(200, 100));
+    expect(content.layoutRect.size).toStrictEqual(new Size(180, 80));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(5, -5));
+    expect(parent.layoutRect.center).toStrictEqual(new Vec2(10, 5));
+    expect(parent.layoutRect.size).toStrictEqual(new Size(200, 100));
 
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.CENTER;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.CENTER;
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.CENTER;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.CENTER;
 
     content.width = 120;
     content.height = 120;
@@ -159,10 +157,10 @@ test('content-slot-arrange', () => {
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(-20, -5), new Size(80, 80)));
     expect(content.desiredSize).toStrictEqual(new Size(120, 120));
     expect(parent.desiredSize).toStrictEqual(new Size(140, 140));
-    expect(content.layout.size).toStrictEqual(new Size(120, 120));
-    expect(content.layout.center).toStrictEqual(new Vec2(5, -5));
-    expect(parent.layout.center).toStrictEqual(new Vec2(-20, -5));
-    expect(parent.layout.size).toStrictEqual(new Size(80, 80));
+    expect(content.layoutRect.size).toStrictEqual(new Size(120, 120));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(5, -5));
+    expect(parent.layoutRect.center).toStrictEqual(new Vec2(-20, -5));
+    expect(parent.layoutRect.size).toStrictEqual(new Size(80, 80));
 
     //       _______________
     //      ||    |         |
@@ -172,16 +170,16 @@ test('content-slot-arrange', () => {
 
     content.width = 20;
     content.height = 20;
-    content.margin = new Thickness(10, 5, 5, 3);
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.LEFT;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.TOP;
+    (content.layout as ContentLayout).margin = new Thickness(10, 5, 5, 3);
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.LEFT;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.TOP;
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
     expect(content.desiredSize).toStrictEqual(new Size(20, 20));
     expect(parent.desiredSize).toStrictEqual(new Size(35, 28));
-    expect(content.layout.size).toStrictEqual(new Size(20, 20));
-    expect(content.layout.center).toStrictEqual(new Vec2(-20, 25));
+    expect(content.layoutRect.size).toStrictEqual(new Size(20, 20));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(-20, 25));
 
     //       _______________
     //      |   |       |   |
@@ -192,17 +190,17 @@ test('content-slot-arrange', () => {
 
     content.width = 50;
     content.height = 50;
-    content.margin = new Thickness(-8, 10, 7, 3);
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.CENTER;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.TOP;
+    (content.layout as ContentLayout).margin = new Thickness(-8, 10, 7, 3);
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.CENTER;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.TOP;
 
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
     expect(content.desiredSize).toStrictEqual(new Size(50, 50));
     expect(parent.desiredSize).toStrictEqual(new Size(49, 63));
-    expect(content.layout.size).toStrictEqual(new Size(50, 50));
-    expect(content.layout.center).toStrictEqual(new Vec2(-7.5, 5));
+    expect(content.layoutRect.size).toStrictEqual(new Size(50, 50));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(-7.5, 5));
 
     //    __________________
     //   |  |               |
@@ -214,17 +212,17 @@ test('content-slot-arrange', () => {
 
     content.width = 100;
     content.height = 100;
-    content.margin = new Thickness(4, 2, 2, 5);
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.RIGHT;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.TOP;
+    (content.layout as ContentLayout).margin = new Thickness(4, 2, 2, 5);
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.RIGHT;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.TOP;
 
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
     expect(content.desiredSize).toStrictEqual(new Size(100, 100));
     expect(parent.desiredSize).toStrictEqual(new Size(106, 107));
-    expect(content.layout.size).toStrictEqual(new Size(100, 100));
-    expect(content.layout.center).toStrictEqual(new Vec2(-12, -12));
+    expect(content.layoutRect.size).toStrictEqual(new Size(100, 100));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(-12, -12));
 
     //    __________________
     //   ||                ||
@@ -236,17 +234,17 @@ test('content-slot-arrange', () => {
 
     content.width = 100;
     content.height = 30;
-    content.margin = new Thickness(4, 2, 2, 5);
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.STRETCH;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.TOP;
+    (content.layout as ContentLayout).margin = new Thickness(4, 2, 2, 5);
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.STRETCH;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.TOP;
 
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
     expect(content.desiredSize).toStrictEqual(new Size(100, 30));
     expect(parent.desiredSize).toStrictEqual(new Size(106, 37));
-    expect(content.layout.size).toStrictEqual(new Size(74, 30));
-    expect(content.layout.center).toStrictEqual(new Vec2(1, 23));
+    expect(content.layoutRect.size).toStrictEqual(new Size(74, 30));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(1, 23));
 
     //       _______________
     //      | ____          |
@@ -256,17 +254,17 @@ test('content-slot-arrange', () => {
 
     content.width = 40;
     content.height = 40;
-    content.margin = new Thickness(10, 5, 5, 3);
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.LEFT;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.CENTER;
+    (content.layout as ContentLayout).margin = new Thickness(10, 5, 5, 3);
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.LEFT;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.CENTER;
 
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
     expect(content.desiredSize).toStrictEqual(new Size(40, 40));
     expect(parent.desiredSize).toStrictEqual(new Size(55, 48));
-    expect(content.layout.size).toStrictEqual(new Size(40, 40));
-    expect(content.layout.center).toStrictEqual(new Vec2(-10, -1));
+    expect(content.layoutRect.size).toStrictEqual(new Size(40, 40));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(-10, -1));
 
     //             ____
     //       _____|____|____
@@ -278,17 +276,17 @@ test('content-slot-arrange', () => {
 
     content.width = 40;
     content.height = 100;
-    content.margin = new Thickness(10, 0, 5, -10);
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.CENTER;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.CENTER;
+    (content.layout as ContentLayout).margin = new Thickness(10, 0, 5, -10);
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.CENTER;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.CENTER;
 
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
     expect(content.desiredSize).toStrictEqual(new Size(40, 100));
     expect(parent.desiredSize).toStrictEqual(new Size(55, 90));
-    expect(content.layout.size).toStrictEqual(new Size(40, 100));
-    expect(content.layout.center).toStrictEqual(new Vec2(2.5, -5));
+    expect(content.layoutRect.size).toStrictEqual(new Size(40, 100));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(2.5, -5));
 
 
     //             
@@ -301,21 +299,21 @@ test('content-slot-arrange', () => {
 
     content.width = 60;
     content.height = 40;
-    content.margin = new Thickness(5, 2, -10, 5);
-    content.getBehavior(ContentSlot)!.horizontalAlignment = HorizontalAlignment.RIGHT;
-    content.getBehavior(ContentSlot)!.verticalAlignment = VerticalAlignment.CENTER;
+    (content.layout as ContentLayout).margin = new Thickness(5, 2, -10, 5);
+    content.getBehavior(ContentLayout)!.horizontalAlignment = HorizontalAlignment.RIGHT;
+    content.getBehavior(ContentLayout)!.verticalAlignment = VerticalAlignment.CENTER;
     content.measure();
     parent.measure();
     parent.arrange(Rect.fromCenterSize(new Rect, new Vec2(0, 0), new Size(80, 80)));
     expect(content.desiredSize).toStrictEqual(new Size(60, 40));
     expect(parent.desiredSize).toStrictEqual(new Size(55, 47));
-    expect(content.layout.size).toStrictEqual(new Size(60, 40));
-    expect(content.layout.center).toStrictEqual(new Vec2(20, 1.5));
+    expect(content.layoutRect.size).toStrictEqual(new Size(60, 40));
+    expect(content.layoutRect.center).toStrictEqual(new Vec2(20, 1.5));
 
 });
 
 
-test('auto layout', () => {
+test('auto layoutRect', () => {
     const document = new UIDocument();
     (document.settings as UIRuntimeDocumentSettings).renderMode = RenderMode.WORLD_SPACE;
     (document.settings as UIRuntimeDocumentSettings).width = 960;
@@ -323,20 +321,20 @@ test('auto layout', () => {
     const content = new ContentControl();
     const fixedSizeContent = new FixedContentElement();
     content.addChild(fixedSizeContent);
-    (fixedSizeContent.slot as ContentSlot).horizontalAlignment = HorizontalAlignment.LEFT;
-    (fixedSizeContent.slot as ContentSlot).verticalAlignment = VerticalAlignment.TOP;
+    (fixedSizeContent.layout as ContentLayout).horizontalAlignment = HorizontalAlignment.LEFT;
+    (fixedSizeContent.layout as ContentLayout).verticalAlignment = VerticalAlignment.TOP;
     fixedSizeContent.width = fixedSizeContent.height = 100;
     document.window.addChild(content);
-    (content.slot as ContentSlot).horizontalAlignment = HorizontalAlignment.STRETCH;
-    (content.slot as ContentSlot).verticalAlignment = VerticalAlignment.STRETCH;
-    content.margin = new Thickness(10, 10, 10, 10);
+    (content.layout as ContentLayout).horizontalAlignment = HorizontalAlignment.STRETCH;
+    (content.layout as ContentLayout).verticalAlignment = VerticalAlignment.STRETCH;
+    (content.layout as ContentLayout).margin = new Thickness(10, 10, 10, 10);
     document.update();
 
     expect(content.desiredSize).toStrictEqual(new Size(100, 100));
     expect(fixedSizeContent.desiredSize).toStrictEqual(new Size(100, 100));
     expect(document.window.desiredSize).toStrictEqual(new Size(120, 120));
-    expect(content.layout.size).toStrictEqual(new Size(940, 620));
-    expect(content.layout.origin).toStrictEqual(new Vec2(-470, -310));
-    expect(fixedSizeContent.layout.size).toStrictEqual(new Size(100, 100));
-    expect(fixedSizeContent.layout.center).toStrictEqual(new Vec2(-420, 260));
+    expect(content.layoutRect.size).toStrictEqual(new Size(940, 620));
+    expect(content.layoutRect.origin).toStrictEqual(new Vec2(-470, -310));
+    expect(fixedSizeContent.layoutRect.size).toStrictEqual(new Size(100, 100));
+    expect(fixedSizeContent.layoutRect.center).toStrictEqual(new Vec2(-420, 260));
 });

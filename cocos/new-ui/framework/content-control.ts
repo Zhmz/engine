@@ -26,9 +26,61 @@
 import { Rect, Size, Vec2 } from '../../core';
 import { ContainerElement } from '../base/container-element';
 import { UIElement, Visibility } from '../base/ui-element';
-import { UISlot } from '../base/ui-slot';
-import { ContentSlot, HorizontalAlignment, VerticalAlignment } from './content-slot';
+import { UILayout } from '../base/ui-layout';
 import { assertIsNonNullable } from '../../core/data/utils/asserts';
+import { Enum } from '../../core/value-types';
+import { AdvancedProperty } from '../base/advanced-property';
+import { Thickness } from '../base/thickness';
+
+export enum HorizontalAlignment {
+    LEFT,
+    CENTER,
+    RIGHT,
+    STRETCH
+}
+
+export enum VerticalAlignment {
+    TOP,
+    CENTER,
+    BOTTOM,
+    STRETCH
+}
+
+export class ContentLayout extends UILayout {
+    public static HorizontalAlignmentProperty = AdvancedProperty.register('HorizontalAlignment',
+        Enum(HorizontalAlignment), ContentLayout, HorizontalAlignment.CENTER);
+    public static VerticalAlignmentProperty = AdvancedProperty.register('VerticalAlignment',
+        Enum(VerticalAlignment), ContentLayout, HorizontalAlignment.CENTER);
+    public static MarginProperty = AdvancedProperty.register('Margin', Thickness, ContentLayout, Thickness.ZERO);
+
+    get horizontalAlignment () {
+        return this.getValue(ContentLayout.HorizontalAlignmentProperty) as HorizontalAlignment;
+    }
+
+    set horizontalAlignment (val) {
+        this.element.invalidateParentArrange();
+        this.setValue(ContentLayout.HorizontalAlignmentProperty, val);
+    }
+
+    get verticalAlignment () {
+        return this.getValue(ContentLayout.VerticalAlignmentProperty) as VerticalAlignment;
+    }
+
+    set verticalAlignment (val) {
+        this.element.invalidateParentArrange();
+        this.setValue(ContentLayout.VerticalAlignmentProperty, val);
+    }
+
+    get margin () {
+        return this.getValue(ContentLayout.MarginProperty) as Thickness;
+    }
+
+    set margin (val: Thickness) {
+        this.element.invalidateParentMeasure();
+        this.element.invalidateParentArrange();
+        this.setValue(ContentLayout.MarginProperty, val);
+    }
+}
 
 export class ContentControl extends ContainerElement {
     get content (): UIElement | null {
@@ -52,8 +104,8 @@ export class ContentControl extends ContainerElement {
         return false;
     }
 
-    protected getSlotClass (): typeof UISlot {
-        return ContentSlot;
+    protected getLayoutClass (): typeof UILayout {
+        return ContentLayout;
     }
 
     protected computeDesiredSize () {
@@ -61,55 +113,59 @@ export class ContentControl extends ContainerElement {
         const content = this.content;
         if (content) {
             content.measure();
-            const { width: marginWidth, height: marginHeight } = content.margin;
+            const { width: marginWidth, height: marginHeight } = (content.layout as ContentLayout).margin;
             desiredSize.set(content.desiredSize.width + marginWidth, content.desiredSize.height + marginHeight);
         }
         return desiredSize;
     }
 
-    protected arrangeContent (finalRect: Rect) {
+    protected arrangeContent (arrangeSize: Size) {
         const content = this.content;
         if (content) {
             if (content.visibility !== Visibility.COLLAPSED) {
                 const childRect = new Rect();
-                const contentSlot = content.slot as ContentSlot;
-                assertIsNonNullable(contentSlot);
-                const { width: marginWidth, height: marginHeight } = content.margin;
-                if (contentSlot.horizontalAlignment === HorizontalAlignment.STRETCH) {
-                    childRect.width = finalRect.width;
+                const contentLayout = content.layout as ContentLayout;
+                assertIsNonNullable(contentLayout);
+                const { left: marginLeft, bottom: marginBottom, width: marginWidth, height: marginHeight } = contentLayout.margin;
+                if (contentLayout.horizontalAlignment === HorizontalAlignment.STRETCH) {
+                    childRect.width = arrangeSize.width;
                 } else {
                     childRect.width = content.desiredSize.width + marginWidth;
                 }
 
-                if (contentSlot.verticalAlignment === VerticalAlignment.STRETCH) {
-                    childRect.height = finalRect.height;
+                if (contentLayout.verticalAlignment === VerticalAlignment.STRETCH) {
+                    childRect.height = arrangeSize.height;
                 } else {
                     childRect.height = content.desiredSize.height + marginHeight;
                 }
 
                 childRect.center = new Vec2(0, 0);
 
-                switch (contentSlot.horizontalAlignment) {
+                switch (contentLayout.horizontalAlignment) {
                 case HorizontalAlignment.LEFT:
-                    childRect.x = -finalRect.width / 2;
+                    childRect.x = -arrangeSize.width / 2;
                     break;
                 case HorizontalAlignment.RIGHT:
-                    childRect.x = finalRect.width / 2 - childRect.width;
+                    childRect.x = arrangeSize.width / 2 - childRect.width;
                     break;
                 default:
                     break;
                 }
 
-                switch (contentSlot.verticalAlignment) {
+                switch (contentLayout.verticalAlignment) {
                 case VerticalAlignment.TOP:
-                    childRect.y = finalRect.height / 2  - childRect.height;
+                    childRect.y = arrangeSize.height / 2  - childRect.height;
                     break;
                 case VerticalAlignment.BOTTOM:
-                    childRect.y = -finalRect.height / 2;
+                    childRect.y = -arrangeSize.height / 2;
                     break;
                 default:
                     break;
                 }
+                childRect.x += marginLeft;
+                childRect.y += marginBottom;
+                childRect.width = Math.max(childRect.width - marginWidth, 0);
+                childRect.height = Math.max(childRect.height - marginHeight, 0);
                 content.arrange(childRect);
             }
         }
