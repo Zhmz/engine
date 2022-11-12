@@ -2,14 +2,14 @@ import { Vec2 } from "../../cocos/core/math";
 import { EventMouse } from "../../cocos/input/types";
 import { UIButton } from "../../cocos/new-ui/component/ui-button";
 import { EventTarget } from '../../cocos/core/event';
-import { pointerInputModule } from "../../cocos/new-ui/event-system/input-modules/pointer-input-module";
+import { PointerInputModule } from "../../cocos/new-ui/event-system/input-modules/pointer-input-module";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { Button } from "../../cocos/new-ui/framework/button";
 import { UIWindow } from "../../cocos/new-ui/base/ui-window";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { PointerClickEvent, PointerDownEvent, PointerUpEvent } from "../../cocos/new-ui/event-system/event-data/pointer-event";
 import exp from "constants";
-import { UISystem } from "../../cocos/new-ui/base/ui-system";
+import { UISystem } from "../../cocos/new-ui/ui-system";
 
 test('simple-button-mouse-enter', () => {
     const element = new UIElement();
@@ -35,9 +35,8 @@ test('simple-button-mouse-enter', () => {
     element.addEventListener(PointerDownEvent, fnDown, element);
     element.addEventListener(PointerUpEvent, fnUp, element);
     element.addEventListener(PointerClickEvent, fnClick, element);
-
     // @ts-expect-error access private method
-    const eventTarget: EventTarget = pointerInputModule.mouseInput._eventTarget;
+    const eventTarget: EventTarget = UISystem.instance.eventSystem.pointerInputModule.mouseInput._eventTarget;
 
     const eventMouseDownStr = 'mouse-down';
     const eventMouseDown = new EventMouse(eventMouseDownStr, false, Vec2.ZERO);

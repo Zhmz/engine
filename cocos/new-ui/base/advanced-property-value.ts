@@ -25,7 +25,7 @@
 
 export class PropertyValueEntry {
     private _propertyId: number;
-    private _value: any;
+    private _value: unknown;
 
     get value () {
         return this._value;

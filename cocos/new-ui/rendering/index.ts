@@ -23,4 +23,8 @@
  THE SOFTWARE.
 */
 
-export { Brush } from './brush';
+export * from './visual-proxy';
+export * from './ui-batch-builder';
+export * from './ui-draw-command';
+export * from './runtime-drawing-context';
+export * from './ui-render-subsystem';

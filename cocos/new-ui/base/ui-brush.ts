@@ -34,8 +34,8 @@ export enum BrushType {
     VECTOR_IMAGE,
 }
 
-export class Brush {
-    static WHITE = Object.freeze(new Brush());
+export class UIBrush {
+    static WHITE = Object.freeze(new UIBrush());
 
     private _type: BrushType = BrushType.COLOR;
     private _tintColor = Color.WHITE.clone();

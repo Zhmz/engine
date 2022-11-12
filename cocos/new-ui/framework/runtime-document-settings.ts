@@ -24,8 +24,7 @@
 */
 
 import { CameraComponent, Mat4, Rect, Size, Vec2 } from '../../core';
-import { UIDocumentSettings } from './ui-document-settings';
-import { UISystem } from './ui-system';
+import { UIDocumentSettings, UIDocumentSettingsFactory } from '../base/ui-document-settings';
 
 export enum RenderMode {
     OVERLAY,
@@ -77,39 +76,14 @@ export class UIRuntimeDocumentSettings extends UIDocumentSettings {
         this._planeDistance = val;
     }
 
-    get lowLevelRenderCamera () {
-        switch (this._renderMode) {
-        case RenderMode.OVERLAY:
-            return UISystem.instance.hudCamera;
-        case RenderMode.CAMERA:
-            return this._camera?.camera;
-        case RenderMode.WORLD_SPACE:
-            return null;
-        default:
-            return null;
-        }
-    }
-
-    public update () {
-        const hudCamera = UISystem.instance.hudCamera;
-        const camera = this._camera?.camera;
-        switch (this._renderMode) {
-        case RenderMode.OVERLAY:
-            this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(hudCamera.width, hudCamera.height)));
-            this._document.setOrigin(hudCamera.node.worldMatrix);
-            break;
-        case RenderMode.CAMERA:
-            break;
-        case RenderMode.WORLD_SPACE:
-            this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(this._width, this._height)));
-            this._document.setOrigin(Mat4.IDENTITY);
-            break;
-        default:
-            break;
-        }
-    }
-
     private _width = 0;
     private _height = 0;
     private _renderMode = RenderMode.OVERLAY;
 }
+
+class RuntimeSettingsFactory extends UIDocumentSettingsFactory {
+    produce (): UIDocumentSettings {
+        return new UIRuntimeDocumentSettings();
+    }
+}
+UIDocumentSettings.registerSettingsFactory(new RuntimeSettingsFactory());

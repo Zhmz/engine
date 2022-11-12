@@ -23,9 +23,13 @@
  THE SOFTWARE.
 */
 
+import { Mat4, Rect, Size, Vec2 } from '../../core';
 import { ErrorID, UIError } from '../base/error';
+import { RenderMode, UIRuntimeDocumentSettings } from '../framework/runtime-document-settings';
+import { UIDocument, UISubSystemStage } from '../base/ui-document';
 import { InvalidateReason, UIElement } from '../base/ui-element';
 import { UISubSystem } from '../base/ui-subsystem';
+import { UISystem } from '../ui-system';
 
 export class UILayoutSubsystem extends UISubSystem {
     private _measureDirtyElements = new Set<UIElement>();
@@ -51,6 +55,23 @@ export class UILayoutSubsystem extends UISubSystem {
     }
 
     update () {
+        const hudCamera = UISystem.instance.hudCamera;
+        const settings = this._document.settings as UIRuntimeDocumentSettings;
+        const camera = settings.camera?.camera;
+        switch (settings.renderMode) {
+        case RenderMode.OVERLAY:
+            this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(hudCamera.width, hudCamera.height)));
+            this._document.setOrigin(hudCamera.node.worldMatrix);
+            break;
+        case RenderMode.CAMERA:
+            break;
+        case RenderMode.WORLD_SPACE:
+            this._document.setViewport(Rect.fromCenterSize(new Rect(), Vec2.ZERO, new Size(settings.width, settings.height)));
+            this._document.setOrigin(Mat4.IDENTITY);
+            break;
+        default:
+            break;
+        }
         let iteration = 0;
         while (this._arrangeDirtyElements.size > 0 || this._measureDirtyElements.size > 0) {
             while (this._measureDirtyElements.size > 0) {
@@ -93,3 +114,5 @@ export class UILayoutSubsystem extends UISubSystem {
         return topElement as UIElement;
     }
 }
+
+UIDocument.registerSubsystem(UILayoutSubsystem, UISubSystemStage.LAYOUT);

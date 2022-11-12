@@ -23,6 +23,6 @@
  THE SOFTWARE.
 */
 
-export { EventSubSystem } from "./event-sub-system";
-export { UILayoutSubsystem } from "./ui-layout-subsystem";
-export { UIRenderSubsystem } from "./ui-render-subsystem";
+export * from './event-sub-system';
+export * from './ui-layout-subsystem';
+export * from './ui-transform-subsystem';

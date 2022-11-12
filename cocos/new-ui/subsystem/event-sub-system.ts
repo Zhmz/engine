@@ -30,6 +30,7 @@ import { UISubSystem } from '../base/ui-subsystem';
 import { UIEvent } from '../base/ui-event';
 import { PointerUpEvent, PointerDownEvent, PointerClickEvent } from '../event-system/event-data/pointer-event';
 import { FramePressState, MouseButtonEvent } from '../event-system/event-data/mouse-button-event';
+import { UIDocument, UISubSystemStage } from '../base/ui-document';
 
 export class EventSubSystem extends UISubSystem {
     get window () {
@@ -85,3 +86,5 @@ export class EventSubSystem extends UISubSystem {
         return true;
     }
 }
+
+UIDocument.registerSubsystem(EventSubSystem, UISubSystemStage.EVENT);

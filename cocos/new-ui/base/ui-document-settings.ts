@@ -23,15 +23,17 @@
  THE SOFTWARE.
 */
 
-import { Mat4, Rect } from '../../core/math';
-import { UIDocument } from './ui-document';
-
-export abstract class UIDocumentSettings {
-    protected _document: UIDocument;
-
-    constructor (document: UIDocument) {
-        this._document = document;
+export class UIDocumentSettingsFactory {
+    produce () {
+        return new UIDocumentSettings();
     }
-
-    public update () {}
+}
+export class UIDocumentSettings {
+    private static _documentSettingsFactory = new UIDocumentSettingsFactory();
+    public static registerSettingsFactory (factory: UIDocumentSettingsFactory) {
+        this._documentSettingsFactory = factory;
+    }
+    static produceDefaultSettings () {
+        return this._documentSettingsFactory.produce();
+    }
 }

@@ -41,14 +41,14 @@ export class AdvancedProperty {
     // Object is used for Enum
     private _propertyType: Constructor | Record<string, number | string> | Primitive;
     private _ownerType: Constructor<AdvancedObject | AttachedObject>;
-    private _defaultValue: any;
+    private _defaultValue: unknown;
     private _id: number;
     private constructor (
         id: number,
         name: string,
         type: Constructor | Record<string, number | string> | Primitive,
         ownerType: Constructor<AdvancedObject | AttachedObject>,
-        defaultValue: any,
+        defaultValue: unknown,
     ) {
         this._id = id;
         this._name = name;
@@ -80,7 +80,6 @@ export class AdvancedProperty {
     public get name () { return this._name; }
     public get propertyType () { return this._propertyType; }
     public get ownerType () { return this._ownerType; }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     public get defaultValue () { return this._defaultValue; }
     public get id () { return this._id; }
 }

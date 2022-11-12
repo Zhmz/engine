@@ -1,4 +1,3 @@
-  
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,14 +23,14 @@
  THE SOFTWARE.
 */
 
-import { Size } from "../../core";
-import { UILayout } from "../base/ui-layout";
-import { Panel } from "./panel";
-import { Vec2 } from "../../core/math/vec2";
-import { Anchors } from "../base/anchors";
-import { Thickness } from "../base/thickness";
-import { AdvancedProperty } from "../base/advanced-property";
-import { InvalidateReason } from "../base/ui-element";
+import { Size } from '../../core';
+import { UILayout } from '../base/ui-layout';
+import { Panel } from './panel';
+import { Vec2 } from '../../core/math/vec2';
+import { Anchors } from '../base/anchors';
+import { Thickness } from '../base/thickness';
+import { AdvancedProperty } from '../base/advanced-property';
+import { InvalidateReason } from '../base/ui-element';
 
 export class CanvasLayout extends UILayout {
     public static AnchorsProperty = AdvancedProperty.register('Anchors', Anchors, CanvasLayout, Anchors.ZERO);

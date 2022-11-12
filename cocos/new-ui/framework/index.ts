@@ -23,12 +23,13 @@
  THE SOFTWARE.
 */
 
-export { Border } from './border';
-export { Button } from './button';
+export * from './border';
+export * from './button';
 export * from './canvas';
 export * from './content-control';
-export { Image } from './image';
-export { Label } from './label';
-export { Panel } from './panel';
+export * from './image';
+export * from './label';
+export * from './panel';
+export * from './runtime-document-settings';
 
 // May have same name error // todo

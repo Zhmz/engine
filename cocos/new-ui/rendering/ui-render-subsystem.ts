@@ -22,14 +22,15 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
-import { assert } from '../../core';
-import { RenderMode, UIRuntimeDocumentSettings } from '../base/runtime-document-settings';
-import { UIDocument } from '../base/ui-document';
+
+import { RenderMode, UIRuntimeDocumentSettings } from '../framework/runtime-document-settings';
+import { UIDocument, UISubSystemStage } from '../base/ui-document';
 import { InvalidateReason, UIElement } from '../base/ui-element';
 import { UISubSystem } from '../base/ui-subsystem';
-import { RuntimeDrawingContext } from '../rendering/runtime-drawing-context';
-import { UIBatchBuilder } from '../rendering/ui-batch-builder';
-import { VisualProxy } from '../rendering/visual-proxy';
+import { RuntimeDrawingContext } from './runtime-drawing-context';
+import { UIBatchBuilder } from './ui-batch-builder';
+import { VisualProxy } from './visual-proxy';
+import { UISystem } from '../ui-system';
 
 export class UIRenderSubsystem extends UISubSystem {
     private _dirtyElementMap = new Set<UIElement>();
@@ -56,6 +57,19 @@ export class UIRenderSubsystem extends UISubSystem {
         }
     }
 
+    private get lowLevelRenderCamera () {
+        switch (this.settings.renderMode) {
+        case RenderMode.OVERLAY:
+            return UISystem.instance.hudCamera;
+        case RenderMode.CAMERA:
+            return this.settings.camera?.camera;
+        case RenderMode.WORLD_SPACE:
+            return null;
+        default:
+            return null;
+        }
+    }
+
     update () {
         for (const element of this._dirtyElementMap) {
             this._drawingContext.paint(element);
@@ -65,7 +79,7 @@ export class UIRenderSubsystem extends UISubSystem {
         // build batches
         this._batchBuilder.buildBatches(this._document.window.renderData as VisualProxy);
 
-        const camera = this.settings.lowLevelRenderCamera;
+        const camera = this.lowLevelRenderCamera;
         camera?.cleanIntermediateModels();
         // insert data
         const renderModel = this._batchBuilder.getContextModel();
@@ -81,3 +95,5 @@ export class UIRenderSubsystem extends UISubSystem {
         }
     }
 }
+
+UIDocument.registerSubsystem(UIRenderSubsystem, UISubSystemStage.PAINT);

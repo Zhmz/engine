@@ -25,8 +25,6 @@
 
 import { Mat4 } from '../../core/math';
 import { AdvancedObject } from './advanced-object';
-import { ErrorID, UIError } from './error';
-import { IDrawingContext } from './ui-drawing-context';
 
 export class UIRenderData {
     setIsVisible (val: boolean) {}

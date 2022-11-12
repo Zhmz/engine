@@ -3,7 +3,7 @@
 import { getAttributeStride, vfmtPosColor4B } from '../../2d/renderer/vertex-format';
 import { builtinResMgr, Color, Material, Pool, Rect } from '../../core';
 import { IDrawingContext } from '../base/ui-drawing-context';
-import { Brush, BrushType } from './brush';
+import { UIBrush, BrushType } from '../base/ui-brush';
 import { UIDrawCommand } from './ui-draw-command';
 import { UIElement } from '../base';
 import { VisualProxy } from './visual-proxy';
@@ -117,7 +117,7 @@ export class RuntimeDrawingContext extends IDrawingContext {
         (this._currentElement.renderData as VisualProxy).addDrawCommands(command);
     }
 
-    public drawBrush (rect: Rect, color: Color, brush: Readonly<Brush>) {
+    public drawBrush (rect: Rect, color: Color, brush: Readonly<UIBrush>) {
         // rect 以传入为准
         if (brush.type === BrushType.COLOR) {
             // color
@@ -176,7 +176,6 @@ export class RuntimeDrawingContext extends IDrawingContext {
             const command = new UIDrawCommand(this._vertexFormat, 4, 6, localVbs, ib, this.getDefaultMaterialByType(MaterialType.ADD_COLOR));
             (this._currentElement.renderData as VisualProxy).addDrawCommands(command);
         }
-
     }
 
     public drawText (rect: Rect, color: Color, text: string, font: string, fontSize: number) {
