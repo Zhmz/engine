@@ -27,17 +27,17 @@ import { Color, Rect, Size, Vec2 } from '../../core';
 import { AdvancedProperty } from '../base/advanced-property';
 import { IDrawingContext } from '../base/ui-drawing-context';
 import { UIElement } from '../base/ui-element';
-import { Brush } from '../rendering/brush';
+import { UIBrush } from '../base/ui-brush';
 
 export class Image extends UIElement {
-    public static SourceProperty = AdvancedProperty.register('Source', Brush, Image, Brush.WHITE);
+    public static SourceProperty = AdvancedProperty.register('Source', UIBrush, Image, UIBrush.WHITE);
     public static TintColorProperty = AdvancedProperty.register('TintColor', Color, Image, Color.WHITE);
 
-    get source (): Readonly<Brush> {
-        return this.getValue(Image.SourceProperty) as Brush;
+    get source (): Readonly<UIBrush> {
+        return this.getValue(Image.SourceProperty) as UIBrush;
     }
 
-    set source (val: Readonly<Brush>) {
+    set source (val: Readonly<UIBrush>) {
         this.invalidateMeasure();
         this.invalidatePainting();
         this.setValue(Image.SourceProperty, val);
@@ -52,7 +52,7 @@ export class Image extends UIElement {
         this.setValue(Image.TintColorProperty, val);
     }
 
-    computeDesiredSize () {
+    protected computeDesiredSize () {
         const { width: naturalWidth, height: naturalHeight } = this.source;
         return new Size(naturalWidth, naturalHeight);
     }

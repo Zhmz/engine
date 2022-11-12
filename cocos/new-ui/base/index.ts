@@ -23,10 +23,9 @@
  THE SOFTWARE.
 */
 
-export { RuntimeDrawingContext } from '../rendering/runtime-drawing-context';
 export { Anchors } from './anchors';
 export { ContainerElement } from './container-element';
-export { UIRuntimeDocumentSettings } from './runtime-document-settings';
+export { UIRuntimeDocumentSettings } from '../framework/runtime-document-settings';
 export { Thickness } from './thickness';
 export { UIBehavior } from './ui-behavior';
 export { UIComponent } from './ui-component';
@@ -35,5 +34,5 @@ export { UIDocumentSettings } from './ui-document-settings';
 export { UIElement } from './ui-element';
 export { UIEvent } from './ui-event';
 export { UILayout } from './ui-layout';
-export { UISystem } from './ui-system';
 export { UIWindow } from './ui-window';
+export { UIBrush } from './ui-brush';

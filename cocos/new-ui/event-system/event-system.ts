@@ -28,24 +28,31 @@ import { Event, EventMouse } from '../../input/types';
 import { InputEventType } from '../../input/types/event-enum';
 import { UIDocument } from '../base/ui-document';
 import { UIElement } from '../base/ui-element';
-import { UISystem } from '../base/ui-system';
+import { UISystem } from '../ui-system';
 import { UIWindow } from '../base/ui-window';
 import { UIEvent as NewUIEvent } from '../base/ui-event';
 import { PointerDownEvent, PointerUpEvent } from './event-data/pointer-event';
 import { BaseInputModule } from './input-modules/base-input-module';
-import { pointerInputModule } from './input-modules/pointer-input-module';
+import { PointerInputModule } from './input-modules/pointer-input-module';
 import { RaycastResult } from './raycast-result';
 import { MouseState } from './event-data/mouse-state';
 import { FramePressState, InputMouseButton, MouseButtonEvent } from './event-data/mouse-button-event';
 import { EventSubSystem } from '../subsystem/event-sub-system';
+import { assert } from '../../core';
 
 export class EventSystem {
     private _inputModuleList: BaseInputModule[] = [];
 
     private _mouseState: MouseState = new MouseState();
+    private _uiSystem: UISystem;
+    private _pointerInputModule = new PointerInputModule(this);
 
-    constructor () {
+    public get pointerInputModule () {
+        return this._pointerInputModule;
+    }
 
+    constructor (uiSystem: UISystem) {
+        this._uiSystem = uiSystem;
     }
 
     // event data
@@ -56,8 +63,8 @@ export class EventSystem {
     }
 
     public tick () {
-        const eventMouseList = pointerInputModule.eventMouseList;
-        const ray = pointerInputModule.ray!;
+        const eventMouseList = this._pointerInputModule.eventMouseList;
+        const ray = this._pointerInputModule.ray!;
 
         for (let i = 0; i < eventMouseList.length; i++) {
             const eventMouse = eventMouseList[i];
@@ -90,7 +97,7 @@ export class EventSystem {
     public handleMouseEvent (event: Event, ray: Ray) {
         const eventMouse = event as EventMouse;
         const button = eventMouse.getButton();
-        if(button<0){
+        if (button < 0) {
             // the event might be move which is not handled with.
             return;
         }
@@ -127,10 +134,11 @@ export class EventSystem {
             return;
         }
         //dispatch to the relevant document
-        const documents = UISystem.instance.documents;
+        const documents = this._uiSystem.documents;
         for (let i = 0; i < documents.length; i++) {
             const curDocument = documents[i];
-            const eventSubSystem: EventSubSystem = curDocument.eventSubSystem;
+            const eventSubSystem = curDocument.getSubSystem(EventSubSystem);
+            assert(eventSubSystem);
             const success = eventSubSystem.dispatchMouseEvent(mouseButtonEvent);
             if (success) {
                 return;

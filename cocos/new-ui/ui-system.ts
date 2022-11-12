@@ -23,13 +23,13 @@
  THE SOFTWARE.
 */
 
-import { Director, director, js, System, Node } from '../../core';
-import { Camera, CameraProjection } from '../../core/renderer/scene/camera';
-import { EventSystem } from '../event-system/event-system';
-import { RenderMode, UIRuntimeDocumentSettings } from './runtime-document-settings';
-import { UIDocument } from './ui-document';
+import { Director, director, js, System, Node } from '../core';
+import { Camera, CameraProjection } from '../core/renderer/scene/camera';
+import { EventSystem } from './event-system/event-system';
+import { RenderMode, UIRuntimeDocumentSettings } from './framework/runtime-document-settings';
+import { UIDocument } from './base/ui-document';
 
-import { ClearFlagBit } from '../../core/gfx';
+import { ClearFlagBit } from '../core/gfx';
 
 export class UISystem extends System {
     private _camera!: Camera;
@@ -52,7 +52,7 @@ export class UISystem extends System {
 
     private static _instance = new UISystem();
     private _documents: UIDocument[] = [];
-    private _eventSystem = new EventSystem();
+    private _eventSystem = new EventSystem(this);
 
     init () {
         this._camera = director.root!.createCamera();

@@ -1,10 +1,11 @@
 import { Rect, Size, Vec2 } from "../../cocos/core";
-import { RenderMode, UIRuntimeDocumentSettings } from "../../cocos/new-ui/base/runtime-document-settings";
+import { RenderMode, UIRuntimeDocumentSettings } from "../../cocos/new-ui/framework/runtime-document-settings";
 import { Thickness } from "../../cocos/new-ui/base/thickness";
 import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { UIElement } from "../../cocos/new-ui/base/ui-element";
 import { ContentControl } from "../../cocos/new-ui/framework/content-control";
 import { ContentLayout, HorizontalAlignment, VerticalAlignment } from "../../cocos/new-ui/framework/content-control";
+import '../../cocos/new-ui/subsystem/ui-layout-subsystem';
 
 class FixedContentElement extends UIElement {
     private _width = 0;

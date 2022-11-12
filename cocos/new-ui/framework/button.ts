@@ -23,85 +23,27 @@
  THE SOFTWARE.
 */
 
-import { ContentControl } from "./content-control";
-//import { NewUIEventType } from "../../input/types/event-enum";
-import { PointerUpEvent } from "../event-system/event-data/pointer-event";
-import { PointerDownEvent } from "../event-system/event-data/pointer-event";
+import { ContentControl } from './content-control';
+import { PointerUpEvent, PointerDownEvent } from '../event-system/event-data/pointer-event';
 
 export class Button extends ContentControl {
-
     public static MOUSE_UP_COUNTER = 0;
     public static MOUSE_DOWN_COUNTER = 0;
 
-    constructor() {
+    constructor () {
         super();
-        this._registerEvent();
+        this.addEventListener(PointerUpEvent, this._onMouseUp, this);
+        this.addEventListener(PointerDownEvent, this._onMouseDown, this);
         Button.MOUSE_DOWN_COUNTER = 0;
         Button.MOUSE_UP_COUNTER = 0;
     }
 
-    protected _registerEvent() {
-        // this.on(NewUIEventType.TOUCH_START, this._onTouchBegan, this);
-        // this.on(NewUIEventType.TOUCH_MOVE, this._onTouchMove, this);
-        // this.on(NewUIEventType.TOUCH_END, this._onTouchEnded,  this);
-        // this.on(NewUIEventType.TOUCH_CANCEL, this._onTouchCancel,  this);
-
-        // this.on(NewUIEventType.MOUSE_ENTER, this._onMouseMoveIn,  this);
-        // this.on(NewUIEventType.MOUSE_LEAVE, this._onMouseMoveOut,  this);
-        // this.on(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
-        // this.on(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
-
-        this.addEventListener(PointerUpEvent, this._onMouseUp, this);
-        this.addEventListener(PointerDownEvent, this._onMouseDown, this);
-    }
-
-    protected _unregisterEvent() {
-        // this.off(NewUIEventType.TOUCH_START, this._onTouchBegan,  this);
-        // this.off(NewUIEventType.TOUCH_MOVE, this._onTouchMove,  this);
-        // this.off(NewUIEventType.TOUCH_END, this._onTouchEnded,  this);
-        // this.off(NewUIEventType.TOUCH_CANCEL, this._onTouchCancel,  this);
-
-        // this.off(NewUIEventType.MOUSE_ENTER, this._onMouseMoveIn,  this);
-        // this.off(NewUIEventType.MOUSE_LEAVE, this._onMouseMoveOut,  this);
-        // this.off(NewUIEventType.MOUSE_UP, this._onMouseUp,  this);
-        // this.off(NewUIEventType.MOUSE_DOWN, this._onMouseDown,  this);
-
-        this.removeEventListener(PointerUpEvent, this._onMouseUp, this);
-        this.removeEventListener(PointerDownEvent, this._onMouseDown, this);
-    }
-
-
-
-    protected _onTouchBegan() {
-        console.log('_onTouchBegan');
-    }
-
-    protected _onTouchMove() {
-        console.log('_onTouchMove');
-    }
-
-    protected _onTouchEnded() {
-        console.log('_onTouchEnded');
-    }
-
-    protected _onTouchCancel() {
-        console.log('_onTouchCancel');
-    }
-
-    protected _onMouseMoveIn() {
-        console.log('_onMouseMoveIn');
-    }
-
-    protected _onMouseMoveOut() {
-        console.log('_onMouseMoveOut');
-    }
-
-    protected _onMouseDown() {
+    protected _onMouseDown () {
         console.log('_onMouseDown');
         Button.MOUSE_DOWN_COUNTER++;
     }
 
-    protected _onMouseUp() {
+    protected _onMouseUp () {
         console.log('_onMouseUp');
         Button.MOUSE_UP_COUNTER++;
     }

@@ -69,18 +69,18 @@ export class UIDrawCommand {
         this._vb = vbBuffer;
     }
     public getVB () {
-        return this._vb!; // world vertex
+        return this._vb; // world vertex
     }
 
     public getUintVB () {
-        return this._uintVb!; // buffer view
+        return this._uintVb; // buffer view
     }
 
     public setIB (ibBuffer: Uint16Array) {
         this._ib = ibBuffer;
     }
     public getIB () {
-        return this._ib!;
+        return this._ib;
     }
 
     public getLocalVB () {

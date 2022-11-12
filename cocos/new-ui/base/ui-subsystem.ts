@@ -36,9 +36,9 @@ export class UISubSystem {
         return this._document;
     }
 
-    onElementMounted (element: UIElement) {};
-    onElementUnmounted (element: UIElement) {};
-    invalidate (element: UIElement, invalidateReason: InvalidateReason) {};
-    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {};
-    update () {};
+    onElementMounted (element: UIElement) {}
+    onElementUnmounted (element: UIElement) {}
+    invalidate (element: UIElement, invalidateReason: InvalidateReason) {}
+    removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {}
+    update () {}
 }

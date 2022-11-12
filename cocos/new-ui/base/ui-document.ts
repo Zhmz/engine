@@ -24,15 +24,19 @@
 */
 
 import { Mat4, Rect } from '../../core/math';
-import { EventSubSystem } from '../subsystem/event-sub-system';
-import { UILayoutSubsystem } from '../subsystem/ui-layout-subsystem';
-import { UIRenderSubsystem } from '../subsystem/ui-render-subsystem';
-import { UITransformSubsystem } from '../subsystem/ui-transform-subsystem';
-import { UIRuntimeDocumentSettings } from './runtime-document-settings';
 import { UIDocumentSettings } from './ui-document-settings';
 import { InvalidateReason, UIElement } from './ui-element';
+import { UISubSystem } from './ui-subsystem';
 import { UIWindow } from './ui-window';
 
+type UISubSystemType <T extends UISubSystem> = new (document: UIDocument) => T;
+
+export enum UISubSystemStage {
+    EVENT = 0,
+    LAYOUT = 100,
+    TRANSFORM = 200,
+    PAINT = 300,
+}
 export class UIDocument {
     get viewport (): Readonly<Rect> {
         return this._viewport;
@@ -54,31 +58,22 @@ export class UIDocument {
         return this._window;
     }
 
-    get eventSubSystem () {
-        return this._eventSubSystem;
-    }
-
-    get renderSubSystem () {
-        return this._renderSubsystem;
-    }
-
     invalidate (element: UIElement, invalidateReason: InvalidateReason) {
-        this._layoutSubsystem.invalidate(element, invalidateReason);
-        this._transformSubsystem.invalidate(element, invalidateReason);
-        this._renderSubsystem.invalidate(element, invalidateReason);
+        for (let i = 0; i < this._subsystems.length; i++) {
+            this._subsystems[i].invalidate(element, invalidateReason);
+        }
     }
 
     removeInvalidation (element: UIElement, invalidateReason: InvalidateReason) {
-        this._layoutSubsystem.removeInvalidation(element, invalidateReason);
-        this._transformSubsystem.removeInvalidation(element, invalidateReason);
-        this._renderSubsystem.removeInvalidation(element, invalidateReason);
+        for (let i = 0; i < this._subsystems.length; i++) {
+            this._subsystems[i].removeInvalidation(element, invalidateReason);
+        }
     }
 
     update () {
-        this._settings.update();
-        this._layoutSubsystem.update();
-        this._transformSubsystem.update();
-        this._renderSubsystem.update();
+        for (let i = 0; i < this._subsystems.length; i++) {
+            this._subsystems[i].update();
+        }
     }
 
     /**
@@ -102,21 +97,49 @@ export class UIDocument {
     }
 
     onElementMounted (element: UIElement) {
-        this._layoutSubsystem.onElementMounted(element);
-        this._transformSubsystem.onElementMounted(element);
-        this._renderSubsystem.onElementMounted(element);
+        for (let i = 0; i < this._subsystems.length; i++) {
+            this._subsystems[i].onElementMounted(element);
+        }
     }
 
     onElementUnmounted (element: UIElement) {
-        this._renderSubsystem.onElementUnmounted(element);
+        for (let i = 0; i < this._subsystems.length; i++) {
+            this._subsystems[i].onElementUnmounted(element);
+        }
     }
 
-    private _settings: UIDocumentSettings = new UIRuntimeDocumentSettings(this);
+    getSubSystem <T extends UISubSystem> (type: Constructor<T>): T | null {
+        for (let i = 0; i < this._subsystems.length; i++) {
+            if (this._subsystems[i] instanceof type) {
+                return this._subsystems[i] as T;
+            }
+        }
+        return null;
+    }
+
+    private static _registerSubsystems: { stage: UISubSystemStage, type: UISubSystemType<UISubSystem>}[] = [];
+
+    public static getAllRegisterSubsystems (): ReadonlyArray<UISubSystemType<UISubSystem>> {
+        return this._registerSubsystems.map((item) => item.type);
+    }
+
+    public static registerSubsystem (type: UISubSystemType<UISubSystem>, stage: UISubSystemStage) {
+        this._registerSubsystems.push({ type, stage });
+        this._registerSubsystems.sort((itemA, itemB) => itemA.stage - itemB.stage);
+    }
+
+    constructor () {
+        this._subsystems = [];
+        const registerSubsystems = UIDocument.getAllRegisterSubsystems();
+        for (let i = 0; i < registerSubsystems.length; i++) {
+            this._subsystems.push(new registerSubsystems[i](this));
+        }
+        this._window = new UIWindow(this);
+    }
+
+    private _subsystems: UISubSystem[];
+    private _settings: UIDocumentSettings = UIDocumentSettings.produceDefaultSettings();
     private _origin = new Mat4();
     private _viewport = new Rect();
-    private _layoutSubsystem = new UILayoutSubsystem(this);
-    private _eventSubSystem = new EventSubSystem(this);
-    private _renderSubsystem = new UIRenderSubsystem(this);
-    private _transformSubsystem = new UITransformSubsystem(this);
-    private _window = new UIWindow(this);
+    private _window: UIWindow;
 }

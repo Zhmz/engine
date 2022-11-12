@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,8 +23,8 @@
  THE SOFTWARE.
 */
 
-import { UIElement } from "../base/ui-element";
+import { UIElement } from '../base/ui-element';
 
 export class Label extends UIElement {
-    
+
 }

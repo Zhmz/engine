@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2017-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -24,12 +23,11 @@
  THE SOFTWARE.
 */
 
-import { ErrorID, UIError } from "../base/error";
-import { ContainerElement } from "../base/container-element";
-import { UIElement } from "../base/ui-element";
+import { ErrorID, UIError } from '../base/error';
+import { ContainerElement } from '../base/container-element';
+import { UIElement } from '../base/ui-element';
 
 export class Panel extends ContainerElement {
-    
     public insertChildAt (child: UIElement, index: number) {
         if (index < 0 || index > this._children.length - 1) {
             throw new UIError(ErrorID.OUT_OF_RANGE);
@@ -61,7 +59,7 @@ export class Panel extends ContainerElement {
             this.addVisualChild(this._children[i]);
         }
     }
-    
+
     public allowMultipleChild () {
         return true;
     }

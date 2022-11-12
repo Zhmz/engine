@@ -1,6 +1,5 @@
-import { director, game } from "../../cocos/core";
-import { UIDocument } from "../../cocos/new-ui/base/ui-document"
-import { UISystem } from "../../cocos/new-ui/base/ui-system"
+import { UIDocument } from "../../cocos/new-ui/base/ui-document";
+import { UISystem } from "../../cocos/new-ui/ui-system";
 
 test('ui-system', () => {
     const uiDocument1 = new UIDocument()
@@ -18,17 +17,16 @@ test('ui-system', () => {
 });
 
 test('update', () => {
-
+    UISystem.instance.init();
     const uiDocument = new UIDocument();
     UISystem.instance.addDocument(uiDocument);
     const tick = uiDocument.update = jest.fn(() => {});
-    game.step();
+    UISystem.instance.tick();
     expect(tick).toBeCalledTimes(1);
-    game.step();
-    game.step();
-    game.step();
+    UISystem.instance.tick();
+    UISystem.instance.tick();
+    UISystem.instance.tick();
     expect(tick).toBeCalledTimes(4);
-    director.pause();
-    game.step();
+    UISystem.instance.tick();
     expect(tick).toBeCalledTimes(5);
 })
