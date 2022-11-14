@@ -1421,16 +1421,17 @@ export function raycastPlane<Out extends IVec3Like> (intersectPoint: Out, ray: R
     Vec3.subtract(rayOriToPointInPlane, pointInPlane, ray.o);
     const dotN = Vec3.dot(ray.d, plane.n);
     if (dotN === 0) {
-        return;
+        return false;
     }
     const scaleFactor: number = Vec3.dot(rayOriToPointInPlane, plane.n) / dotN;
     if (scaleFactor <= 0) {
-        return;
+        return false;
     }
 
     const scaleRayDirection = new Vec3();
     Vec3.multiplyScalar(scaleRayDirection, ray.d, scaleFactor);
     Vec3.add(intersectPoint, ray.o, scaleRayDirection);
+    return true;
 }
 
 /**

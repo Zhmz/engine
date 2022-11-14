@@ -459,17 +459,20 @@ export class UIElement extends Visual {
 
         const position = this._renderTransform.position;
         // bottom left
-        pointA.set(position.x-width/2,position.y-height/2);
+        pointA.set(position.x - width / 2, position.y - height / 2, position.z);
         // bottom right
-        pointB.set(position.x+width/2,position.y-height/2);
+        pointB.set(position.x + width / 2,position.y - height / 2, position.z);
         // top right
-        pointC.set(position.x+width/2,position.y+height/2);
+        pointC.set(position.x + width / 2, position.y + height / 2, position.z);
 
-        Plane.fromPoints(temp_plane,pointA,pointB,pointC);
-        raycastPlane(hitPoint,ray,temp_plane);
+        Plane.fromPoints(temp_plane, pointA, pointB, pointC);
+        const raycast = raycastPlane(hitPoint, ray, temp_plane);
+        if(!raycast) {
+            return false;
+        }
 
-        this.worldToLocal(hitPoint,hitPoint);
-        const hitPointVec2 = new Vec2(hitPoint.x,hitPoint.y);
+        this.worldToLocal(hitPoint, hitPoint);
+        const hitPointVec2 = new Vec2(hitPoint.x, hitPoint.y);
         const hit = this._layoutRect.contains(hitPointVec2);
 
         return hit;
