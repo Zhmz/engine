@@ -448,20 +448,23 @@ export class UIElement extends Visual {
 
     //#region event
     public hitTest (ray: Ray): boolean {
+        const width = this._layoutRect.width;
+        const height = this._layoutRect.height;
+        if(width === 0 || height === 0) {
+            return false;
+        }
+
         const hitPoint = new Vec3();
         const pointA = new Vec3();
         const pointB = new Vec3();
         const pointC = new Vec3();
         const temp_plane = new Plane();
 
-        const width = this._layoutRect.width;
-        const height = this._layoutRect.height;
-
         const position = this._renderTransform.position;
         // bottom left
         pointA.set(position.x - width / 2, position.y - height / 2, position.z);
         // bottom right
-        pointB.set(position.x + width / 2,position.y - height / 2, position.z);
+        pointB.set(position.x + width / 2, position.y - height / 2, position.z);
         // top right
         pointC.set(position.x + width / 2, position.y + height / 2, position.z);
 
