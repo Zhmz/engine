@@ -57,6 +57,18 @@ test('hitTest', () => {
     hit = element.hitTest(ray);
     expect(hit).toBeFalsy();
 
+    // element pivot is not located at origin, it is at (0,-0.5,1), the intersect point of plane and ray is at (0,0.5,1)
+    // which is not included in the UIElement
+    ray.o = new Vec3(0,0,-1);
+    ray.d = new Vec3(0,0.25,1);
+    element.layoutRect = new Rect(-1,-1,1,1);
+    hit = element.hitTest(ray);
+    expect(hit).toBeFalsy();
+
+    // the ray can hit the element at (0,0) in local coordinate
+    ray.d = new Vec3(-0.25,-0.25,1);
+    hit = element.hitTest(ray);
+    expect(hit).toBeTruthy();
 });
 
 test('raycastPlane', () => {

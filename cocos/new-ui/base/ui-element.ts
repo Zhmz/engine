@@ -462,11 +462,14 @@ export class UIElement extends Visual {
 
         const position = this._renderTransform.position;
         // bottom left
-        pointA.set(position.x - width / 2, position.y - height / 2, position.z);
+        pointA.set(position.x - width / 2, position.y - height / 2);
+        this.localToWorld(pointA,pointA);
         // bottom right
-        pointB.set(position.x + width / 2, position.y - height / 2, position.z);
+        pointB.set(position.x + width / 2, position.y - height / 2);
+        this.localToWorld(pointB,pointB);
         // top right
-        pointC.set(position.x + width / 2, position.y + height / 2, position.z);
+        pointC.set(position.x + width / 2, position.y + height / 2);
+        this.localToWorld(pointC,pointC);
 
         Plane.fromPoints(temp_plane, pointA, pointB, pointC);
         const raycast = raycastPlane(hitPoint, ray, temp_plane);
