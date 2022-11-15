@@ -1,4 +1,4 @@
-import { Vec2 } from "../../cocos/core/math";
+import { Rect, Vec2, Vec3 } from "../../cocos/core/math";
 import { EventMouse } from "../../cocos/input/types";
 import { UIButton } from "../../cocos/new-ui/component/ui-button";
 import { EventTarget } from '../../cocos/core/event';
@@ -10,17 +10,40 @@ import { UIDocument } from "../../cocos/new-ui/base/ui-document";
 import { PointerClickEvent, PointerDownEvent, PointerUpEvent } from "../../cocos/new-ui/event-system/event-data/pointer-event";
 import exp from "constants";
 import { UISystem } from "../../cocos/new-ui/ui-system";
+import { ContainerElement } from "../../cocos/new-ui/base";
+import { ContentLayout } from "../../cocos/new-ui/framework";
+import { Ray } from "../../cocos/core/geometry";
+
+class SingleChildElement extends ContainerElement {
+    public allowMultipleChild () {
+        return false;
+    }
+
+    public getLayoutClass () {
+        return ContentLayout;
+    }
+
+    set layoutRect (rect: Readonly<Rect>) {
+        super.layoutRect = rect;
+    }
+
+    get layoutRect () {
+        return super.layoutRect;
+    }
+}
 
 test('simple-button-mouse-enter', () => {
-    const element = new UIElement();
+    UISystem.instance.init();
+    const eventSystem  = UISystem.instance.eventSystem;
+
+    const element = new SingleChildElement();
     const document = new UIDocument();
     UISystem.instance.addDocument(document);
     const window = document.window;
     document.window.addChild(element);
 
-    // const eventPointerDown = new PointerDownEvent(element);
-    // const eventPointerUp = new PointerUpEvent(element);
-    // const eventPointerClick = new PointerClickEvent(element);
+    element.renderTransform.position = new Vec3(0, 0, 1);
+    element.layoutRect = new Rect(-0.5,-0.5,1,1);
 
     const fnDown =  jest.fn(function (evt) {
         expect(this).toBe(element);
@@ -36,14 +59,21 @@ test('simple-button-mouse-enter', () => {
     element.addEventListener(PointerUpEvent, fnUp, element);
     element.addEventListener(PointerClickEvent, fnClick, element);
     // @ts-expect-error access private method
-    const eventTarget: EventTarget = UISystem.instance.eventSystem.pointerInputModule.mouseInput._eventTarget;
+    const eventTarget: EventTarget = eventSystem.pointerInputModule.mouseInput._eventTarget;
 
+    // event data
     const eventMouseDownStr = 'mouse-down';
     const eventMouseDown = new EventMouse(eventMouseDownStr, false, Vec2.ZERO);
-    eventMouseDown.setLocation(0, 0);
+    eventMouseDown.setLocation(1, 1);
     eventMouseDown.setButton(0);
     eventMouseDown.movementX = 0;
     eventMouseDown.movementY = 0;
+
+    // construct a ray and simulate the raycast
+    const ray = new Ray();
+    ray.d = new Vec3(0,0.25,1);
+    ray.o = new Vec3(0,0,-1);
+    eventSystem.setRay(ray);
 
     eventTarget.emit(eventMouseDownStr, eventMouseDown);
     expect(fnDown).toBeCalledTimes(1);
@@ -54,16 +84,20 @@ test('simple-button-mouse-enter', () => {
     eventMouseUp.setButton(0);
     eventMouseUp.movementX = 0;
     eventMouseUp.movementY = 0;
-    
+
     eventTarget.emit(eventMouseUpStr, eventMouseUp);
     expect(fnClick).toBeCalledTimes(1);
     eventTarget.emit(eventMouseUpStr, eventMouseUp);
     expect(fnUp).toBeCalledTimes(1);
 
+    // modify the ray
+    ray.d = new Vec3(0,-0.3,1);
+    ray.o = new Vec3(0,0,-1);
+    eventSystem.setRay(ray);
 
-    // debug in UIButton and observe whether OnMouseUp or OnMouseDown executes
-
-
+    // new ray doesn't raycast the element so that the time of down doesn't increase
+    eventTarget.emit(eventMouseDownStr, eventMouseDown);
+    expect(fnDown).toBeCalledTimes(1);
 });
 
 

@@ -47,22 +47,23 @@ export class EventSystem {
     private _uiSystem: UISystem;
     private _pointerInputModule = new PointerInputModule(this);
 
-    public get pointerInputModule () {
+    public get pointerInputModule() {
         return this._pointerInputModule;
     }
 
-    constructor (uiSystem: UISystem) {
+    constructor(uiSystem: UISystem) {
         this._uiSystem = uiSystem;
     }
 
     // event data
 
-    // raycast all
-    public raycastAll () {
-
+    // set ray (temporarily)
+    public setRay(ray: Ray) {
+        this._pointerInputModule.ray = ray;
     }
 
-    public tick () {
+
+    public tick() {
         const eventMouseList = this._pointerInputModule.eventMouseList;
         const ray = this._pointerInputModule.ray!;
 
@@ -72,29 +73,29 @@ export class EventSystem {
         }
     }
 
-    protected emitEvent (event: Event) {
+    protected emitEvent(event: Event) {
 
     }
 
     //raycast comparer
-    private static raycastComparer (left: RaycastResult, right: RaycastResult) {
+    private static raycastComparer(left: RaycastResult, right: RaycastResult) {
 
     }
 
-    public registerInputModule (inputModule: BaseInputModule) {
+    public registerInputModule(inputModule: BaseInputModule) {
         this._inputModuleList.push(inputModule);
         this._inputModuleList.sort((a, b) => b.priority - a.priority);
     }
 
-    public handleTouchEvent (event: Event, ray: Ray) {
+    public handleTouchEvent(event: Event, ray: Ray) {
 
     }
 
-    public dispatchTouchEvent () {
+    public dispatchTouchEvent() {
 
     }
 
-    public handleMouseEvent (event: Event, ray: Ray) {
+    public handleMouseEvent(event: Event, ray: Ray) {
         const eventMouse = event as EventMouse;
         const button = eventMouse.getButton();
         if (button < 0) {
@@ -129,7 +130,7 @@ export class EventSystem {
         this.dispatchMouseEvent(curMouseButtonEvent!);
     }
 
-    public dispatchMouseEvent (mouseButtonEvent: MouseButtonEvent) {
+    public dispatchMouseEvent(mouseButtonEvent: MouseButtonEvent) {
         if (!mouseButtonEvent) {
             return;
         }

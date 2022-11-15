@@ -31,10 +31,31 @@ import { UIEvent } from '../base/ui-event';
 import { PointerUpEvent, PointerDownEvent, PointerClickEvent } from '../event-system/event-data/pointer-event';
 import { FramePressState, MouseButtonEvent } from '../event-system/event-data/mouse-button-event';
 import { UIDocument, UISubSystemStage } from '../base/ui-document';
+import { UIRuntimeDocumentSettings } from '../base';
+import { RenderMode } from '../framework';
+import { UISystem } from '../ui-system';
+import { EventMouse } from '../../input/types';
 
 export class EventSubSystem extends UISubSystem {
     get window () {
         return this._document.window;
+    }
+
+    get settings () {
+        return this._document.settings as UIRuntimeDocumentSettings;
+    }
+    
+    private get renderCamera () {
+        switch (this.settings.renderMode) {
+        case RenderMode.OVERLAY:
+            return UISystem.instance.hudCamera;
+        case RenderMode.CAMERA:
+            return this.settings.camera?.camera;
+        case RenderMode.WORLD_SPACE:
+            return null;
+        default:
+            return null;
+        }
     }
 
     protected getHitUIElement (ray: Ray): UIElement | null {
@@ -63,8 +84,17 @@ export class EventSubSystem extends UISubSystem {
             return false;
         }
 
-        const ray = mouseButtonEvent.ray!;
-        const element = this.getHitUIElement(ray);
+        let ray = mouseButtonEvent.ray;
+        // The ray is not null in XR module
+        if(!ray) {
+            const eventMouse = mouseButtonEvent.event as EventMouse;
+            const posX = eventMouse.getLocationX();
+            const posY = eventMouse.getLocationY();
+            ray = new Ray();
+            this.renderCamera!.screenPointToRay(ray!,posX,posY);
+        }
+
+        const element = this.getHitUIElement(ray!);
         if (!element) {
             return false;
         }

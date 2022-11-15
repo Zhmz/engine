@@ -84,7 +84,6 @@ export class PointerInputModule extends BaseInputModule {
         super();
         this._eventSystem = eventSystem;
         this._registerEvent();
-        this._ray = new Ray();
     }
 
     private _registerEvent () {
