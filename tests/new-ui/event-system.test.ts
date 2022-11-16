@@ -58,8 +58,18 @@ test('simple-button-mouse-enter', () => {
     element.addEventListener(PointerDownEvent, fnDown, element);
     element.addEventListener(PointerUpEvent, fnUp, element);
     element.addEventListener(PointerClickEvent, fnClick, element);
+    
+    //inputModule
+    const pointerInputModule = new PointerInputModule(eventSystem);
+    // construct a ray and set it in inputModule
+    const ray = new Ray();
+    ray.d = new Vec3(0,0.25,1);
+    ray.o = new Vec3(0,0,-1);
+    pointerInputModule.ray = ray;
+
+    eventSystem.inputModule = pointerInputModule;
     // @ts-expect-error access private method
-    const eventTarget: EventTarget = eventSystem.pointerInputModule.mouseInput._eventTarget;
+    const eventTarget: EventTarget = eventSystem.inputModule.mouseInput._eventTarget;
 
     // event data
     const eventMouseDownStr = 'mouse-down';
@@ -68,12 +78,6 @@ test('simple-button-mouse-enter', () => {
     eventMouseDown.setButton(0);
     eventMouseDown.movementX = 0;
     eventMouseDown.movementY = 0;
-
-    // construct a ray and simulate the raycast
-    const ray = new Ray();
-    ray.d = new Vec3(0,0.25,1);
-    ray.o = new Vec3(0,0,-1);
-    eventSystem.setRay(ray);
 
     eventTarget.emit(eventMouseDownStr, eventMouseDown);
     expect(fnDown).toBeCalledTimes(1);
@@ -93,7 +97,6 @@ test('simple-button-mouse-enter', () => {
     // modify the ray
     ray.d = new Vec3(0,-0.3,1);
     ray.o = new Vec3(0,0,-1);
-    eventSystem.setRay(ray);
 
     // new ray doesn't raycast the element so that the time of down doesn't increase
     eventTarget.emit(eventMouseDownStr, eventMouseDown);

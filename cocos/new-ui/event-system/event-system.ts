@@ -45,11 +45,15 @@ export class EventSystem {
 
     private _mouseState: MouseState = new MouseState();
     private _uiSystem: UISystem;
-    private _pointerInputModule = new PointerInputModule(this);
+    private _inputModule: BaseInputModule | null = null;// temporarily use one instead of list
 
-    public get pointerInputModule() {
-        return this._pointerInputModule;
+    public get inputModule(): BaseInputModule | null {
+        return this._inputModule;
     }
+    public set inputModule(val: BaseInputModule | null) {
+        this._inputModule = val;
+    }
+
 
     constructor(uiSystem: UISystem) {
         this._uiSystem = uiSystem;
@@ -57,19 +61,26 @@ export class EventSystem {
 
     // event data
 
-    // set ray (temporarily)
-    public setRay(ray: Ray) {
-        this._pointerInputModule.ray = ray;
-    }
-
+    // // set ray (temporarily)
+    // public setRay(ray: Ray) {
+    //     this._pointerInputModule.ray = ray;
+    // }
 
     public tick() {
-        const eventMouseList = this._pointerInputModule.eventMouseList;
-        const ray = this._pointerInputModule.ray!;
+        if (!this._inputModule) {
+            return;
+        }
 
-        for (let i = 0; i < eventMouseList.length; i++) {
-            const eventMouse = eventMouseList[i];
-            this.handleMouseEvent(eventMouse, ray);
+        if (this._inputModule instanceof PointerInputModule) {
+            const eventMouseList = this._inputModule.eventMouseList;
+            const ray = this._inputModule.ray!;
+
+            for (let i = 0; i < eventMouseList.length; i++) {
+                const eventMouse = eventMouseList[i];
+                this.handleMouseEvent(eventMouse, ray);
+            }
+        } else {
+            // TODO: for other type inputModule
         }
     }
 
